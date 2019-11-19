@@ -8,7 +8,6 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=tvheadend
-PKG_VERSION:=4.2.8
 PKG_RELEASE:=7
 
 PKG_SOURCE_URL:=https://codeload.github.com/tvheadend/tvheadend/tar.gz/v$(PKG_VERSION)?
@@ -30,7 +29,11 @@ define Package/tvheadend
   SECTION:=multimedia
   CATEGORY:=Multimedia
   TITLE:=TV streaming server and recorder
+<<<<<<< HEAD
   DEPENDS:=+libopenssl +librt +zlib +TVHEADEND_AVAHI_SUPPORT:libavahi-client $(ICONV_DEPENDS) +libffmpeg +libx264 +libx265 +libpcre2
+=======
+  DEPENDS:=+libopenssl +librt +zlib +TVHEADEND_AVAHI_SUPPORT:libavahi-client +TVHEADEND_CAM_SUPPORT:libdvbapi +TVHEADEND_CAM_SUPPORT:libdvben50221 +TVHEADEND_CAM_SUPPORT:libucsi $(ICONV_DEPENDS) +libffmpeg +libx264 +libx265 +libpcre2 +tar
+>>>>>>> d008b97e4 (tvheadend: add CAM SUPPORT)
   URL:=https://tvheadend.org
 endef
 
@@ -50,6 +53,12 @@ endef
 
 ifeq ($(CONFIG_TVHEADEND_CWC_SUPPORT),)
   CONFIGURE_ARGS += --disable-cwc
+endif
+
+ifeq ($(CONFIG_TVHEADEND_CAM_SUPPORT),)
+  CONFIGURE_ARGS += --disable-dvben50221
+else
+  CONFIGURE_ARGS += --enable-dvben50221
 endif
 
 ifeq ($(CONFIG_TVHEADEND_LINUXDVB_SUPPORT),)
