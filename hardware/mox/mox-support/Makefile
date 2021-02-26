@@ -1,5 +1,5 @@
 #
-## Copyright (C) 2019-2022 CZ.NIC z.s.p.o. (https://www.nic.cz/)
+## Copyright (C) 2019-2025 CZ.NIC z.s.p.o. (https://www.nic.cz/)
 #
 ## This is free software, licensed under the GNU General Public License v3.
 # See /LICENSE for more information.
@@ -14,27 +14,19 @@ PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 
 include $(INCLUDE_DIR)/package.mk
 
-define Package/mox-generic-support
-  TITLE:=Generic MOX support package
-  DEPENDS:=@TARGET_mvebu_cortexa53_DEVICE_cznic_turris-mox \
-    +mtd +kmod-gpio-button-hotplug +mox-dtb
-endef
+common_dependencies = +mtd +kmod-gpio-button-hotplug +mox-dtb
 
 define Package/mox-support
   TITLE:=MOX support package
-  DEPENDS:=@TARGET_mvebu_cortexa53_DEVICE_cznic_turris-mox +mox-generic-support
+  DEPENDS:=@TARGET_mvebu_cortexa53_DEVICE_cznic_turris-mox $(common_dependencies)
 endef
 
 define Package/shield-support
   TITLE:=Shield support package
-  DEPENDS:=@TARGET_mvebu_cortexa53_DEVICE_cznic_turris-mox +mox-generic-support \
+  DEPENDS:=@TARGET_mvebu_cortexa53_DEVICE_cznic_turris-mox $(common_dependencies) \
 	  +pkglists +turris-nor-update +turris-mox-firmware
   PROVIDES:=mox-support
   CONFLICTS:=mox-support
-endef
-
-define Package/mox-generic-support/description
- Contains generic supporting files for Turris MOX.
 endef
 
 define Package/mox-support/description
@@ -46,10 +38,6 @@ define Package/shield-support/description
 endef
 
 Build/Compile:=:
-
-define Package/mox-generic-support/install
-	true
-endef
 
 define Package/mox-support/install
 	$(INSTALL_DIR) $(1)/boot
@@ -91,6 +79,5 @@ define Package/shield-support/postinst
 }
 endef
 
-$(eval $(call BuildPackage,mox-generic-support))
 $(eval $(call BuildPackage,mox-support))
 $(eval $(call BuildPackage,shield-support))
