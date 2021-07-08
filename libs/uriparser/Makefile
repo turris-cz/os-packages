@@ -49,7 +49,7 @@ define package/liburiparser/description
   strictly rfc 3986 compliant uri parsing and handling library written in c89
 endef
 
-CMAKE_OPTIONS := \
+CMAKE_OPTIONS += \
 	-DBUILD_SHARED_LIBS=ON \
 	-DURIPARSER_BUILD_CHAR=ON \
 	-DURIPARSER_BUILD_DOCS=OFF \
