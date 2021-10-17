@@ -28,7 +28,7 @@ PKG_CONFIG_DEPENDS:=CONFIG_LIGHTTPD_SSL $(patsubst %,CONFIG_PACKAGE_lighttpd-mod
 REBUILD_MODULES=authn_gssapi authn_ldap magnet webdav
 
 include $(INCLUDE_DIR)/package.mk
-include $(TOPDIR)/feeds/packages/devel/meson/meson.mk
+include $(INCLUDE_DIR)/meson.mk
 
 define Package/lighttpd/Default
   SUBMENU:=Web Servers/Proxies
