@@ -1,14 +1,14 @@
 Package: tos3to4-notify
-Version: 1.2
+Version: 1.3
 Depends: mount-utils, bc, libatsha204
 License: GPL-3.0
 Section: none
 Architecture: all
 Installed-Size: 0
 Filename: tos3to4-notify.ipk
-MD5Sum: 974383b459c3a1357d554194a47e6f8a
-SHA256sum: 878d6024049dfedbaaf42097446ea230ac8cd902961c46b78a3048fca0848311
-SHA256Sum: 878d6024049dfedbaaf42097446ea230ac8cd902961c46b78a3048fca0848311
+MD5Sum: 15bbb756fbecf7c140460ea78215a016
+SHA256sum: 4b244eebca86049d248c8ddc9880b9bd8913f008b4e8839933faaf54574afa1a
+SHA256Sum: 4b244eebca86049d248c8ddc9880b9bd8913f008b4e8839933faaf54574afa1a
 Description:  Send notification to suggest migration
 
 Package: userlists
