@@ -39,6 +39,9 @@ define Package/libatsha204-emul
   VARIANT:=emul
 endef
 
+TARGET_CFLAGS += \
+        -fcommon
+
 MAKE_FLAGS += NO_DOC=1
 
 ifeq ($(BUILD_VARIANT),real)
