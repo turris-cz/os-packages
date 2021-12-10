@@ -1,0 +1,2 @@
+MAILTO=""
+0-59/4	*	*	*	*	root	LANG="$(uci -q get foris.settings.lang || echo en)" healthcheck --periodic
