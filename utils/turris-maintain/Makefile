@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=turris-maintain
 PKG_VERSION:=13
-PKG_RELEASE:=1
+PKG_RELEASE:=2
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 
@@ -28,7 +28,7 @@ endef
 
 define Package/turris-restart
   TITLE:=Turris restart utility scripts
-  DEPENDS:=+uci +python3 +python3-uci +coreutils-base64 +bzip2 +crypto-wrapper
+  DEPENDS:=+uci +python3 +python3-uci +coreutils-base64 +bzip2 +crypto-wrapper +python3-pkg-resources
 endef
 
 define Package/turris-maintain
