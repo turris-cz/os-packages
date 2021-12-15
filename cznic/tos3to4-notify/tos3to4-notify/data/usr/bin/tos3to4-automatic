@@ -27,9 +27,6 @@ if [ "$(cat /tmp/sysinfo/model)" = "Turris" ]; then
 		migrate
 	fi
 else
-	serial="$(echo "ibase=16; $(atsha204cmd serial-number) % A" | bc)"
-	if [ "$serial" -lt 7 ]; then
-		migrate
-	fi
+	migrate
 fi
 do_not_migrate
