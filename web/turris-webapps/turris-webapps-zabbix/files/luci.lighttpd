@@ -1,0 +1,7 @@
+# lighttpd include file for Zabbix
+
+## Set aliases to LuCI install directory
+alias.url := (
+        "/zabbix/" => "/www/zabbix/",
+)
+

@@ -1,0 +1,10 @@
+{
+    "id": "luci",
+    "title": "LuCI",
+    "url": "/zabbix",
+    "icon": "/icons/luci.svg",
+    "description": {
+        "en": "OpenWrt advance web configuration.",
+        "cs": "OpenWrt rozhraní pro nastavení routeru."
+    }
+}
