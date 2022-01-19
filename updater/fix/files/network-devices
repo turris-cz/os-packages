@@ -1,0 +1,165 @@
+#!/bin/sh
+set -e
+. /lib/functions.sh
+# netifd provides default network overlay with current runtime configuration. We
+# are not interested in that. We need to work with real content of /etc/config so
+# we disable state loading.
+LOAD_STATE=
+config_load network
+
+lanports="$(mktemp -d)"
+lanmerge="$(mktemp -d)"
+cleanup() {
+	rm -rf "$lanports" "$lanmerge"
+}
+trap cleanup EXIT TERM INT QUIT ABRT
+
+
+device_attrs="
+macaddr mtu mtu6
+"
+bridge_attrs="
+bridge_empty igmp_snooping multicast_querier query_interval
+query_response_interval last_member_interval hash_max robustness stp
+forward_delay hello_time priority ageing_time max_age
+"
+
+
+# This splits off the new device sections from existing interfaces.
+for_interface_ifname() {
+	local ifname="$1"
+	uci add_list "network.$dcnf.ports=$ifname"
+}
+for_interfaces() {
+	local name="$1"
+	local type ifname
+	config_get type "$name" "type"
+	config_get ifname "$name" "ifname"
+
+	local devname dcnf empty="y"
+	if [ "$type" = "bridge" ]; then
+		devname="br-$name"
+		empty="n" # we always create device for bridge
+		dcnf="$(uci add "network" "device")"
+		uci set "network.$dcnf.name=$devname"
+		uci set "network.$dcnf.type=bridge"
+		for attr in $bridge_attrs; do
+			local value
+			config_get value "$name" "$attr"
+			[ -n "$value" ] && uci set "network.$dcnf.$attr=$value"
+			uci -q del "network.$name.$attr" || true
+		done
+		config_list_foreach "$name" "ifname" for_interface_ifname
+	else
+		devname="$ifname"
+		# We do not create device for interfaces if it references some other
+		# interface or if is just empty
+		if [ -n "$ifname" ] && [ "${ifname:0:1}" != "@" ]; then
+			dcnf="$(uci add "network" "device")"
+			uci set "network.$dcnf.name=$devname"
+		fi
+	fi
+	if [ -n "$dcnf" ]; then
+		for attr in $device_attrs; do
+			local value
+			config_get value "$name" "$attr"
+			if [ -n "$value" ]; then
+				uci set "network.$dcnf.$attr=$value"
+				empty="n"
+			fi
+			uci -q del "network.$name.$attr" || true
+		done
+		# Remove the section if it is empty
+		[ "$empty" = "y" ] && uci -q delete "network.$dcnf"
+	fi
+
+	uci -q del "network.$name.ifname" || true
+	[ -z "$devname" ] \
+		|| uci set "network.$name.device=$devname"
+}
+config_foreach for_interfaces "interface"
+
+uci commit network
+
+
+# We reload here to get the new migrated configuration
+config_load network
+# The netifd does not allow to have base interface (such as lan0) assigned if
+# there are derived interfaces (such as lan0.1) assigned in some bridge. Thus we
+# have to make sure that this is not the case. We do it by identifying bridge
+# collisions and merge those bridges to use VLAN filtering instead.
+for_device_ports_dump() {
+	local port="$1"
+	if [ "${port#*.}" != "$port" ]; then
+		echo "${port##*.}:$cnf" >> "$lanports/${port%.*}"
+	else
+		echo "u:$cnf" >> "$lanports/$port"
+	fi
+}
+for_devices_dump() {
+	local cnf="$1"
+	config_list_foreach "$cnf" "ports" for_device_ports_dump
+}
+config_foreach for_devices_dump "device"
+
+# Identify devices we want to merge
+merge_dev() {
+	local base="$1"
+	local top="$2"
+	local dev="$lanmerge/$top"
+	if [ -f "$dev" ] && [ "$(cat "$dev")" != "$untagged" ]; then
+		merge_dev "$(cat "$dev")" "$top"
+	else
+		echo "$base" > "$dev"
+	fi
+}
+for port in "$lanports"/*; do
+	[ -f "$port" ] || continue
+	untagged="$(sed -n 's/^u:\(.*\)$/\1/p' "$port")"
+	if [ -n "$untagged" ] && grep -qE '^[0-9]+:' "$port"; then
+		echo "Detected mixin of tagged and utagged traffic on: ${port##*/}" >&2
+		while read -r line; do
+			[ "${line#u:}" = "$line" ] || continue # ignore untagged
+			merge_dev "$untagged" "${line#*:}"
+		done <"$port"
+	else
+		rm -f "$port"
+	fi
+done
+
+verify_merge() {
+	for attr in $device_attrs $bridge_attrs; do
+		local from_value to_value
+		config_get from_value "$from" "$attr"
+		config_get to_value "$to" "$attr"
+		if [ "$from_value" != "$to_value" ]; then
+			echo "Can't merge device '$from_dev_name' to '$to_dev_name' because attribute '$attr' has a different value ('$from_value' != '$to_value')" >&2
+			return 1
+		fi
+	done
+}
+for dev in "$lanmerge"/*; do
+	[ -f "$dev" ] || continue
+	from="${dev##*/}"
+	to="$(cat "$dev")"
+	config_get from_dev_name "$from" "name"
+	config_get to_dev_name "$to" "name"
+	verify_merge || continue
+	echo "Merging device '$from_dev_name' to '$to_dev_name'" >&2
+done
+
+# Select an appropriate VLAN we want assign to device
+# ports we care about.
+if [ "$(grep -E "[0-9]+:$from_value" "$lanports"/* | sed 's/^[^:]\+://' | sort -u | wc -l)" -gt 1 ]; then
+	echo "TODO" >&2
+	return 1
+fi
+if [ "$(grep -E "[0-9]+:$to_value" "$lanports"/* | sed 's/^[^:]\+://' | sort -u | wc -l)" -gt 1 ]; then
+	echo "TODO" >&2
+	return 1
+fi
+
+uci commit network
+
+
+#/etc/init.d/network restart
