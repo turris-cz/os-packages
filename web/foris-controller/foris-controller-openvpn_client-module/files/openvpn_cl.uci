@@ -11,6 +11,9 @@ if ! uci -q get firewall.turris_openvpn_client > /dev/null; then
 		set firewall.turris_vpn_client_forward='forwarding'
 		set firewall.turris_vpn_client_forward.src='lan'
 		set firewall.turris_vpn_client_forward.dest='tr_vpn_cl'
+		set firewall.turris_guest_to_vpn_client_forward='forwarding'
+		set firewall.turris_guest_to_vpn_client_forward.src='guest_turris'
+		set firewall.turris_guest_to_vpn_client_forward.dest='tr_vpn_cl'
 		commit firewall
 	EOF
 fi
