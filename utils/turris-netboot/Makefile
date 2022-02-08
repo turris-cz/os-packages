@@ -16,11 +16,11 @@ PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/turris-netboot.git
 PKG_MIRROR_HASH:=6eae57a9b30157d004dd40a0e290885e00f7fef6fcb1c427aff7d49ac728b888
 
-BB_VERSION:=1.29.3
+BB_VERSION:=1.35.0
 PKG_BB_SOURCE:=busybox-$(BB_VERSION).tar.bz2
 PKG_BB_SOURCE_URL:=https://www.busybox.net/downloads \
-		http://sources.buildroot.net
-PKG_BB_HASH:=0a367e19cdfd157e8258d87f893ee516
+                http://sources.buildroot.net
+PKG_BB_HASH:=faeeb244c35a348a334f4a59e44626ee870fb07b6884d68c10ae8bc19f83a694
 
 PKG_MAINTAINER:=Michal Hrusecky <michal.hrusecky@nic.cz>
 
