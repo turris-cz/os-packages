@@ -9,10 +9,14 @@ Více informací naleznete v dokumentaci https://docs.turris.cz/geek/tos3-migrat
 More info is available in the official documentation https://docs.turris.cz/geek/tos3-migration/."
 else
 	create_notification -s news \
-"Aktualizace na nejnovější verzi Turris OS je k dispozici. Pro provedení je prozatím nutné ruční schválení. Pro aktualizaci aktivujte seznam balíčků 'Migration to Turris OS 5.x' ve webovém rozhraní Foris.
+"Podpora verze Turris OS 3.x byla ukončena k 7.1.2022. Tato verze již nedostává bezpečnostní aktualizace a důrazně doporučujeme aktualizaci na nejnovější verzi Turris OS.
 
-Více informací naleznete v dokumentaci https://docs.turris.cz/geek/tos3-migration/." \
-"Update to the latest Turris OS version is available. The update, for now, requires manual approval. To update your router, you must enable package list 'Migration to Turris OS 5.x' in the Foris web interface.
+Aktualizace na nejnovější verzi Turris OS je k dispozici. Pro provedení je nutný ruční zásah. Důrazně doporučujeme toto udělat co nejdříve, protože migrace nebude oficiálně podporována od vydání Turris OS verze 6.0.0.
 
-More info is available in the official documentation https://docs.turris.cz/geek/tos3-migration/."
+Prosím přečtěte si instrukce v dokumentaci https://docs.turris.cz/geek/tos3-migration/." \
+"The Turris OS 3.x support was terminated since 7.1.2022. This version no longer receives security updates and we highly recommend update to the latest Turris OS version.
+
+Update to the latest Turris OS version is available. The update requires manual intervention. It is highly recommended to trigger update as soon as possible because migration process won't be supported after Turris OS 6.0.0 release.
+
+Please read the instruction in the official documentation https://docs.turris.cz/geek/tos3-migration/."
 fi
