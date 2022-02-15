@@ -7,10 +7,25 @@ set -e
 LOAD_STATE=
 config_load network
 
+config_network="/etc/config/network"
+config_network_backup="$config_network.backup"
+cp "$config_network" "$config_network_backup"
 lanports="$(mktemp -d)"
 lanmerge="$(mktemp -d)"
+devmerged="$(mktemp -d)"
 cleanup() {
-	rm -rf "$lanports" "$lanmerge"
+	local ec=$?
+	if [ $ec -ne 0 ]; then
+		echo "======" # TODO remove
+		cat "$config_network" # TODO remove
+		echo "======" # TODO remove
+		mv "$config_network_backup" "$config_network"
+		echo "The network migration failed. Reverting to the original state.  Please migrate the network configuration manually!" >&2
+		exit $ec
+	else
+		rm -f "$config_network_backup"
+	fi
+	rm -rf "$lanports" "$lanmerge" "$devmerged"
 }
 trap cleanup EXIT TERM INT QUIT ABRT
 
@@ -128,6 +143,8 @@ for port in "$lanports"/*; do
 done
 
 verify_merge() {
+	local from_dev_name="$1"
+	local to_dev_name="$2"
 	for attr in $device_attrs $bridge_attrs; do
 		local from_value to_value
 		config_get from_value "$from" "$attr"
@@ -136,30 +153,60 @@ verify_merge() {
 			echo "Can't merge device '$from_dev_name' to '$to_dev_name' because attribute '$attr' has a different value ('$from_value' != '$to_value')" >&2
 			return 1
 		fi
+		if [ "$(grep -E "[0-9]+:$from_value" "$lanports"/* | sed 's/^[^:]\+://' | sort -u | wc -l)" -gt 1 ]; then
+			echo "Can't convert device '$from_dev_name' to VLAN as it contains mix of different VLAN IDs." >&2
+			return 1
+		fi
+		if [ "$(grep -E "[0-9]+:$to_value" "$lanports"/* | sed 's/^[^:]\+://' | sort -u | wc -l)" -gt 1 ]; then
+			echo "Can't convert device '$to_dev_name' to VLAN as it contains mix of different VLAN IDs." >&2
+			return 1
+		fi
 	done
 }
+
+create_vlan_port() {
+	false
+}
+create_vlan() {
+	local from_dev="$1"
+	local from_dev_name="$2"
+	local to_dev_name="$3"
+	[ -f "$devmerged/$from_dev" ] && return 0
+	# TODO we should select somehow default vlan and ensure that there is no
+	# collision between existing
+	local vlan vlancnf
+	vlan="$(grep -E "[0-9]+:$from_dev" "$lanports"/* | cut -d: -f2 | sort -u)"
+	if [ "$(echo "$vlan" | wc -l)" -gt 1 ]; then
+		echo "Can't convert device '$from_dev_name' to VLAN as it contains mix of different VLAN IDs." >&2
+		return 1
+	fi
+	vlancnf="$(uci add "network" "bridge-vlan")"
+	uci set "network.$vlancnf.device=$to_dev_name"
+	uci set "network.$vlancnf.vlan=$vlan"
+	# TODO ports
+	touch "$devmerged/$from_dev"
+	# TODO we need to switch to appropriate device in the interface as well
+	echo "Migrated" # TODO
+}
+
 for dev in "$lanmerge"/*; do
 	[ -f "$dev" ] || continue
 	from="${dev##*/}"
 	to="$(cat "$dev")"
 	config_get from_dev_name "$from" "name"
 	config_get to_dev_name "$to" "name"
-	verify_merge || continue
+	verify_merge "$from_dev_name" "$to_dev_name"
 	echo "Merging device '$from_dev_name' to '$to_dev_name'" >&2
+	create_vlan "$to" "$to_dev_name" "$to_dev_name"
+	create_vlan "$from" "$from_dev_name" "$to_dev_name"
+	uci delete "network.$from"
 done
 
 # Select an appropriate VLAN we want assign to device
 # ports we care about.
-if [ "$(grep -E "[0-9]+:$from_value" "$lanports"/* | sed 's/^[^:]\+://' | sort -u | wc -l)" -gt 1 ]; then
-	echo "TODO" >&2
-	return 1
-fi
-if [ "$(grep -E "[0-9]+:$to_value" "$lanports"/* | sed 's/^[^:]\+://' | sort -u | wc -l)" -gt 1 ]; then
-	echo "TODO" >&2
-	return 1
-fi
 
 uci commit network
 
 
-#/etc/init.d/network restart
+exit 42 # TODO remove
+/etc/init.d/network restart
