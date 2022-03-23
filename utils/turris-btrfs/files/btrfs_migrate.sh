@@ -96,7 +96,7 @@ stdin serial
 stdout serial
 hwconfig usb1:dr_mode=host,phy_type=ulpi
 ubiboot max6370_wdt_off; setenv bootargs \$bootargsubi; ubi part rootfs; ubifsmount ubi0:rootfs; ubifsload \$nandfdtaddr /boot/fdt; ubifsload \$nandbootaddr /boot/zImage; bootm \$nandbootaddr - \$nandfdtaddr
-bootcmd setexpr.b reflash *0xFFA0001F; if test \$reflash -ge \$reflash_timeout; then echo BOOT NOR; run norboot; else echo NORMAL BOOT; run turris_boot; fi
+bootcmd mw ffee0060 40000000; setexpr.b reflash *0xFFA0001F; if test \$reflash -ge \$reflash_timeout; then echo BOOT NOR; run norboot; else echo NORMAL BOOT; run turris_boot; fi
 norboot max6370_wdt_off; setenv bootargs \$bootargsnor; bootm 0xef020000 - 0xef000000
 root_uuid=$ROOT_UUID
 bootargsbtrfs rootwait rw rootfstype=btrfs rootflags=subvol=@,commit=5 console=ttyS0,115200
