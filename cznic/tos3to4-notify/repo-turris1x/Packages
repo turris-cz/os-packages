@@ -1,0 +1,37 @@
+Package: kernel
+Version: 4.4.199-1-f90a52a6230ecb072f657fce5aebd444-2
+Depends: libc, create_notification, uboot-turris, mtd-utils-flash-erase, mtd-utils-nandwrite, mtd
+Source: package/kernel/linux
+License: GPLv2
+Section: sys
+Architecture: mpc85xx
+Installed-Size: 3323059
+Filename: kernel.ipk
+MD5Sum: 54523a8c522d6a48afa8425ba2ace0a1
+SHA256sum: 50b0c4b2fd472d6e68087bcdbc9de41573378dfb07bc0cc955cf9d42e238a2b6
+SHA256Sum: 50b0c4b2fd472d6e68087bcdbc9de41573378dfb07bc0cc955cf9d42e238a2b6
+Description:  Kernel package
+
+Package: tos3to4-notify
+Version: 1.6
+Depends: mount-utils, bc, libatsha204
+License: GPL-3.0
+Section: none
+Architecture: all
+Installed-Size: 0
+Filename: tos3to4-notify.ipk
+MD5Sum: 765794693f08cd0001f7d39bbaa6810c
+SHA256sum: 36b75dea39f90b324ef3db049c9136f5f9c82bf0f1e619890400589dabd1718c
+SHA256Sum: 36b75dea39f90b324ef3db049c9136f5f9c82bf0f1e619890400589dabd1718c
+Description:  Send notification to suggest migration
+
+Package: userlists
+Version: 11.10
+Architecture: all
+Maintainer: CZ.NIC <packaging@turris.cz>
+Filename: userlists.ipk
+MD5Sum: bcc0bade9e8aefd4ceeb903b2df23107
+SHA256sum: e1d28a1ad92d526e96c14c6c92a06f34e28eb9c92fa501384d95bec1bb6f4dee
+SHA256Sum: e1d28a1ad92d526e96c14c6c92a06f34e28eb9c92fa501384d95bec1bb6f4dee
+Description:  Userlists for the updater
+
