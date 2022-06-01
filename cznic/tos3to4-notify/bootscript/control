@@ -1,0 +1,8 @@
+Package: bootscript
+Version: 1.0
+Depends: kernel
+License: GPLv2
+Section: sys
+Architecture: mpc85xx
+Installed-Size: 100
+Description:  Boot script package

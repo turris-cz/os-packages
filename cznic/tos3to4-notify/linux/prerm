@@ -1,3 +1,0 @@
-#!/bin/sh
-. ${IPKG_INSTROOT}/lib/functions.sh
-( type default_prerm > /dev/null ) && default_prerm $0 $@ || true

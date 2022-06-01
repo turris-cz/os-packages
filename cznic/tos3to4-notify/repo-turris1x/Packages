@@ -1,16 +1,15 @@
-Package: kernel
-Version: 4.4.199-1-f90a52a6230ecb072f657fce5aebd444-2
-Depends: libc, create_notification, uboot-turris, mtd-utils-flash-erase, mtd-utils-nandwrite, mtd
-Source: package/kernel/linux
+Package: bootscript
+Version: 1.0
+Depends: kernel
 License: GPLv2
 Section: sys
 Architecture: mpc85xx
-Installed-Size: 3323059
-Filename: kernel.ipk
-MD5Sum: 54523a8c522d6a48afa8425ba2ace0a1
-SHA256sum: 50b0c4b2fd472d6e68087bcdbc9de41573378dfb07bc0cc955cf9d42e238a2b6
-SHA256Sum: 50b0c4b2fd472d6e68087bcdbc9de41573378dfb07bc0cc955cf9d42e238a2b6
-Description:  Kernel package
+Installed-Size: 100
+Filename: bootscript.ipk
+MD5Sum: 923e73ceda18eec84e50a27fbe88f92c
+SHA256sum: fb97aabaaef47b6d419d985c071274ffeb1476b943576f513dd266e8960728bf
+SHA256Sum: fb97aabaaef47b6d419d985c071274ffeb1476b943576f513dd266e8960728bf
+Description:  Boot script package
 
 Package: tos3to4-notify
 Version: 1.6

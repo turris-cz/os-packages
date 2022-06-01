@@ -1,9 +1,0 @@
-Package: kernel
-Version: 4.4.199-1-f90a52a6230ecb072f657fce5aebd444-2
-Depends: libc, create_notification, uboot-turris, mtd-utils-flash-erase, mtd-utils-nandwrite, mtd
-Source: package/kernel/linux
-License: GPLv2
-Section: sys
-Architecture: mpc85xx
-Installed-Size: 3323059
-Description:  Kernel package
