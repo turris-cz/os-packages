@@ -21,8 +21,6 @@ PKG_MAINTAINER:=Knot DNS <knot-dns@labs.nic.cz>
 PKG_LICENSE:=GPL-3.0-later
 PKG_LICENSE_FILES:=COPYING
 
-PKG_BUILD_DEPENDS:=meson/host
-
 PKG_INSTALL:=1
 
 include $(INCLUDE_DIR)/package.mk
