@@ -21,16 +21,6 @@ run_kresd_command () {
 	echo "${1}" | socat - "unix-connect:${kresd_socket}"
 }
 
-run_unbound_command () {
-	local cmd="$1"
-	which unbound-control; echo $?
-	if [ "$?" -eq 0 ]; then
-		unbound-control "$cmd" | test_log
-	else
-		echo "unbound-control not found" | test_log
-	fi
-}
-
 add_luci_custom_cmd () {
 	local cmd="$1"
 	local description="$2"
@@ -88,9 +78,6 @@ start_debug () {
 		run_kresd_command "policy.add(policy.all(policy.QTRACE))"
 		run_kresd_command "table.insert(policy.rules, 1, table.remove(policy.rules))"
 		run_kresd_command "verbose(true)"
-	elif [ "${resolver}" == "unbound" ]; then
-		echo "== enable verbose logging (reboot to disable it) ==" |test_log
-		run_unbound_command "verbosity 5"
 	fi
 
 }
@@ -102,9 +89,6 @@ stop_debug () {
 	if [ "${resolver}" == "kresd" ]; then
 		echo "== kresd disabled verbose logging ==" |test_log
 		run_kresd_command "verbose(false)"
-	elif [ "${resolver}" == "unbound" ]; then
-		echo "== unbound disabled verbose logging ==" |test_log
-		run_unbound_command "verbosity 0"
 	fi
 }
 
@@ -139,8 +123,6 @@ run_test () {
 		run_kresd_command "trust_anchors" |test_log
 		echo "== enable verbose logging (reboot to disable it) ==" |test_log
 		run_kresd_command "verbose(true)"
-	elif [ "${RESOLVER}" == "unbound" ]; then
-		echo TBD
 	fi
 
 	echo "== resolution attempts =="
