@@ -8,7 +8,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=resolver-debug
-PKG_VERSION:=0.0.3
+PKG_VERSION:=0.0.4
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
@@ -25,7 +25,7 @@ define Package/resolver-debug
 endef
 
 define Package/resolver-debug/description
-  Debug utils for knot-resolver and unbound.
+  Debug utils for knot-resolver.
   It adds custom commands for debugging to LuCI
   and redirects resolver log from /var/log/messages
   to /var/log/resolver
