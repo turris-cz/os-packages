@@ -1,0 +1,10 @@
+{
+  "id": "miniflux",
+  "title": "miniflux",
+  "url": "/miniflux",
+  "icon": "/icons/miniflux.svg",
+  "description": {
+      "en": "Open source and self-hosted minimalist feed reader.",
+      "cs": "Otevřená minimalistická RSS Čtečka."
+  }
+}
