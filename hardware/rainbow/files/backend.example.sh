@@ -5,7 +5,7 @@
 # that those names match with labeling on the box.
 LEDS="pwr lan0 lan1 lan2 wan"
 
-# This function is required only if leds are kontrolled by kernel driver and
+# This function is required only if leds are controlled by kernel driver and
 # kernel managed triggers are available. When this function is defined and
 # successfully provides path to sysfs for specified LED then it unlocks
 # activity triggers for it.
