@@ -21,4 +21,4 @@ class Backend:
     @staticmethod
     def handled(ledid: int) -> bool:
         """Informs animator if given led animation should be handled by it."""
-        return True  # On Omnia all leds have to be animated using animator
+        return True  # On Omnia all leds could be animated using animator
