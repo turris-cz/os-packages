@@ -4,7 +4,7 @@
 set -eu
 
 warning() {
-	echo "Warnig:" "$@" >&2
+	echo "Warning:" "$@" >&2
 }
 
 fail() {
