@@ -25,20 +25,20 @@ board_init() {
     TARGET_DRIVE="/dev/mmcblk0"
     PART_NO="1"
     TARGET_PART="${TARGET_DRIVE}p${PART_NO}"
-    BRIGHT="`cat /sys/class/leds/omnia-led\:all/device/global_brightness`"
+    BRIGHT="`cat /sys/class/leds/rgb\:all/device/global_brightness`"
     WAN_IF="eth2"
     DELAY=40
-    RESCUE_IF="`ip a s | sed -n 's|^[0-9]*:[[:blank:]]*\(lan4\)@.*|\1|p'`"
-    RESCUE_IF_UP="`ip a s | sed -n 's|^[0-9]*:[[:blank:]]*\(lan4\)@\([^:]*\):.*|\2|p'`"
-    echo '0 255 0' >  /sys/class/leds/omnia-led\:all/color
-    echo default-on > /sys/class/leds/omnia-led\:all/trigger
+    RESCUE_IF="`ip a s | sed -n 's|^[0-9]*:[[:blank:]]*\(lan-4\)@.*|\1|p'`"
+    RESCUE_IF_UP="`ip a s | sed -n 's|^[0-9]*:[[:blank:]]*\(lan-4\)@\([^:]*\):.*|\2|p'`"
+    echo '0 255 0' >  /sys/class/leds/rgb\:all/multi_intensity
+    echo default-on > /sys/class/leds/rgb\:all/trigger
     enable_btrfs
     generic_post_init
 }
 
 check_for_mode_change() {
-    if [ "`cat /sys/class/leds/omnia-led\:all/device/global_brightness`" -ne "$BRIGHT" ]; then
-        echo "$BRIGHT" > /sys/class/leds/omnia-led\:all/device/global_brightness
+    if [ "`cat /sys/class/leds/rgb\:all/device/global_brightness`" -ne "$BRIGHT" ]; then
+        echo "$BRIGHT" > /sys/class/leds/rgb\:all/device/global_brightness
         return 0
     fi
     return 1
@@ -46,48 +46,48 @@ check_for_mode_change() {
 
 display_mode() {
     MODE_TG=default-on
-    echo '255 64 0' >  /sys/class/leds/omnia-led\:all/color
-    for i in /sys/class/leds/omnia-led*; do
+    echo '255 64 0' >  /sys/class/leds/rgb\:all/multi_intensity
+    for i in /sys/class/leds/rgb*; do
         echo none > "$i"/trigger
     done
-    echo "$MODE_TG" > /sys/class/leds/omnia-led\:power/trigger
+    echo "$MODE_TG" > /sys/class/leds/rgb\:power/trigger
     if [ "$MODE" -gt 1 ]; then
-        echo "$MODE_TG" > /sys/class/leds/omnia-led\:lan0/trigger
+        echo "$MODE_TG" > /sys/class/leds/rgb\:lan-0/trigger
     fi
     if [ "$MODE" -gt 2 ]; then
-        echo "$MODE_TG" > /sys/class/leds/omnia-led\:lan1/trigger
+        echo "$MODE_TG" > /sys/class/leds/rgb\:lan-1/trigger
     fi
     if [ "$MODE" -gt 3 ]; then
-        echo "$MODE_TG" > /sys/class/leds/omnia-led\:lan2/trigger
+        echo "$MODE_TG" > /sys/class/leds/rgb\:lan-2/trigger
     fi
     if [ "$MODE" -gt 4 ]; then
-        echo "$MODE_TG" > /sys/class/leds/omnia-led\:lan3/trigger
+        echo "$MODE_TG" > /sys/class/leds/rgb\:lan-3/trigger
     fi
     if [ "$MODE" -gt 5 ]; then
-        echo "$MODE_TG" > /sys/class/leds/omnia-led\:lan4/trigger
+        echo "$MODE_TG" > /sys/class/leds/rgb\:lan-4/trigger
     fi
     if [ "$MODE" -gt 6 ]; then
-        echo "$MODE_TG" > /sys/class/leds/omnia-led\:wan/trigger
+        echo "$MODE_TG" > /sys/class/leds/rgb\:wan/trigger
     fi
     if [ "$MODE" -gt 7 ]; then
-        echo "$MODE_TG" > /sys/class/leds/omnia-led\:pci1/trigger
+        echo "$MODE_TG" > /sys/class/leds/rgb\:wlan-1/trigger
     fi
     if [ "$MODE" -gt 8 ]; then
-        echo "$MODE_TG" > /sys/class/leds/omnia-led\:pci2/trigger
+        echo "$MODE_TG" > /sys/class/leds/rgb\:wlan-2/trigger
     fi
     if [ "$MODE" -gt 9 ]; then
-        echo "$MODE_TG" > /sys/class/leds/omnia-led\:pci3/trigger
+        echo "$MODE_TG" > /sys/class/leds/rgb\:wlan-3/trigger
     fi
 }
 
 busy() {
-    echo '255 0 0' >  /sys/class/leds/omnia-led\:all/color
+    echo '255 0 0' >  /sys/class/leds/rgb\:all/multi_intensity
 }
 
 die() {
     predie "$1" "$2"
-    echo '0 0 255' >  /sys/class/leds/omnia-led\:all/color
-    echo timer > /sys/class/leds/omnia-led\:all/trigger
+    echo '0 0 255' >  /sys/class/leds/rgb\:all/multi_intensity
+    echo timer > /sys/class/leds/rgb\:all/trigger
     while true; do
         sleep 1
     done
