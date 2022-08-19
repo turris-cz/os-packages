@@ -5,10 +5,10 @@ class Backend:
     """Handler for all leds we can control."""
 
     # All available leds in order on the box
-    LEDS = ["power", "lan0", "lan1", "lan2", "lan3", "lan4", "wan", "pci1", "pci2", "pci3", "user1", "user2"]
+    LEDS = ["power", "lan-0", "lan-1", "lan-2", "lan-3", "lan-4", "wan", "wlan-1", "wlan-2", "wlan-3", "indicator-1", "indicator-2"]
 
     def __init__(self):
-        self._fds = tuple(os.open(f"/sys/class/leds/omnia-led:{led}/color", os.O_WRONLY) for led in self.LEDS)
+        self._fds = tuple(os.open(f"/sys/class/leds/rgb:{led}/color", os.O_WRONLY) for led in self.LEDS)
 
     def update(self, ledid: int, red: int, green: int, blue: int) -> None:
         """Update color of led on given index."""

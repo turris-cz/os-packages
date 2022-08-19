@@ -1,5 +1,5 @@
 # Turris Omnia backend for generic rainbow script
-LEDS="pwr lan0 lan1 lan2 lan3 lan4 wan pci1 pci2 pci3 usr1 usr2"
+LEDS="power lan-0 lan-1 lan-2 lan-3 lan-4 wan wlan-1 wlan-2 wlan-3 indicator1 indicator2"
 
 SYSFS="/sys/devices/platform/soc/soc:internal-regs/f1011000.i2c/i2c-0/i2c-1/1-002b"
 
@@ -13,16 +13,16 @@ led2sysfs() {
 			led="user${led#usr}"
 			;;
 	esac
-	echo "$SYSFS/leds/omnia-led:$led"
+	echo "$SYSFS/leds/rgb:$led"
 }
 
 led_defaults() {
 	local led="$1"
 	case "$led" in
-		pwr)
+		power)
 			color_r=0 color_g=255 color_b=0
 			;;
-		lan*|pci*)
+		lan*|wlan*)
 			color_r=0 color_g=0 color_b=255
 			;;
 		wan)
@@ -56,7 +56,7 @@ set_led() {
 			pwd)
 				mode="enable"
 				;;
-			pci*)
+			wlan*)
 				local trigger
 				loadsrc pci
 				if trigger="$(pci_device_activity_detect "$led" "/sys/bus/pci/devices/0000:0${led#pci}:00.0")"; then
@@ -66,7 +66,7 @@ set_led() {
 					mode="disable"
 				fi
 				;;
-			usr*)
+			indicator*)
 				mode="disable"
 				;;
 		esac
