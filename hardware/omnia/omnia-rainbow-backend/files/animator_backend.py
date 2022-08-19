@@ -16,7 +16,7 @@ class Backend:
 
     def apply(self) -> None:
         """Apply previous LEDs state updates if that is required."""
-        # We apply immediatelly so we do not need this.
+        # We apply immediately so we do not need this.
 
     @staticmethod
     def handled(ledid: int) -> bool:

@@ -1,18 +1,10 @@
 # Turris Omnia backend for generic rainbow script
-LEDS="power lan-0 lan-1 lan-2 lan-3 lan-4 wan wlan-1 wlan-2 wlan-3 indicator1 indicator2"
+LEDS="power lan-0 lan-1 lan-2 lan-3 lan-4 wan wlan-1 wlan-2 wlan-3 indicator-1 indicator-2"
 
 SYSFS="/sys/devices/platform/soc/soc:internal-regs/f1011000.i2c/i2c-0/i2c-1/1-002b"
 
 led2sysfs() {
 	local led="$1"
-	case "$led" in # Transform our names of leds to the driver names
-		pwr)
-			led="power"
-			;;
-		usr*)
-			led="user${led#usr}"
-			;;
-	esac
 	echo "$SYSFS/leds/rgb:$led"
 }
 
