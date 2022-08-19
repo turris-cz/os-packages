@@ -1,5 +1,5 @@
 # Turris 1.x backend for generic rainbow script
-LEDS="wan lan1 lan2 lan3 lan4 lan5 wifi pwr"
+LEDS="wan lan-1 lan-2 lan-3 lan-4 lan-5 wlan power"
 
 led_defaults() {
 	local led="$1"
