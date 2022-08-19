@@ -20,7 +20,7 @@ include $(INCLUDE_DIR)/package.mk
 define Package/turris1x-rainbow-backend
   TITLE:=turris1x-rainbow-backend
   DEPENDS:=\
-    @KERNEL_DEVMEM @TARGET_mpc85xx_p2020_DEVICE_turris1x \
+    @KERNEL_DEVMEM @TARGET_mpc85xx_p2020_DEVICE_cznic_turris1x \
     +turris1x-rainbow \
     +rainbow-button-sync \
     +rainbow-animator

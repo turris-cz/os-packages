@@ -17,7 +17,7 @@ include $(INCLUDE_DIR)/package.mk
 define Package/Common
   TITLE:=rainbow
   URL:=https://gitlab.nic.cz/turris/rainbow_omnia
-  DEPENDS:=@(TARGET_mvebu_cortexa9_DEVICE_cznic_turris-omnia||TARGET_mpc85xx_p2020_DEVICE_turris1x||TARGET_mvebu_cortexa53_DEVICE_cznic-mox) \
+  DEPENDS:=@(TARGET_mvebu_cortexa9_DEVICE_cznic_turris-omnia||TARGET_mpc85xx_p2020_DEVICE_cznic_turris1x||TARGET_mvebu_cortexa53_DEVICE_cznic_turris-mox) \
 endef
 
 define Package/rainbow
@@ -38,7 +38,7 @@ define Package/rainbow-animator
 endef
 
 define Package/rainbow/description
-  Leds control on Turris Omnia, Mox and 1.x routers.
+  LEDs control on Turris Omnia, Mox and 1.x routers.
 endef
 
 define Package/rainbow-button-sync/description

@@ -20,7 +20,7 @@ include $(INCLUDE_DIR)/package.mk
 define Package/mox-rainbow-backend
   TITLE:=mox-rainbow-backend
   DEPENDS:=\
-    @TARGET_mvebu_cortexa53_DEVICE_cznic-mox \
+    @TARGET_mvebu_cortexa53_DEVICE_cznic_turris-mox \
     +rainbow-animator \
     +python3-uci
   PROVIDES:=rainbow-backend
