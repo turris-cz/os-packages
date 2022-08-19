@@ -7,7 +7,7 @@ fail() {
 	exit 1
 }
 
-LEDS="pwr lan0 lan1 pci1 usr1"
+LEDS="power lan-0 lan-1 wlan-1 indicator-1"
 
 valid() {
 	is_valid_led "$1" || fail "Led should be valid but it is not: $1"

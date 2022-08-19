@@ -8,7 +8,7 @@ loadsrc state
 rainbowdir="$(mktemp -d)"
 trap 'rm -rf "$rainbowdir"' EXIT
 
-LEDS="pwr lan0 lan1 pci1 usr1"
+LEDS="power lan-0 lan-1 wlan-1 indicator-1"
 
 fail() {
 	echo "$@" >&2
@@ -37,16 +37,16 @@ cmp_file 50 "default" <<EOF
 -	-	-	-
 EOF
 
-set_pci1() {
-	if [ "$led" = "pci1" ]; then
+set_wlan-1() {
+	if [ "$led" = "wlan-1" ]; then
 		color_r=255
 		color_g=0
 		color_b=127
 		status="auto"
 	fi
 }
-call_for_leds_config_level 51 "pci1" set_pci1
-cmp_file 51 "pci1" <<EOF
+call_for_leds_config_level 51 "wlan-1" set_wlan-1
+cmp_file 51 "wlan-1" <<EOF
 -	-	-	-
 -	-	-	-
 -	-	-	-
@@ -54,21 +54,21 @@ cmp_file 51 "pci1" <<EOF
 -	-	-	-
 EOF
 
-modify_pci1() {
-	if [ "$led" = "pci1" ]; then
+modify_wlan-1() {
+	if [ "$led" = "wlan-1" ]; then
 		color_r=0
 		color_g=255
 		color_b=0
 		status="trigger"
-		status_args="netdev	wlan1	link tx rx"
+		status_args="netdev	wlan-1	link tx rx"
 	fi
 }
-call_for_leds_config_level 51 "pci1" modify_pci1
-cmp_file 51 "pci1" <<EOF
+call_for_leds_config_level 51 "wlan-1" modify_wlan-1
+cmp_file 51 "wlan-1" <<EOF
 -	-	-	-
 -	-	-	-
 -	-	-	-
-0	255	0	trigger	netdev	wlan1	link tx rx
+0	255	0	trigger	netdev	wlan-1	link tx rx
 -	-	-	-
 EOF
 
@@ -92,19 +92,19 @@ EOF
 complete_config() {
 	local r g b s a
 	case "$led" in
-		pwr|lan0|lan1|usr1)
+		power|lan-0|lan-1|indicator-1)
 			r=127
 			g=128
 			b=255
 			s="auto"
 			a=""
 			;;
-		pci1)
+		wlan-1)
 			r=0
 			g=255
 			b=0
 			s="trigger"
-			a="netdev	wlan1	link tx rx"
+			a="netdev	wlan-1	link tx rx"
 			;;
 		*)
 			fail "Invalid led: $led"
