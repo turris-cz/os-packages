@@ -3,7 +3,7 @@
 # This variable has to be always defined with full list of LED names. It is
 # prefered to use self-describing but short names for those LEDs. It is prefered
 # that those names match with labeling on the box.
-LEDS="pwr lan0 lan1 lan2 wan"
+LEDS="power lan-0 lan-1 lan-2 wan"
 
 # This function is required only if leds are controlled by kernel driver and
 # kernel managed triggers are available. When this function is defined and
