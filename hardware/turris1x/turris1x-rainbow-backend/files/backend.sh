@@ -4,7 +4,7 @@ LEDS="wan lan-1 lan-2 lan-3 lan-4 lan-5 wlan power"
 led_defaults() {
 	local led="$1"
 	case "$led" in
-		pwr)
+		power)
 			color_r=0 color_g=255 color_b=0
 			;;
 		lan*|wifi)
