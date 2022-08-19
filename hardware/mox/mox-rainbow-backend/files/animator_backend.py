@@ -6,7 +6,7 @@ class Backend:
     """Handler for all leds we can control."""
 
     def __init__(self):
-        self._fd = os.open(f"/sys/class/leds/mox:red:activity/brightness", os.O_WRONLY)
+        self._fd = os.open("/sys/class/leds/mox:red:activity/brightness", os.O_WRONLY)
         self.uci = EUci()
 
     def update(self, ledid: int, red: int, green: int, blue: int) -> None:
