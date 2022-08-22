@@ -29,7 +29,7 @@ endef
 Build/Compile:=:
 
 define Package/mox-rainbow-backend/install
-	$(INSTALL_DIR) $(1)/usr/share
+	$(INSTALL_DIR) $(1)/usr/libexec/rainbow
 	$(INSTALL_DATA) ./files/backend.sh $(1)/usr/libexec/rainbow/
 	$(INSTALL_DATA) ./files/animator_backend.sh $(1)/usr/libexec/rainbow/
 endef

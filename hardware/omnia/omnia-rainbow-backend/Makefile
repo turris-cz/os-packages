@@ -29,9 +29,9 @@ endef
 Build/Compile:=:
 
 define Package/omnia-rainbow-backend/install
-	$(INSTALL_DIR) $(1)/usr/share
+	$(INSTALL_DIR) $(1)/usr/libexec/rainbow
 	$(INSTALL_DATA) ./files/backend.sh $(1)/usr/libexec/rainbow/
-	$(INSTALL_DATA) ./files/animator_backend.sh $(1)/usr/libexec/rainbow/
+	$(INSTALL_DATA) ./files/animator_backend.py $(1)/usr/libexec/rainbow/
 endef
 
 $(eval $(call BuildPackage,omnia-rainbow-backend))
