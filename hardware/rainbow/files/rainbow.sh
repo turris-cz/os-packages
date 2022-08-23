@@ -4,7 +4,7 @@ set -eu
 rainbowdir="/var/run/rainbow"
 mkdir -p "$rainbowdir"
 [ "${RAINBOW_DIRECTORY_LOCKED-:}" = "y" ] \
-	|| RAINBOW_DIRECTORY_LOCKED="y" exec flock -Fx "$rainbowdir" "$0" "$@"
+	|| RAINBOW_DIRECTORY_LOCKED="y" exec flock -x "$rainbowdir" "$0" "$@"
 
 . "$(dirname "$(readlink -f "$0")")/utils.sh"
 loadsrc state
