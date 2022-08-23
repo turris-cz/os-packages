@@ -21,9 +21,9 @@ brightness_help() {
 }
 
 op_brightness() {
-	local query="f"
-	local precise="n"
-	while getopts "qh" opt; do
+	local query
+	local precise
+	while getopts "qph" opt; do
 		case "$opt" in
 			q)
 				query="y"
@@ -41,7 +41,7 @@ op_brightness() {
 				;;
 		esac
 	done
-	if [ "$query" = "y" ]; then
+	if [ "$query" ]; then
 		brightness fetch
 		return $#
 	fi
@@ -52,7 +52,7 @@ op_brightness() {
 		exit 2
 	}
 	brightness="$1"
-	if [ "$precise" = "y" ]; then
+	if [ "$precise" ]; then
 		if [ "$brightness" -lt 0 ] || [ "$brightness" -gt 255 ]; then
 			echo "The value has to be a number from 0 to 255!" >&2
 			brightness_usage
