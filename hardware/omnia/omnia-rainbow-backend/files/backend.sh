@@ -25,7 +25,7 @@ led_defaults() {
 
 get_brightness() {
 	local cur
-	cur="$(cat "$SYSFS/global_brightness")"
+	cur="$(cat "$SYSFS/brightness")"
 	echo $((cur * 255 / 100))
 }
 
@@ -36,7 +36,7 @@ preapply() {
 	brightness_level="$(brightness)"
 	# The full range is only 0-100 but that is good enough so we don't adjust
 	# more. We just loose the precision on Omnia but who can see it anyway.
-	echo "$((brightness_level * 100 / 255))" > "$SYSFS/global_brightness"
+	echo "$((brightness_level * 100 / 255))" > "$SYSFS/brightness"
 }
 
 set_led() {
