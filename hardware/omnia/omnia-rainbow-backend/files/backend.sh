@@ -1,7 +1,12 @@
 # Turris Omnia backend for generic rainbow script
 LEDS="power lan-0 lan-1 lan-2 lan-3 lan-4 wan wlan-1 wlan-2 wlan-3 indicator-1 indicator-2"
 
-SYSFS="/sys/devices/platform/soc/soc:internal-regs/f1011000.i2c/i2c-0/i2c-1/1-002b/leds/rgb"
+SYSFS="/sys/devices/platform/soc/soc:internal-regs/f1011000.i2c/i2c-0/i2c-1/1-002b"
+
+led2sysfs() {
+	local led="$1"
+	echo "$SYSFS/leds/rgb:$led"
+}
 
 led_defaults() {
 	local led="$1"
@@ -80,7 +85,8 @@ set_led() {
 			;;
 	esac
 
-	local sysfs="$SYSFS:$led"
+	local sysfs
+	sysfs="$(led2sysfs "$led")"
 	# We have to disable trigger first to make sure that changes are correctly
 	# applied and not modified by this in the meantime.
 	echo "none" > "$sysfs/trigger"
@@ -104,7 +110,7 @@ boot_sequence() {
 	local sysfs
 
 	for led in $LEDS; do
-		sysfs="$SYSFS:$led"
+		sysfs="$(led2sysfs "$led")"
 		echo "none" > "$sysfs/trigger"
 		echo "0" > "$sysfs/autonomous"
 		echo "255" > "$sysfs/brightness"
@@ -113,7 +119,7 @@ boot_sequence() {
 	sleep 1
 
 	for led in $LEDS; do
-		sysfs="$SYSFS:$led"
+		sysfs="$(led2sysfs "$led")"
 		echo "0" > "$sysfs/autonomous"
 		echo "none" > "$sysfs/trigger"
 		echo "255" > "$sysfs/brightness"

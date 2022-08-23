@@ -16,9 +16,9 @@ class Backend:
 
     def apply(self) -> None:
         """Apply previous LEDs state updates if that is required."""
-        # We apply immediately so we do not need this
+        # We apply immediately so we do not need this.
 
     @staticmethod
     def handled(ledid: int) -> bool:
         """Informs animator if given led animation should be handled by it."""
-        return True  # On Omnia all leds can be animated using animator
+        return True  # On Omnia all leds could be animated using animator
