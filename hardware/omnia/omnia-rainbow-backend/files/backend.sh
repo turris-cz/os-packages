@@ -91,7 +91,7 @@ set_led() {
 	# applied and not modified by this in the meantime.
 	echo "none" > "$sysfs/trigger"
 	echo "$brightness" > "$sysfs/brightness"
-	echo "$r $g $b" > "$sysfs/color"
+	echo "$r $g $b" > "$sysfs/multi_intensity"
 	echo "$autonomous" > "$sysfs/autonomous"
 	if [ "$trigger" = "activity" ]; then
 		apply_activity "$led" "$@" \
@@ -114,7 +114,7 @@ boot_sequence() {
 		echo "none" > "$sysfs/trigger"
 		echo "0" > "$sysfs/autonomous"
 		echo "255" > "$sysfs/brightness"
-		echo "0 255 0" > "$sysfs/color"
+		echo "0 255 0" > "$sysfs/multi_intensity"
 	done
 	sleep 1
 
@@ -123,7 +123,7 @@ boot_sequence() {
 		echo "0" > "$sysfs/autonomous"
 		echo "none" > "$sysfs/trigger"
 		echo "255" > "$sysfs/brightness"
-		echo "0 0 255" > "$sysfs/color"
+		echo "0 0 255" > "$sysfs/multi_intensity"
 	done
 	sleep 1
 	# Note: we apply in the end so we don't have to restore previous state
