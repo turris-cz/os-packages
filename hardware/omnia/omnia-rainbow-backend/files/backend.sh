@@ -1,11 +1,13 @@
 # Turris Omnia backend for generic rainbow script
 LEDS="power lan-0 lan-1 lan-2 lan-3 lan-4 wan wlan-1 wlan-2 wlan-3 indicator-1 indicator-2"
 
-SYSFS="/sys/devices/platform/soc/soc:internal-regs/f1011000.i2c/i2c-0/i2c-1/1-002b"
+# it doesn't matter which led we use here, device always points to the same
+# location
+SYSFS="/sys/class/leds/rgb:power/$(readlink /sys/class/leds/rgb:power/device)"
 
 led2sysfs() {
 	local led="$1"
-	echo "$SYSFS/leds/rgb:$led"
+	echo "/sys/class/leds/rgb:$led"
 }
 
 led_defaults() {
