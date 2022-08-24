@@ -100,7 +100,7 @@ while [ $# -gt 0 ]; do
 		brightness)
 			loadsrc brightness
 			op_brightness "$@"
-			shift $(($# - SHIFTARGS))
+			shift $SHIFTARGS
 			;;
 		"")
 			usage
@@ -110,7 +110,7 @@ while [ $# -gt 0 ]; do
 			if is_valid_led "$operation"; then
 				loadsrc led
 				op_led "$operation" "$@"
-				shift $(($# - SHIFTARGS))
+				shift $SHIFTARGS
 			else
 				SHIFTARGS=$#
 				type compatibility >/dev/null \
