@@ -66,10 +66,10 @@ set_led() {
 		esac
 	fi
 
-	local brightness=255 autonomous=0 trigger="none"
+	local brightness=255 trigger="none"
 	case "$mode" in
 		auto)
-			autonomous=1
+			trigger="omnia-mcu"
 			;;
 		disable)
 			brightness=0
@@ -94,7 +94,6 @@ set_led() {
 	echo "none" > "$sysfs/trigger"
 	echo "$brightness" > "$sysfs/brightness"
 	echo "$r $g $b" > "$sysfs/multi_intensity"
-	echo "$autonomous" > "$sysfs/autonomous"
 	if [ "$trigger" = "activity" ]; then
 		apply_activity "$led" "$@" \
 			|| echo "Warning: activity setup failed for: $led" >&2
@@ -114,7 +113,6 @@ boot_sequence() {
 	for led in $LEDS; do
 		sysfs="$(led2sysfs "$led")"
 		echo "none" > "$sysfs/trigger"
-		echo "0" > "$sysfs/autonomous"
 		echo "255" > "$sysfs/brightness"
 		echo "0 255 0" > "$sysfs/multi_intensity"
 	done
@@ -122,7 +120,6 @@ boot_sequence() {
 
 	for led in $LEDS; do
 		sysfs="$(led2sysfs "$led")"
-		echo "0" > "$sysfs/autonomous"
 		echo "none" > "$sysfs/trigger"
 		echo "255" > "$sysfs/brightness"
 		echo "0 0 255" > "$sysfs/multi_intensity"
