@@ -7,8 +7,10 @@ brightness() {
 		if [ "$__brightness" -lt 0 ] || [ "$__brightness" -gt 255 ]; then
 			__brightness=255
 		fi
+		echo "$__brightness"
+	else
+		echo "$brightness"
 	fi
-	echo "$__brightness"
 }
 
 # Set the new brightness level
