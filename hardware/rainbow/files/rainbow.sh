@@ -95,12 +95,12 @@ while [ $# -gt 0 ]; do
 		reset)
 			loadsrc reset
 			op_reset "$@"
-			shift $SHIFTARGS
+			shift $#
 			;;
 		brightness)
 			loadsrc brightness
 			op_brightness "$@"
-			shift $SHIFTARGS
+			shift $#
 			;;
 		"")
 			usage
@@ -110,7 +110,7 @@ while [ $# -gt 0 ]; do
 			if is_valid_led "$operation"; then
 				loadsrc led
 				op_led "$operation" "$@"
-				shift $SHIFTARGS
+				shift $#
 			else
 				SHIFTARGS=$#
 				type compatibility >/dev/null \
