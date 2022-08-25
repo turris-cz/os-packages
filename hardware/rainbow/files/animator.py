@@ -151,7 +151,7 @@ def parse_arguments():
     parser = argparse.ArgumentParser(
         description="Rainbow Animator. Helper for platforms that do not correctly support pattern trigger on LEDs."
     )
-    parser.add_argument("--ups", "-u", default=15, help="Set number of updates per-second.")
+    parser.add_argument("--ups", "-u", type=int, default=15, help="Set number of updates per-second.")
     return parser.parse_args()
 
 
