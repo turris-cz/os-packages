@@ -66,7 +66,7 @@ set_led() {
 		esac
 	fi
 
-	local brightness=255 trigger="none"
+	local brightness=1 trigger="none"
 	case "$mode" in
 		auto)
 			trigger="omnia-mcu"
@@ -113,7 +113,7 @@ boot_sequence() {
 	for led in $LEDS; do
 		sysfs="$(led2sysfs "$led")"
 		echo "none" > "$sysfs/trigger"
-		echo "255" > "$sysfs/brightness"
+		echo "1" > "$sysfs/brightness"
 		echo "0 255 0" > "$sysfs/multi_intensity"
 	done
 	sleep 1
@@ -121,7 +121,7 @@ boot_sequence() {
 	for led in $LEDS; do
 		sysfs="$(led2sysfs "$led")"
 		echo "none" > "$sysfs/trigger"
-		echo "255" > "$sysfs/brightness"
+		echo "1" > "$sysfs/brightness"
 		echo "0 0 255" > "$sysfs/multi_intensity"
 	done
 	sleep 1
