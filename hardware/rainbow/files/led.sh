@@ -17,14 +17,14 @@ led_help() {
 		  Another option is to specify RGB compounds. They are integer between 0
 		  and 255. They can be specified either in decimal format or in
 		  hexadecimal if you prefix it with x (thus xFF is 255). Compounds are
-		  expected to be joined by commad (such as 255,0,0 for red). You can
+		  expected to be joined by commas (such as 255,0,0 for red). You can
 		  also specify compounds out of order by prefixing them with leter R for
 		  red, G for green and B for blue (such as G0,B0,R255 for red). Not
 		  every color compound has to be defined. They are filled with previous
 		  value if you left some out (such as ,255, or G255) or with default
 		  '-'. The '-' is the special value that specifies inheritence from
 		  lower priority configuration. You can use it as replacement for any
-		  color compound or allone to set inheritence.
+		  color compound or alone to set inheritence.
 		Mode:
 		  auto
 		    Operate led status as designed (that is for example ethernet activity for lan leds)
