@@ -1,4 +1,4 @@
-import subprocess
+import os
 
 
 class Backend:
@@ -8,18 +8,15 @@ class Backend:
     LEDS = ["wan", "lan-1", "lan-2", "lan-3", "lan-4", "lan-5", "wlan", "power"]
 
     def __init__(self):
-        self.args = []
+        self._fds = tuple(os.open(f"/sys/class/leds/rgb:{led}/multi_intensity", os.O_WRONLY) for led in self.LEDS)
 
     def update(self, ledid: int, red: int, green: int, blue: int) -> None:
         """Update color of led on given index."""
-        self.args.append(self.LEDS[ledid])
-        self.args.append("%.2X%.2X%.2X" % red, green, blue)
+        os.write(self._fds[ledid], f"{red} {green} {blue}".encode())
 
     def apply(self) -> None:
-        """Apply LEDs state updates."""
-        self.args.insert(0, "turris1x-rainbow")
-        subprocess.run(self.args, check=True)
-        self.args.clear()
+        """Apply previous LEDs state updates if that is required."""
+        # We apply immediately so we do not need this.
 
     @staticmethod
     def handled(ledid: int) -> bool:
