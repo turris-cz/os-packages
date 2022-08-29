@@ -47,7 +47,7 @@ set_led() {
 
 	if [ "$mode" = "auto" ]; then # override auto mode for some
 		case "$led" in 
-			pwd)
+			power)
 				mode="enable"
 				;;
 			wlan*)
