@@ -35,9 +35,13 @@ preapply() {
 	/etc/init.d/rainbow-animator pause
 
 	local brightness_level
-	brightness_level="$(brightness)"
-	# TODO we might want to use brightness of leds to tweak brightness itself
-	turris1x_rainbow_args="intensity $((brightness_level * 7 / 255))"
+	# brightness gives us brightness * 32, but sysfs needs $brightness ** 2
+	brightness_level=$(( ( $(brightness) / 32 ) ** 2 ))
+	# 8 ** 2 = 256, but maximum is 255
+	if [ $brightness_level -eq 256 ]; then
+		brightness = 255
+	fi
+	echo $brightness_level > $SYSFS/brightness
 }
 
 set_led() {
