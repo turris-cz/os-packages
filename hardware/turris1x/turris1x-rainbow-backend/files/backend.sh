@@ -3,7 +3,7 @@ LEDS="wan lan-1 lan-2 lan-3 lan-4 lan-5 wlan power"
 
 # it doesn't matter which led we use here, device always points to the same
 # location
-SYSFS="/sys/class/leds/rgb:wan/$(readlink /sys/class/leds/rgb:wan/device)"
+SYSFS="/sys/class/leds/rgb:wan/device"
 
 led2sysfs() {
 	local led="$1"
