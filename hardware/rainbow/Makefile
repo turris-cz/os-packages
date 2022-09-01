@@ -21,7 +21,7 @@ endef
 
 define Package/rainbow
   $(call Package/Common)
-  DEPENDS+= +rainbow-backend
+  DEPENDS+= +rainbow-backend +flock
   PROVIDES:=turris-rainbow
 endef
 
