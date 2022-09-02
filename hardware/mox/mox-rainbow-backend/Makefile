@@ -21,6 +21,7 @@ define Package/mox-rainbow-backend
   TITLE:=mox-rainbow-backend
   DEPENDS:=\
     @TARGET_mvebu_cortexa53_DEVICE_cznic_turris-mox \
+    +kmod-ledtrig-activity \
     +rainbow-animator \
     +python3-uci
   PROVIDES:=rainbow-backend
