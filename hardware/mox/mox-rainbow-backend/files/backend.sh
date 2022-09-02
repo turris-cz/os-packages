@@ -51,6 +51,7 @@ set_led() {
 	echo "none" > "$SYSFS/trigger"
 	echo "$brightness" > "$SYSFS/brightness"
 	if [ "$trigger" = "activity" ]; then
+		loadsrc led_activity
 		apply_activity "$led" "$@" \
 			|| echo "Warning: activity setup failed for: $led" >&2
 	else
