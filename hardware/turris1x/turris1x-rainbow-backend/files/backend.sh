@@ -35,13 +35,13 @@ preapply() {
 	/etc/init.d/rainbow-animator pause
 
 	local brightness_level
-	# brightness gives us brightness * 32, but sysfs needs $brightness ** 2
-	brightness_level=$(( ( $(brightness) / 32 ) ** 2 ))
-	# 8 ** 2 = 256, but maximum is 255
-	if [ $brightness_level -eq 256 ]; then
-		brightness = 255
+	brightness_level="$(($(brightness) / 32))"
+	# we only have 8 indexes - 0-7, but $brightness_level is 0-8
+	if [ $brightness_level = 8 ]; then
+		brightness_level=7
 	fi
-	echo $brightness_level > $SYSFS/brightness
+	echo 0 2 4 8 16 32 64 255 > $SYSFS/brightness_values
+	echo $brightness_level > $SYSFS/brightness_level
 }
 
 set_led() {
