@@ -1,0 +1,53 @@
+arch=powerpc
+baudrate=115200
+board=turris_1x
+board_name=turris_1x
+boot_a_script=load ${devtype} ${devnum}:${distro_bootpart} ${scriptaddr} ${prefix}${script}; source ${scriptaddr}
+boot_extlinux=sysboot ${devtype} ${devnum}:${distro_bootpart} any ${scriptaddr} ${prefix}${boot_syslinux_conf}
+boot_net_usb_start=usb start
+boot_pci_enum=pci enum
+boot_prefixes=/ /boot/
+boot_script_dhcp=boot.scr.uimg
+boot_scripts=boot.scr.uimg boot.scr
+boot_syslinux_conf=extlinux/extlinux.conf
+boot_targets=mmc0 nvme0 scsi0 usb0 usb1 usb2 usb3 usb4 ubifs0 ubifs1 dhcp 
+bootcmd=run distro_bootcmd
+bootcmd_dhcp=devtype=dhcp; run boot_net_usb_start; run boot_pci_enum; if dhcp ${scriptaddr} ${boot_script_dhcp}; then source ${scriptaddr}; fi;
+bootcmd_mmc0=devnum=0; run mmc_boot
+bootcmd_nvme0=devnum=0; run nvme_boot
+bootcmd_rescue=setenv bootargs root=mtd2 ro rootfstype=jffs2 console=ttyS0,115200; mw.b 0xffa00002 0x03; bootm 0xef020000 - 0xef000000
+bootcmd_scsi0=devnum=0; run scsi_boot
+bootcmd_ubifs0=bootubipart=rootfs; bootubivol=rootfs; bootubioff=512; run ubifs_boot
+bootcmd_ubifs1=bootubipart=rootfs; bootubivol=rootfs; bootubioff=2048; run ubifs_boot
+bootcmd_usb0=devnum=0; run usb_boot
+bootcmd_usb1=devnum=1; run usb_boot
+bootcmd_usb2=devnum=2; run usb_boot
+bootcmd_usb3=devnum=3; run usb_boot
+bootcmd_usb4=devnum=4; run usb_boot
+bootdelay=3
+cpu=mpc85xx
+distro_bootcmd=scsi_need_init=; setenv nvme_need_init; for target in ${boot_targets}; do run bootcmd_${target}; done
+ethprime=eth2
+fdt_addr=0xef000000
+fdt_addr_r=0x2000000
+fdtfile=turris1x.dtb
+kernel_addr_r=0x2100000
+loadaddr=0x1000000
+mmc_boot=if mmc dev ${devnum}; then devtype=mmc; run scan_dev_for_boot_part; fi
+nvme_boot=run boot_pci_enum; run nvme_init; if nvme dev ${devnum}; then devtype=nvme; run scan_dev_for_boot_part; fi
+nvme_init=if ${nvme_need_init}; then setenv nvme_need_init false; nvme scan; fi
+pxefile_addr_r=0x3100000
+ramdisk_addr_r=0x4000000
+reboot_to_def=echo Rebooting to default bootloader; i2c dev 0; i2c mw 0x18 1 0x00 1; i2c mw 0x18 3 0xff 1; reset
+reboot_to_nor=echo Rebooting to NOR bootloader; i2c dev 0; i2c mw 0x18 1 0xc8 1; i2c mw 0x18 3 0x03 1; reset
+reboot_to_sd=echo Rebooting to SD bootloader; i2c dev 0; i2c mw 0x18 1 0x68 1; i2c mw 0x18 3 0x03 1; reset
+scan_dev_for_boot=echo Scanning ${devtype} ${devnum}:${distro_bootpart}...; for prefix in ${boot_prefixes}; do run scan_dev_for_extlinux; run scan_dev_for_scripts; done;
+scan_dev_for_boot_part=part list ${devtype} ${devnum} -bootable devplist; env exists devplist || setenv devplist 1; for distro_bootpart in ${devplist}; do if fstype ${devtype} ${devnum}:${distro_bootpart} bootfstype; then run scan_dev_for_boot; fi; done; setenv devplist
+scan_dev_for_extlinux=if test -e ${devtype} ${devnum}:${distro_bootpart} ${prefix}${boot_syslinux_conf}; then echo Found ${prefix}${boot_syslinux_conf}; run boot_extlinux; echo SCRIPT FAILED: continuing...; fi
+scan_dev_for_scripts=for script in ${boot_scripts}; do if test -e ${devtype} ${devnum}:${distro_bootpart} ${prefix}${script}; then echo Found U-Boot script ${prefix}${script}; run boot_a_script; echo SCRIPT FAILED: continuing...; fi; done
+scriptaddr=0x3000000
+scsi_boot=run boot_pci_enum; run scsi_init; if scsi dev ${devnum}; then devtype=scsi; run scan_dev_for_boot_part; fi
+scsi_init=if ${scsi_need_init}; then scsi_need_init=false; scsi scan; fi
+ubifs_boot=if ubi part ${bootubipart} ${bootubioff} && ubifsmount ubi0:${bootubivol}; then devtype=ubi; devnum=ubi0; bootfstype=ubifs; distro_bootpart=${bootubivol}; run scan_dev_for_boot; ubifsumount; fi
+usb_boot=usb start; if usb dev ${devnum}; then devtype=usb; run scan_dev_for_boot_part; fi
+vendor=CZ.NIC
