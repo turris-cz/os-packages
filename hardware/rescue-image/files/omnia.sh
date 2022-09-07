@@ -25,7 +25,7 @@ board_init() {
     TARGET_DRIVE="/dev/mmcblk0"
     PART_NO="1"
     TARGET_PART="${TARGET_DRIVE}p${PART_NO}"
-    BRIGHT="`cat /sys/class/leds/rgb\:all/device/global_brightness`"
+    BRIGHT="`cat /sys/class/leds/rgb\:all/device/brightness`"
     WAN_IF="eth2"
     DELAY=40
     RESCUE_IF="`ip a s | sed -n 's|^[0-9]*:[[:blank:]]*\(lan-4\)@.*|\1|p'`"
@@ -37,8 +37,8 @@ board_init() {
 }
 
 check_for_mode_change() {
-    if [ "`cat /sys/class/leds/rgb\:all/device/global_brightness`" -ne "$BRIGHT" ]; then
-        echo "$BRIGHT" > /sys/class/leds/rgb\:all/device/global_brightness
+    if [ "`cat /sys/class/leds/rgb\:all/device/brightness`" -ne "$BRIGHT" ]; then
+        echo "$BRIGHT" > /sys/class/leds/rgb\:all/device/brightness
         return 0
     fi
     return 1
