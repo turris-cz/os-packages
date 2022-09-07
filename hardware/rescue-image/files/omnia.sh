@@ -49,10 +49,7 @@ display_mode() {
 
     for i in /sys/class/leds/rgb*; do
        echo '255 64 0' > "$i"/multi_intensity
-    done
-
-    for i in /sys/class/leds/rgb*; do
-        echo none > "$i"/trigger
+       echo none > "$i"/trigger
     done
 
     echo "$MODE_TG" > /sys/class/leds/rgb\:power/trigger
