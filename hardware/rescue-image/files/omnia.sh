@@ -30,8 +30,12 @@ board_init() {
     DELAY=40
     RESCUE_IF="`ip a s | sed -n 's|^[0-9]*:[[:blank:]]*\(lan-4\)@.*|\1|p'`"
     RESCUE_IF_UP="`ip a s | sed -n 's|^[0-9]*:[[:blank:]]*\(lan-4\)@\([^:]*\):.*|\2|p'`"
-    echo '0 255 0' >  /sys/class/leds/rgb\:all/multi_intensity
-    echo default-on > /sys/class/leds/rgb\:all/trigger
+
+    for i in /sys/class/leds/rgb*; do
+       echo '000 255 0' > "$i"/multi_intensity
+       echo default-on > "$i"/trigger
+    done
+
     enable_btrfs
     generic_post_init
 }
