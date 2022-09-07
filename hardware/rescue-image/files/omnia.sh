@@ -87,13 +87,18 @@ display_mode() {
 }
 
 busy() {
-    echo '255 0 0' >  /sys/class/leds/rgb\:all/multi_intensity
+    for i in /sys/class/leds/rgb*; do
+       echo '255 0 0' > "$i"/multi_intensity
+    done
 }
 
 die() {
     predie "$1" "$2"
-    echo '0 0 255' >  /sys/class/leds/rgb\:all/multi_intensity
-    echo timer > /sys/class/leds/rgb\:all/trigger
+    for i in /sys/class/leds/rgb*; do
+       echo '0 0 255' > "$i"/multi_intensity
+       echo timer > "$i"/trigger
+    done
+
     while true; do
         sleep 1
     done
