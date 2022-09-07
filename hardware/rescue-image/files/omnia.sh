@@ -25,7 +25,7 @@ board_init() {
     TARGET_DRIVE="/dev/mmcblk0"
     PART_NO="1"
     TARGET_PART="${TARGET_DRIVE}p${PART_NO}"
-    BRIGHT="`cat /sys/class/leds/rgb\:all/device/brightness`"
+    BRIGHT="`cat /sys/class/leds/rgb\:power/device/brightness`"
     WAN_IF="eth2"
     DELAY=40
     RESCUE_IF="`ip a s | sed -n 's|^[0-9]*:[[:blank:]]*\(lan-4\)@.*|\1|p'`"
