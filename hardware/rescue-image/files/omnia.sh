@@ -46,10 +46,15 @@ check_for_mode_change() {
 
 display_mode() {
     MODE_TG=default-on
-    echo '255 64 0' >  /sys/class/leds/rgb\:all/multi_intensity
+
+    for i in /sys/class/leds/rgb*; do
+       echo '255 64 0' > "$i"/multi_intensity
+    done
+
     for i in /sys/class/leds/rgb*; do
         echo none > "$i"/trigger
     done
+
     echo "$MODE_TG" > /sys/class/leds/rgb\:power/trigger
     if [ "$MODE" -gt 1 ]; then
         echo "$MODE_TG" > /sys/class/leds/rgb\:lan-0/trigger
