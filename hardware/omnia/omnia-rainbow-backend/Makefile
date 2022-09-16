@@ -8,7 +8,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=omnia-rainbow-backend
-PKG_VERSION:=0.1.0
+PKG_VERSION:=$(if $(DUMP),x,$(shell sed -ne 's#PKG_VERSION:=##p' ../../rainbow/Makefile))
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
