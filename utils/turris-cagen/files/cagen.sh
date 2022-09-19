@@ -1,6 +1,6 @@
 #!/bin/sh
 
-#Copyright 2018-2021 CZ.NIC z.s.p.o. (http://www.nic.cz/)
+#Copyright 2018-2022 CZ.NIC z.s.p.o. (http://www.nic.cz/)
 #
 #This file as originaly part of NUCI configuration server.
 #
@@ -141,14 +141,23 @@ do_gen_dh() {
 }
 
 do_gen_server() {
+	owner="$2"
+	group="$3"
+
 	msg gen_server "started ($1)"
 	test_active_ca gen_server
 	SERIAL=$(cat serial)
+	KEYFILE="$SERIAL".key
 	echo "$SERIAL server $1" >>notes.txt
 	echo "$SERIAL server $1" >generating
-	echo "$1" | openssl req -new -newkey rsa:4096 -keyout "$SERIAL".key -nodes -out "$SERIAL".csr -config "$OPENSSL_CONF" -extensions usr_server
+	echo "$1" | openssl req -new -newkey rsa:4096 -keyout $KEYFILE -nodes -out "$SERIAL".csr -config "$OPENSSL_CONF" -extensions usr_server
 	openssl ca -out "$SERIAL".crt -config "$OPENSSL_CONF" -batch -extensions usr_server -infiles "$SERIAL".csr
-	chmod 0400 "$SERIAL".key
+	chmod 0400 $KEYFILE
+	if [ -n "$owner" ] && [ -n "$group" ]; then
+		chown $owner:$group $KEYFILE
+	elif [ -n "$owner" ]; then
+		chown $owner $KEYFILE
+	fi
 	do_gen_crl
 	rm generating
 	msg gen_server "finished ($1)"
@@ -208,6 +217,35 @@ do_revoke() {
 	msg revoke "finished ($1)"
 }
 
+usage() {
+    cat <<END
+turris-cagen command [param] command [param] ...
+
+A CA generator. Mostly for backend use, but you can use it for anything else.
+To work with a concrete CA you have to switch to it first.
+
+The generated certificates live in /etc/ssl/ca/.
+
+Commands:
+    background                              Terminate now and run the rest of the commands in background
+    new_ca <name>                           Create a new CA (without any keys or certificates) and switch to it
+    gen_ca                                  Generate the certificates for the CA itself (invalidates all current certificates)
+    link_dh                                 Link pregenerated DH parameters
+    gen_dh                                  Generate new DH parameters
+    gen_server <name> [<owner>] [<group>]   Generate a server-side certificate with optionally specified <owner> and <group>
+    gen_client <name>                       Generate a client-side certificate
+    switch <name>                           Choose a CA to run the following commands on
+    drop_ca <name>                          Delete the whole CA
+    refresh                                 Regenerate CRLs for all the CAs
+    revoke <serial>                         Revoke a certificate
+END
+}
+
+if [ "$#" -eq 0 ]; then
+    usage
+    exit 1
+fi
+
 while [ "$1" ] ; do
 	CMD="$1"
 	shift
@@ -233,8 +271,8 @@ while [ "$1" ] ; do
 			do_gen_dh
 			;;
 		gen_server)
-			do_gen_server "$1"
-			shift
+			do_gen_server "$1" "$2" "$3"
+			shift 3 # TODO: how many shifts to perform with optional arguments?
 			;;
 		gen_client)
 			do_gen_client "$1"
@@ -256,27 +294,7 @@ while [ "$1" ] ; do
 			shift
 			;;
 		help|-h|--help)
-			cat <<END
-turris-cagen command [param] command [param] ...
-
-A CA generator. Mostly for backend use, but you can use it for anything else.
-To work with a concrete CA you have to switch to it first.
-
-The generated certificates live in /etc/ssl/ca/.
-
-Commands:
-	background		Terminate now and run the rest of the commands in background
-	new_ca <name>		Create a new CA (without any keys or certificates) and switch to it
-	gen_ca			Generate the certificates for the CA itself (invalidates all current certificates)
-	link_dh			Link pregenerated DH parameters
-	gen_dh			Generate new DH parameters
-	gen_server <name>	Generate a server-side certificate
-	gen_client <name>	Generate a client-side certificate
-	switch <name>		Choose a CA to run the following commands on
-	drop_ca <name>		Delete the whole CA
-	refresh			Regenerate CRLs for all the CAs
-	revoke <serial>		Revoke a certificate
-END
+		    usage	
 			;;
 	esac
 done
