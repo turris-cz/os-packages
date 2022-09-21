@@ -108,6 +108,7 @@ do_new_ca() {
 }
 
 do_gen_crl() {
+	# TODO: perhaps change owner of ca.crl as well?
 	openssl ca -gencrl -out ca.crl -config "$OPENSSL_CONF"
 }
 
