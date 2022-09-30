@@ -76,7 +76,7 @@ define Package/shield-support/install
 	$(INSTALL_BIN) ./files/enable_sentinel $(1)/etc/uci-defaults/10_sentinel-enable
 	$(INSTALL_BIN) ./files/enable_updater $(1)/etc/uci-defaults/10_updater-enable
 	$(INSTALL_DIR) $(1)/etc/lighttpd/conf.d
-	$(INSTALL_DATA) ./files/lighttpd-reforis-only.conf $(1)/etc/lighttpd/conf.d/60-reforis-redirect.conf
+	$(INSTALL_DATA) ./files/lighttpd-reforis-only.conf $(1)/etc/lighttpd/conf.d/80-reforis-redirect.conf
 	$(INSTALL_DIR) $(1)/etc/hotplug.d/button
 	$(INSTALL_DATA) ./files/shield_reset_btn $(1)/etc/hotplug.d/button/mox_reset
 endef
