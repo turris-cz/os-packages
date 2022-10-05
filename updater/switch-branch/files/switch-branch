@@ -16,6 +16,7 @@ print_help() {
 	echo "  --list-versions  List all available versions"
 	echo "  --verify         Verify and fix branch/version settings (apply setting from uci updater.turris)"
 	echo "  --force          Change to unknown (not-existing) branch/version"
+	echo "  --no-update      Do not run opkg update after switching the branch"
 	echo "  --help           Print this help text"
 	echo "Branch:"
 	echo "  If BRANCH is specified then switch is immediately performed."
@@ -196,6 +197,7 @@ list_versions="n"
 verify="n"
 force="n"
 noopts="n"
+update="y"
 
 arg_option() {
 	case "$1" in
@@ -214,6 +216,9 @@ arg_option() {
 			;;
 		--verify)
 			verify="y"
+			;;
+		--no-update)
+			update="n"
 			;;
 		--force)
 			force="y"
@@ -399,7 +404,7 @@ set +x
 
 # If we are verifying configuration than the work is done.
 # We don't want to run updater nor printing info about branch.
-if [ "$verify" = "y" ]; then
+if [ "$verify" = "y" ] || [ "$update" = "n" ]; then
 	exit 0
 fi
 
