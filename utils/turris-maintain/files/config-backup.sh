@@ -1,7 +1,7 @@
 #!/bin/sh
 # Turris OS configuration backup utility
 #
-# Copyright 2014-2021 CZ.NIC z.s.p.o. (http://www.nic.cz/)
+# Copyright 2014-2022 CZ.NIC z.s.p.o. (http://www.nic.cz/)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -131,7 +131,7 @@ else
 	archive="${1%.bz2}" # This prevents bzip2 compain about suffix
 fi
 
-files | sed 's|^/||' | xargs /usr/bin/tar -rf "$archive" -C /
+files | sed 's|^/||' | xargs tar -rf "$archive" -C /
 
 bzip2 -z -f -9 "$archive"
 archive="$archive.bz2"
