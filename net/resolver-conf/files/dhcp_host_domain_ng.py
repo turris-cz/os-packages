@@ -1,22 +1,34 @@
 #!/usr/bin/python3
 
+import os
+import re
+import socket
 import subprocess
 import sys
 import syslog
-from syslog import LOG_ERR, LOG_INFO, LOG_DEBUG, LOG_WARNING
-import re
-import socket
-import os
+import typing
 from os import listdir
+from syslog import LOG_ERR, LOG_INFO, LOG_WARNING
+
+from euci import EUci
 
 
-def is_valid_hostname(hostname):
+def is_valid_hostname(hostname: str, router_hostname: typing.Optional[str]):
     if len(hostname) > 255:
         return False
     if hostname == "":
         return False
     if hostname[-1] == ".":
         hostname = hostname[:-1]
+    if hostname == router_hostname:
+        # When a client requests a dhcp lease but does not provide a hostname,
+        # then the dhcp-script.sh does not provide a hostname. That results in
+        # using the HOSTNAME variable from the environment, containing the
+        # hostname of the router, finally resulting in an additional A-Record
+        # with another IP address. The router then may become unreachable.
+        # So do not consider router own hostname as valid hostname for dynamic
+        # dhcp lease.
+        return False
     allowed = re.compile(r"^(?!-)[A-Z\d_-]{1,63}(?<!-)$", re.IGNORECASE)
     for x in hostname.split("."):
         if allowed.match(x) is None:
@@ -76,6 +88,25 @@ def uci_get_bool(path, default):
 
 def uci_set(path, val):
     return call_cmd(["uci", "set", "%s=%s" % (path, val)])
+
+
+def get_router_hostname() -> typing.Optional[str]:
+    """Get router hostname from anonymous uci config section.
+
+    Unfortunately neither original uci, nor euci offers method to get option from anonymous section,
+    so we need to use this workaround.
+
+    Fetch the first section of given type.
+    """
+    config = "system"
+
+    uci = EUci()
+    sections = uci.get(config)
+    for section_name in sections:
+        if uci.get(config, section_name) == "system":
+            return uci.get(config, section_name, "hostname", dtype=str, default=None)
+
+    return None  # No config `system.system` exists, fallback to None
 
 
 class Kresd:
@@ -255,9 +286,13 @@ class DHCPv4:
         self.__leases_list = []
         self.__resolver = uci_get("resolver.common.prefered_resolver")
         self.__local_suffix = uci_get("dhcp.@dnsmasq[0].local").replace("/", "")
+        self._router_hostname = get_router_hostname()
         self._load_hints()
 
     def update_dhcp(self, op, hostname, ipv4):
+        if hostname == self._router_hostname:
+            hostname = "Unknown"
+
         if op == "add":
             self._add_lease(hostname, ipv4)
             log("DHCP add new hostname [%s,%s]" % (hostname, ipv4), LOG_INFO)
@@ -302,7 +337,7 @@ class DHCPv4:
                 self.__dhcp_leases_file, LOG_WARNING)
 
     def _add_lease(self, hostname, ipv4):
-        if is_valid_hostname(hostname) is False:
+        if is_valid_hostname(hostname, self._router_hostname) is False:
             log("Add_lease, hostname check failed", LOG_WARNING)
             return False
         if is_valid_ipv4(ipv4) is False:
@@ -319,7 +354,7 @@ class DHCPv4:
 
     def _del_lease(self, hostname, ipv4=None):
         hostname_suffix = "%s.%s" % (hostname, self.__local_suffix)
-        if is_valid_hostname(hostname) is False:
+        if is_valid_hostname(hostname, self._router_hostname) is False:
             log("Del_lease, hostname check failed", LOG_WARNING)
             return False
         for index, item in enumerate(self.__leases_list):
