@@ -243,7 +243,7 @@ END
 }
 
 if [ "$#" -eq 0 ]; then
-    usage
+    >&2 usage
     exit 1
 fi
 
