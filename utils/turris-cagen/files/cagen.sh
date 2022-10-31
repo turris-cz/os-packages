@@ -142,16 +142,17 @@ do_gen_dh() {
 }
 
 do_gen_server() {
+	name="$1"
 	owner="$2"
 	group="$3"
 
-	msg gen_server "started ($1)"
+	msg gen_server "started ($name)"
 	test_active_ca gen_server
 	SERIAL=$(cat serial)
 	KEYFILE="$SERIAL".key
-	echo "$SERIAL server $1" >>notes.txt
-	echo "$SERIAL server $1" >generating
-	echo "$1" | openssl req -new -newkey rsa:4096 -keyout $KEYFILE -nodes -out "$SERIAL".csr -config "$OPENSSL_CONF" -extensions usr_server
+	echo "$SERIAL server $name" >>notes.txt
+	echo "$SERIAL server $name" >generating
+	echo "$name" | openssl req -new -newkey rsa:4096 -keyout $KEYFILE -nodes -out "$SERIAL".csr -config "$OPENSSL_CONF" -extensions usr_server
 	openssl ca -out "$SERIAL".crt -config "$OPENSSL_CONF" -batch -extensions usr_server -infiles "$SERIAL".csr
 	chmod 0400 $KEYFILE
 	if [ -n "$owner" ] && [ -n "$group" ]; then
@@ -161,7 +162,7 @@ do_gen_server() {
 	fi
 	do_gen_crl
 	rm generating
-	msg gen_server "finished ($1)"
+	msg gen_server "finished ($name)"
 }
 
 do_gen_client() {
