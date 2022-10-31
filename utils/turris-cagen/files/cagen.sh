@@ -225,7 +225,7 @@ turris-cagen command [param] command [param] ...
 A CA generator. Mostly for backend use, but you can use it for anything else.
 To work with a concrete CA you have to switch to it first.
 
-The generated certificates live in /etc/ssl/ca/.
+The generated certificates live in $CA_DIR.
 
 Commands:
     background                              Terminate now and run the rest of the commands in background
