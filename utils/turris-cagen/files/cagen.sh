@@ -220,7 +220,7 @@ do_revoke() {
 }
 
 usage() {
-    cat <<END
+	cat <<END
 turris-cagen command [param] command [param] ...
 
 A CA generator. Mostly for backend use, but you can use it for anything else.
@@ -229,23 +229,23 @@ To work with a concrete CA you have to switch to it first.
 The generated certificates live in $CA_DIR.
 
 Commands:
-    background                              Terminate now and run the rest of the commands in background
-    new_ca <name>                           Create a new CA (without any keys or certificates) and switch to it
-    gen_ca                                  Generate the certificates for the CA itself (invalidates all current certificates)
-    link_dh                                 Link pregenerated DH parameters
-    gen_dh                                  Generate new DH parameters
-    gen_server <name> [<owner>] [<group>]   Generate a server-side certificate with optionally specified <owner> and <group>
-    gen_client <name>                       Generate a client-side certificate
-    switch <name>                           Choose a CA to run the following commands on
-    drop_ca <name>                          Delete the whole CA
-    refresh                                 Regenerate CRLs for all the CAs
-    revoke <serial>                         Revoke a certificate
+	background                              Terminate now and run the rest of the commands in background
+	new_ca <name>                           Create a new CA (without any keys or certificates) and switch to it
+	gen_ca                                  Generate the certificates for the CA itself (invalidates all current certificates)
+	link_dh                                 Link pregenerated DH parameters
+	gen_dh                                  Generate new DH parameters
+	gen_server <name> [<owner>] [<group>]   Generate a server-side certificate with optionally specified <owner> and <group>
+	gen_client <name>                       Generate a client-side certificate
+	switch <name>                           Choose a CA to run the following commands on
+	drop_ca <name>                          Delete the whole CA
+	refresh                                 Regenerate CRLs for all the CAs
+	revoke <serial>                         Revoke a certificate
 END
 }
 
 if [ "$#" -eq 0 ]; then
-    >&2 usage
-    exit 1
+	>&2 usage
+	exit 1
 fi
 
 while [ "$1" ] ; do
