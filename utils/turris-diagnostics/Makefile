@@ -40,13 +40,13 @@ endef
 define Package/turris-diagnostics-web
   $(call Package/Common)
   TITLE:=Turris Diagnostics Web
-  DEPENDS:=+turris-diagnostics +turris-bootstrap-theme +lighttpd-mod-fastcgi +lighttpd-mod-alias +lighttpd-mod-authn_pam +uci
+  DEPENDS:=+turris-diagnostics +turris-bootstrap-theme +lighttpd-mod-fastcgi +lighttpd-mod-cgi +lighttpd-mod-alias +lighttpd-mod-authn_pam +uci
 endef
 
 define Package/turris-snapshots-web
   $(call Package/Common)
   TITLE:=Turris Schnapps Web
-  DEPENDS:=+schnapps +openssl-util +turris-bootstrap-theme +lighttpd-mod-fastcgi +lighttpd-mod-alias +lighttpd-mod-authn_pam +uci
+  DEPENDS:=+schnapps +openssl-util +turris-bootstrap-theme +lighttpd-mod-fastcgi +lighttpd-mod-cgi +lighttpd-mod-alias +lighttpd-mod-authn_pam +uci
 endef
 
 define Package/turris-diagnostics/description
