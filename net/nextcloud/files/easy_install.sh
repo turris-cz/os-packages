@@ -28,6 +28,7 @@ if [ -f /srv/www/nextcloud/config/config.php ]; then
 fi
 
 if [ "x$1" = x--daemon ] || [ "x$1" = x-d ]; then
+    [ $# -gt 2 ] && shift $(($# - 2))
     "$0" --batch "$@" > /dev/null 2>&1 &
     exit 0
 fi
