@@ -2,7 +2,7 @@
 
 mkdir -p /tmp/resolv.conf.d
 chown -R root:root /tmp/resolv.conf.d
-chmod 0644 /tmp/resolv.conf.d
+chmod 0755 /tmp/resolv.conf.d
 if [ "$ACTION" = up ]; then
     set | sed -n "s|foreign_option_[0-9]*='dhcp-option DNS \([^']*\)'|nameserver \1|p" > /tmp/resolv.conf.d/resolv.conf.vpn."$INSTANCE"
     grep -q nameserver /tmp/resolv.conf.d/resolv.conf.vpn."$INSTANCE" || rm -f /tmp/resolv.conf.d/resolv.conf.vpn."$INSTANCE"
