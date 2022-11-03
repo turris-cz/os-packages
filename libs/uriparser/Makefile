@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=uriparser
-PKG_VERSION:=0.9.6
+PKG_VERSION:=0.9.7
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://github.com/uriparser/uriparser/archive
-PKG_HASH:=defaf550bf6fe05e89afb9814dccc6bd643a3b0a8308801a2c04b76682b87383
+PKG_HASH:=8e19250654a204af0858408b55dc78941382a8c824bf38fc7f2a95ca6e16d7a0
 PKG_BUILD_DIR:=$(BUILD_DIR)/uriparser-uriparser-$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
