@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=updater-supervisor
-PKG_VERSION:=1.5.3
+PKG_VERSION:=1.5.4
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/updater/supervisor.git
-PKG_MIRROR_HASH:=232ddf02231e34a87970441dde6d9ec4d11aee4f66a788808389cb80f5707d5c
+PKG_MIRROR_HASH:=6ab06a075bf34dbdda066ebb6b7e2f82fb3ea1159430afd4b949e6b2a2870afa
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
