@@ -19,7 +19,7 @@ define Package/Common
   SECTION:=updater
   CATEGORY:=Turris Updater
   TITLE:=Turris OS 3.x to 4.x migration package
-  DEPENDS:=@(TARGET_mvebu_cortexa9_DEVICE_cznic_turris-omnia||TARGET_mpc85xx_p2020_DEVICE_turris1x)
+  DEPENDS:=@(TARGET_mvebu_cortexa9_DEVICE_cznic_turris-omnia||TARGET_mpc85xx_p2020_DEVICE_cznic_turris1x)
 endef
 
 define Package/tos3to4
