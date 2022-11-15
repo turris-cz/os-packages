@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=rainbow
-PKG_VERSION:=0.1.2
+PKG_VERSION:=0.1.3
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/rainbow-ng.git
-PKG_MIRROR_HASH:=bfa048ea17a97aab610fdf71610c8078eb7b461647b16d3e4d6eb0777824dba6
+PKG_MIRROR_HASH:=15f4fef3f6b1c5c48d61e6828783e9767cfe5fe3a4a06017227c6a095be0244d
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
@@ -44,6 +44,38 @@ define Package/rainbow-animator
   TITLE+=-animator
   DEPENDS+= +python3-base
 endef
+
+define Package/omnia-rainbow-backend
+  TITLE:=omnia-rainbow-backend
+  DEPENDS:=\
+    @TARGET_mvebu_cortexa9_DEVICE_cznic_turris-omnia \
+    +kmod-leds-turris-omnia \
+    +rainbow-button-sync \
+    +rainbow-animator
+  PROVIDES:=rainbow-backend
+endef
+
+define Package/mox-rainbow-backend
+  TITLE:=mox-rainbow-backend
+  DEPENDS:=\
+    @TARGET_mvebu_cortexa53_DEVICE_cznic_turris-mox \
+    +kmod-ledtrig-activity \
+    +python3-uci \
+    +rainbow-button-sync \
+    +rainbow-animator \
+  PROVIDES:=rainbow-backend
+endef
+
+define Package/turris1x-rainbow-backend
+  TITLE:=turris1x-rainbow-backend
+  DEPENDS:=\
+    @TARGET_mpc85xx_p2020_DEVICE_cznic_turris1x \
+    +kmod-leds-turris-1x \
+    +rainbow-button-sync \
+    +rainbow-animator
+  PROVIDES:=rainbow-backend
+endef
+
 
 define Package/rainbow/description
   LEDs control on Turris Omnia, Mox and 1.x routers.
@@ -80,6 +112,18 @@ define Package/rainbow-animator/install
 	cd $(PKG_BUILD_DIR); make animator-install DESTDIR=$(1)
 endef
 
+define Package/omnia-rainbow-backend/install
+	cd $(PKG_BUILD_DIR); make omnia-install DESTDIR=$(1)
+endef
+
+define Package/mox-rainbow-backend/install
+	cd $(PKG_BUILD_DIR); make mox-install DESTDIR=$(1)
+endef
+
+define Package/turris1x-rainbow-backend/install
+	cd $(PKG_BUILD_DIR); make turris1x-install DESTDIR=$(1)
+endef
+
 define Package/rainbow/conffiles
 /etc/config/rainbow
 endef
@@ -106,3 +150,6 @@ endef
 $(eval $(call BuildPackage,rainbow))
 $(eval $(call BuildPackage,rainbow-button-sync))
 $(eval $(call BuildPackage,rainbow-animator))
+$(eval $(call BuildPackage,omnia-rainbow-backend))
+$(eval $(call BuildPackage,mox-rainbow-backend))
+$(eval $(call BuildPackage,turris1x-rainbow-backend))
