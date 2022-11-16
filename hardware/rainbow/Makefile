@@ -62,7 +62,7 @@ define Package/mox-rainbow-backend
     +kmod-ledtrig-activity \
     +python3-uci \
     +rainbow-button-sync \
-    +rainbow-animator \
+    +rainbow-animator
   PROVIDES:=rainbow-backend
 endef
 
