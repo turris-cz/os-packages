@@ -30,14 +30,14 @@ define Package/nextcloud
 	CATEGORY:=Network
 	TITLE:=Nextcloud server
 	URL:=https://nextcloud.com/
-	DEPENDS=+php7-mod-opcache +php7-fpm +php7-cli +sudo +php7-mod-ctype +php7-mod-fileinfo +php7-mod-xmlreader +php7-mod-openssl +php7-mod-gd +php7-mod-xml +php7-mod-xmlwriter +php7-mod-json +php7-mod-mbstring +php7-mod-pcntl +php7-mod-opcache +php7-mod-session +php7-mod-simplexml +php7-mod-iconv +php7-mod-curl +php7-mod-zip +php7-mod-dom +coreutils-stat +php7 +lighttpd-mod-access +php7-mod-intl +php7-mod-filter +icu-full-data
+	DEPENDS=+php8-mod-opcache +php8-fpm +php8-cli +sudo +php8-mod-ctype +php8-mod-fileinfo +php8-mod-xmlreader +php8-mod-openssl +php8-mod-gd +php8-mod-xml +php8-mod-xmlwriter +php8-mod-mbstring +php8-mod-pcntl +php8-mod-opcache +php8-mod-session +php8-mod-simplexml +php8-mod-iconv +php8-mod-curl +php8-mod-zip +php8-mod-dom +coreutils-stat +php8 +lighttpd-mod-access +php8-mod-intl +php8-mod-filter +icu-full-data
 endef
 
 define Package/nextcloud-install
 	SECTION:=net
 	CATEGORY:=Network
 	TITLE:=Nextcloud server installation script
-	DEPENDS=+nextcloud +mariadb-server +php7-mod-pdo-mysql +mariadb-client
+	DEPENDS=+nextcloud +mariadb-server +php8-mod-pdo-mysql +mariadb-client
 endef
 
 define Package/$(PKG_NAME)/description
