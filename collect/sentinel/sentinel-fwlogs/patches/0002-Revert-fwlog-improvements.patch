@@ -1,0 +1,57 @@
+From 49be209a3f0e85467882a8e1bfed787a952b8dc5 Mon Sep 17 00:00:00 2001
+From: Josef Schlehofer <pepe.schlehofer@gmail.com>
+Date: Wed, 23 Nov 2022 14:42:48 +0100
+Subject: [PATCH 2/3] Revert "fwlog: improvements"
+
+This reverts commit df88a094e49d3524e7f89ec780d34e66ad1eeece.
+---
+ fwlogs/fwlog.c |  3 ---
+ fwlogs/fwlog.h | 12 +++++++-----
+ 2 files changed, 7 insertions(+), 8 deletions(-)
+
+diff --git a/fwlogs/fwlog.c b/fwlogs/fwlog.c
+index 9e09dc0..7d78b57 100644
+--- a/fwlogs/fwlog.c
++++ b/fwlogs/fwlog.c
+@@ -1,9 +1,6 @@
+ #include "fwlog.h"
+ #include <errno.h>
+-#include <sys/socket.h>
+ #include <libnetfilter_log/libnetfilter_log.h>
+-#include <stdio.h>
+-#include "parser.h"
+ #include "log.h"
+ 
+ struct local_data {
+diff --git a/fwlogs/fwlog.h b/fwlogs/fwlog.h
+index 34121d1..4fef2a8 100644
+--- a/fwlogs/fwlog.h
++++ b/fwlogs/fwlog.h
+@@ -1,17 +1,19 @@
+ #ifndef _SENTINEL_FWLOGS_FWLOG_H_
+ #define _SENTINEL_FWLOGS_FWLOG_H_
++#include <stdbool.h>
+ #include <stdint.h>
+-#include <stddef.h>
++#include <time.h>
++#include <sys/param.h>
++#include <arpa/inet.h>
++#include "sender.h"
+ 
+ #define FWLOG_LIMIT (1 << 0) // Request only max_packet_size() to be copied from kernel
+ 
+ 
+-typedef void (*fwlog_callback)(uint8_t *payload, size_t payload_len, void *data)
+-	__attribute__((nonnull(1)));
++typedef void (*fwlog_callback)(uint8_t *payload, size_t payload_len, void *data);
+ 
+ // This function connects to Firewall log and calls callback for every packet
+ // received from given log_group.
+-void fwlog_run(uint16_t log_group, int flags, fwlog_callback callback, void *data)
+-	__attribute__((nonnull(3)));
++void fwlog_run(uint16_t log_group, int flags, fwlog_callback, void *data);
+ 
+ #endif
+-- 
+2.34.1
+

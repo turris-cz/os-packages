@@ -1,0 +1,113 @@
+From 81b77e15b7339b39f88bb2adff64d18890c83eb8 Mon Sep 17 00:00:00 2001
+From: Josef Schlehofer <pepe.schlehofer@gmail.com>
+Date: Wed, 23 Nov 2022 14:42:54 +0100
+Subject: [PATCH 3/3] Revert "fwlogs: handle receive and package handling
+ errors"
+
+This reverts commit bac990901113781da67a7422c7f959525fe7a6c1.
+---
+ fwlogs/fwlog.c           | 13 +++----------
+ fwlogs/fwlog.h           |  2 +-
+ fwlogs/sentinel_fwlogs.c |  6 ++++--
+ recorder/fwrecorder.c    |  3 ++-
+ 4 files changed, 10 insertions(+), 14 deletions(-)
+
+diff --git a/fwlogs/fwlog.c b/fwlogs/fwlog.c
+index 7d78b57..ce67944 100644
+--- a/fwlogs/fwlog.c
++++ b/fwlogs/fwlog.c
+@@ -1,5 +1,4 @@
+ #include "fwlog.h"
+-#include <errno.h>
+ #include <libnetfilter_log/libnetfilter_log.h>
+ #include "log.h"
+ 
+@@ -13,9 +12,8 @@ static int local_callback(struct nflog_g_handle *gh, struct nfgenmsg *nfmsg,
+ 	struct local_data *local_data = data;
+ 
+ 	char *payload;
+-	int payload_len = nflog_get_payload(nfa, &payload);
+-	local_data->callback(payload, payload_len, local_data->data);
+-	return 0;
++	int payload_len = nflog_get_payload(nfa, &payload);;
++	return local_data->callback(payload, payload_len, local_data->data) ? 0 : -1;
+ }
+ 
+ void fwlog_run(uint16_t log_group, int flags, fwlog_callback callback, void *data) {
+@@ -43,13 +41,8 @@ void fwlog_run(uint16_t log_group, int flags, fwlog_callback callback, void *dat
+ 	char buf[BUFSIZ];
+ 	while ((rn = recv(fd, buf, sizeof(buf), 0)) && rn >= 0) {
+ 		trace("Received data from nflog (len=%lu)", rn);
+-		if (nflog_handle_packet(nflog, buf, rn) < 0) {
+-			error("Packet handling failed");
+-			break;
+-		}
++		nflog_handle_packet(nflog, buf, rn);
+ 	}
+-	if (rn == -1 && errno != EINTR) // Note: we use interrupt for termination
+-		error("Unable to receive data from netfilter");
+ 
+ 	nflog_unbind_group(nflog_g);
+ 	nflog_close(nflog);
+diff --git a/fwlogs/fwlog.h b/fwlogs/fwlog.h
+index 4fef2a8..d49b446 100644
+--- a/fwlogs/fwlog.h
++++ b/fwlogs/fwlog.h
+@@ -10,7 +10,7 @@
+ #define FWLOG_LIMIT (1 << 0) // Request only max_packet_size() to be copied from kernel
+ 
+ 
+-typedef void (*fwlog_callback)(uint8_t *payload, size_t payload_len, void *data);
++typedef bool (*fwlog_callback)(uint8_t *payload, size_t payload_len, void *data);
+ 
+ // This function connects to Firewall log and calls callback for every packet
+ // received from given log_group.
+diff --git a/fwlogs/sentinel_fwlogs.c b/fwlogs/sentinel_fwlogs.c
+index 3a1f5ac..c281ea8 100644
+--- a/fwlogs/sentinel_fwlogs.c
++++ b/fwlogs/sentinel_fwlogs.c
+@@ -6,7 +6,7 @@
+ #include "parser.h"
+ 
+ 
+-static void callback(uint8_t *payload, size_t payload_len, void *data) {
++static bool callback(uint8_t *payload, size_t payload_len, void *data) {
+ 	sender_t sender = data;
+ 
+ 	struct packet_data dt;
+@@ -14,8 +14,10 @@ static void callback(uint8_t *payload, size_t payload_len, void *data) {
+ 		debug("Proto: %s | Source: %s :%d | Destination: %s :%d | Time: %ld",
+ 				dt.proto, dt.source_ip, dt.source_port, dt.dest_ip, dt.dest_port,
+ 				dt.ts);
+-		sender_send(sender, &dt); // Ignoring send failure causes only packet info drop
++		if (!sender_send(sender, &dt))
++			return false;
+ 	}
++	return true;
+ }
+ 
+ 
+diff --git a/recorder/fwrecorder.c b/recorder/fwrecorder.c
+index 040c185..fbf2f47 100644
+--- a/recorder/fwrecorder.c
++++ b/recorder/fwrecorder.c
+@@ -59,7 +59,7 @@ static char *generate_filename() {
+ 	return filename;
+ }
+ 
+-static void callback(uint8_t *payload, size_t payload_len, void *data) {
++static bool callback(uint8_t *payload, size_t payload_len, void *data) {
+ 	char *filename = generate_filename();
+ 	int fd;
+ 	std_fatal(fd = open(filename, O_WRONLY | O_CREAT | O_EXCL, S_IRWXU | S_IRWXG | S_IRWXO));
+@@ -73,6 +73,7 @@ static void callback(uint8_t *payload, size_t payload_len, void *data) {
+ 	info("Recorded packet: %s", filename);
+ 
+ 	free(filename);
++	return true;
+ }
+ 
+ 
+-- 
+2.34.1
+
