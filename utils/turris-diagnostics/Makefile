@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=turris-diagnostics
-PKG_VERSION:=17.0.0
+PKG_VERSION:=17.0.1
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/diagnostics.git
-PKG_MIRROR_HASH:=5d668d4f132200a9b8f1975d85a6729a253508d1964b2aedacbcd31d4ab88ba2
+PKG_MIRROR_HASH:=47ab346ff4791d5d46b33cdfbcf33d2feaf1712436568f5e3fe82f9c14a7342f
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
