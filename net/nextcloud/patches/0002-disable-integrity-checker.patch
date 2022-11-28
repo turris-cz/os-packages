@@ -1,0 +1,13 @@
+We patch the sources, so the integrity check fails with an important looking red warning
+
+--- a/lib/private/IntegrityCheck/Checker.php
++++ b/lib/private/IntegrityCheck/Checker.php
+@@ -116,7 +116,7 @@ class Checker {
+ 		 */
+ 		$isIntegrityCheckDisabled = false;
+ 		if ($this->config !== null) {
+-			$isIntegrityCheckDisabled = $this->config->getSystemValue('integrity.check.disabled', false);
++			$isIntegrityCheckDisabled = $this->config->getSystemValue('integrity.check.disabled', true);
+ 		}
+ 		if ($isIntegrityCheckDisabled === true) {
+ 			return false;

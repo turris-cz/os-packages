@@ -1,0 +1,21 @@
+https://src.fedoraproject.org/rpms/nextcloud/blob/1053fdee18f078cb15e1b623f19229e6d37719cb/f/0000-disable-update-version-check.patch
+
+--- a/lib/private/Updater.php
++++ b/lib/private/Updater.php
+@@ -208,14 +208,11 @@ class Updater extends BasicEmitter {
+ 		}
+ 
+ 		if ($currentVendor === 'nextcloud') {
+-			return isset($allowedPreviousVersions[$currentVendor][$majorMinor])
+-				&& (version_compare($oldVersion, $newVersion, '<=') ||
+-					$this->config->getSystemValue('debug', false));
++			return true;
+ 		}
+ 
+ 		// Check if the instance can be migrated
+-		return isset($allowedPreviousVersions[$currentVendor][$majorMinor]) ||
+-			isset($allowedPreviousVersions[$currentVendor][$oldVersion]);
++		return true;
+ 	}
+ 
+ 	/**
