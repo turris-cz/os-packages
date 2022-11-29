@@ -131,7 +131,7 @@ else
 	archive="${1%.bz2}" # This prevents bzip2 compain about suffix
 fi
 
-files | sed 's|^/||' | xargs tar -rf "$archive" -C /
+files | sed 's|^/||' | xargs /bin/tar -rf "$archive" -C /
 
 bzip2 -z -f -9 "$archive"
 archive="$archive.bz2"

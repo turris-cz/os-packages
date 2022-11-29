@@ -90,7 +90,7 @@ else
 	trap 'rm -f "$archive"' INT QUIT TERM ABRT EXIT
 fi
 
-version="$(tar -xOf backup.tar.bz2 etc/turris-version || echo "unknown")"
+version="$(/bin/tar -xOf backup.tar.bz2 etc/turris-version || echo "unknown")"
 if [ "$only_version" = "y" ]; then
 	echo "$version"
 	exit 0
@@ -117,7 +117,7 @@ if [ "$preserve_passwords" = "y" ]; then
 	root_password="$(sed -n 's/^root:\([^:]\+\):.*/\1/p' /etc/shadow || true)"
 fi
 
-tar -xjf "$archive" -C /
+/bin/tar -xjf "$archive" -C /
 
 if [ "$preserve_passwords" = "y" ]; then
 	if [ -n "$foris_password" ]; then
