@@ -88,8 +88,6 @@ define Package/knot-resolver/install
 	$(CP) $(PKG_INSTALL_DIR)/etc/knot-resolver/root.hints $(1)/etc/knot-resolver/
 
 	$(INSTALL_DIR) $(1)/etc/kresd
-	$(INSTALL_BIN) ./files/kresd.postinst $(1)/etc/kresd/kresd.postinst.sh
-	$(INSTALL_BIN) ./files/convert_config.sh $(1)/etc/kresd/convert_config.sh
 endef
 
 define Package/knot-resolver/postinst
@@ -98,8 +96,29 @@ set -x
 if [ -z "$$IPKG_INSTROOT" ]; then
 /etc/init.d/dnsmasq restart
 sleep 2 # Cooldown for above (problems in times of reinstall)
-/etc/kresd/kresd.postinst.sh && rm /etc/kresd/kresd.postinst.sh
-/etc/kresd/convert_config.sh && rm /etc/kresd/convert_config.sh
+
+# convert static_domain from kresd to common section
+stat_dom=`uci -q get resolver.kresd.static_domains`
+if [ ! -z "$$stat_dom" ]; then
+	uci set resolver.common.static_domains="$$stat_dom"
+	uci delete resolver.kresd.static_domains
+	uci commit resolver
+fi
+/etc/init.d/resolver restart
+
+# convert hostname_config from option to list
+hostnames=`uci show resolver.kresd.hostname_config`
+item_count=`echo "$$hostnames"| tr -cd "'"|wc -c`
+if [ "$$item_count" -gt  "2" ] || [ "$$item_count" == "0" ]; then
+	echo "resolver.kresd.hostname_config was already converted to list"
+else
+	echo "converting resolver.kresd.hostname_config to list"
+	val=`uci get resolver.kresd.hostname_config`
+	uci delete resolver.kresd.hostname_config
+	uci add_list resolver.kresd.hostname_config=$$val
+	uci commit resolver
+fi
+
 if [ "`uci -q get resolver.common.prefered_resolver`" = kresd ] && uci -q get resolver.common.forward_upstream | egrep -q '(1|yes|true|enabled|on)'; then
 	ping -c 1 repo.turris.cz 2> /dev/null >&2 || {
 		uci set resolver.common.forward_upstream=0
