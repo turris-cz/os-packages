@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2016-2021 CZ.NIC, z. s. p. o. (https://www.nic.cz/)
+# Copyright (C) 2016-2022 CZ.NIC, z. s. p. o. (https://www.nic.cz/)
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -8,7 +8,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=resolver-conf
-PKG_VERSION:=0.0.4
+PKG_VERSION:=0.0.5
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
@@ -23,7 +23,7 @@ define Package/resolver-conf
 	CATEGORY:=Network
 	SUBMENU:=IP Addresses and Names
 	TITLE:=Resolver configuration
-	DEPENDS:=+python3-light +python3-multiprocessing +python3-logging +ca-bundle
+	DEPENDS:=+python3-light +python3-multiprocessing +python3-logging +ca-bundle +python3-uci
 endef
 
 define Package/resolver-conf/description
