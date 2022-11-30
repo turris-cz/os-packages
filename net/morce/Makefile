@@ -40,6 +40,7 @@ define Package/morce/install
 
 	$(INSTALL_DIR) $(1)/usr/share/morce/loggers/
 	$(INSTALL_DATA) $(PKG_BUILD_DIR)/logger/alert_morce.lua $(1)/usr/share/morce/loggers/
+	$(INSTALL_DATA) $(PKG_BUILD_DIR)/share/aggregate.sql $(1)/usr/share/morce/
 
 	$(INSTALL_DIR) $(1)/etc/config
 	$(INSTALL_CONF) $(PKG_BUILD_DIR)/uci/morce $(1)/etc/config
