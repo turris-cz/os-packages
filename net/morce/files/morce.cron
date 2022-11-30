@@ -1,0 +1,2 @@
+MAILTO=""
+5 3 * * * root /etc/init.d/morce enabled && /etc/init.d/morce aggregate
