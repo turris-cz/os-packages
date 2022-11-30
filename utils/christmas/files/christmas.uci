@@ -1,0 +1,6 @@
+config christmas "christmas"
+	#option sleep '1'
+	#list colors '00FF00'
+	#list colors '0000AA'
+	#list colors 'FF6600'
+	#list colors 'FF0000'
