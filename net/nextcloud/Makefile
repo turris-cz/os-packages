@@ -82,7 +82,7 @@ if [ -z "$$IPKG_INSTROOT" ]; then
 		VER="`cat ./config/config.php | sed -n 's|.*version[^0-9]*\([0-9]\+\)\.\([0-9]\+\)\.\([0-9]\+\)\..*|\1\2\3|p'`"
 		sed -i 's|\(.*dbhost.*=>.*\)localhost\(.\),|\1127.0.0.1\2,|' config/config.php
 		if [ -n "$$VER" ] && [ $$VER -lt "`echo $(PKG_VERSION) | sed 's|\.||g'`" ]; then
-			sudo -u nobody php-cli ./occ upgrade --no-app-disable --no-interaction
+			sudo -u nobody php-cli ./occ upgrade --no-interaction
 		fi
 	else
 		/etc/init.d/lighttpd restart
