@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=nextcloud
-PKG_VERSION:=22.2.10
+PKG_VERSION:=23.0.11
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.bz2
 PKG_SOURCE_URL:=https://download.nextcloud.com/server/releases/
-PKG_HASH:=8de167bfcfcaa661245a00a5ac36628e7961951b9fe2dfaf4f8a5aac6907ccdb
+PKG_HASH:=33e141ecadab8306c12ae373f2a49b25d464aca192c9fee072004a1c33f60bba
 
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)
 
@@ -30,14 +30,14 @@ define Package/nextcloud
 	CATEGORY:=Network
 	TITLE:=Nextcloud server
 	URL:=https://nextcloud.com/
-	DEPENDS=+php7-mod-opcache +php7-fpm +php7-cli +sudo +php7-mod-ctype +php7-mod-fileinfo +php7-mod-xmlreader +php7-mod-openssl +php7-mod-gd +php7-mod-xml +php7-mod-xmlwriter +php7-mod-json +php7-mod-mbstring +php7-mod-pcntl +php7-mod-opcache +php7-mod-session +php7-mod-simplexml +php7-mod-iconv +php7-mod-curl +php7-mod-zip +php7-mod-dom +coreutils-stat +php7 +lighttpd-mod-access +php7-mod-intl +php7-mod-filter +icu-full-data
+	DEPENDS=+php8-mod-opcache +php8-fpm +php8-cli +sudo +php8-mod-ctype +php8-mod-fileinfo +php8-mod-xmlreader +php8-mod-openssl +php8-mod-gd +php8-mod-xml +php8-mod-xmlwriter +php8-mod-mbstring +php8-mod-pcntl +php8-mod-opcache +php8-mod-session +php8-mod-simplexml +php8-mod-iconv +php8-mod-curl +php8-mod-zip +php8-mod-dom +coreutils-stat +php8 +lighttpd-mod-access +php8-mod-intl +php8-mod-filter +icu-full-data
 endef
 
 define Package/nextcloud-install
 	SECTION:=net
 	CATEGORY:=Network
 	TITLE:=Nextcloud server installation script
-	DEPENDS=+nextcloud +mariadb-server +php7-mod-pdo-mysql +mariadb-client
+	DEPENDS=+nextcloud +mariadb-server +php8-mod-pdo-mysql +mariadb-client
 endef
 
 define Package/$(PKG_NAME)/description
@@ -82,7 +82,7 @@ if [ -z "$$IPKG_INSTROOT" ]; then
 		VER="`cat ./config/config.php | sed -n 's|.*version[^0-9]*\([0-9]\+\)\.\([0-9]\+\)\.\([0-9]\+\)\..*|\1\2\3|p'`"
 		sed -i 's|\(.*dbhost.*=>.*\)localhost\(.\),|\1127.0.0.1\2,|' config/config.php
 		if [ -n "$$VER" ] && [ $$VER -lt "`echo $(PKG_VERSION) | sed 's|\.||g'`" ]; then
-			sudo -u nobody php-cli ./occ upgrade --no-app-disable --no-interaction
+			sudo -u nobody php-cli ./occ upgrade --no-interaction
 		fi
 	else
 		/etc/init.d/lighttpd restart

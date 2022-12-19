@@ -13,7 +13,7 @@ Fixes:
 
 --- a/lib/private/Http/Client/Client.php
 +++ b/lib/private/Http/Client/Client.php
-@@ -91,7 +91,7 @@ class Client implements IClient {
+@@ -109,7 +109,7 @@ class Client implements IClient {
  		}
  
  		if (!isset($options[RequestOptions::HEADERS]['Accept-Encoding'])) {
@@ -21,4 +21,4 @@ Fixes:
 +			$options[RequestOptions::HEADERS]['Accept-Encoding'] = 'identity';
  		}
  
- 		return $options;
+ 		// Fallback for save_to

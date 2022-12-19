@@ -57,8 +57,8 @@ fi
 # Enable dependencies
 /etc/init.d/mysqld start
 /etc/init.d/mysqld enable
-/etc/init.d/php7-fpm start
-/etc/init.d/php7-fpm enable
+/etc/init.d/php8-fpm start
+/etc/init.d/php8-fpm enable
 
 DELAY=5
 
@@ -126,7 +126,7 @@ sudo -u nobody php-cli ./occ config:system:set --value false updatechecker --typ
 [ -z "$IP" ] || sudo -u nobody php-cli ./occ config:system:set --value "$IP" trusted_domains 1
 [ -z "$(uname -n)" ] || sudo -u nobody php-cli ./occ config:system:set --value "$(uname -n ).local" trusted_domains 2
 
-/etc/init.d/php7-fpm restart
+/etc/init.d/php8-fpm restart
 
 echo "Your Nextcloud installation should be available at http://$IP/nextcloud"
 echo "Your username is '$ALOGIN' and password '$APASS'"
