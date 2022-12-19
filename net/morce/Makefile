@@ -40,9 +40,30 @@ define Package/morce/install
 
 	$(INSTALL_DIR) $(1)/usr/share/morce/loggers/
 	$(INSTALL_DATA) $(PKG_BUILD_DIR)/logger/alert_morce.lua $(1)/usr/share/morce/loggers/
+	$(INSTALL_DATA) $(PKG_BUILD_DIR)/share/aggregate.sql $(1)/usr/share/morce/
 
 	$(INSTALL_DIR) $(1)/etc/config
 	$(INSTALL_CONF) $(PKG_BUILD_DIR)/uci/morce $(1)/etc/config
+
+	$(INSTALL_DIR) $(1)/etc/cron.d
+	$(INSTALL_DATA) ./files/morce.cron $(1)/etc/cron.d/morce-aggregate
+endef
+
+define Package/morce/postinst
+#!/bin/sh
+if [ -z "$$IPKG_INSTROOT" ]; then
+    /etc/init.d/morce enable
+    /etc/init.d/morce restart 2>/dev/null
+fi
+[ -e "$$IPKG_INSTROOT"/etc/cron.d/morce-rules-refresh ] || {
+    echo 'MAILTO=""'
+    echo "$$(($$RANDOM % 59)) $$(($$RANDOM % 4 + 1)) * * * root /etc/init.d/morce enabled && /etc/init.d/morce update_rules" 
+} > "$$IPKG_INSTROOT"/etc/cron.d/morce-rules-refresh
+endef
+
+define Package/morce/postrm
+#!/bin/sh
+rm -f "$$IPKG_INSTROOT"/etc/cron.d/morce-rules-refresh
 endef
 
 define Package/morce/conffiles
