@@ -13,8 +13,6 @@ This fix will allow users to get through the onboarding wizard.
  js/src/wan/WAN.js               | 8 +++++++-
  2 files changed, 14 insertions(+), 2 deletions(-)
 
-diff --git a/js/src/interfaces/Interfaces.js b/js/src/interfaces/Interfaces.js
-index 863d56fa..2a1616b7 100644
 --- a/js/src/interfaces/Interfaces.js
 +++ b/js/src/interfaces/Interfaces.js
 @@ -19,9 +19,14 @@ import "./Interfaces.css";
@@ -33,7 +31,7 @@ index 863d56fa..2a1616b7 100644
      return (
          <>
              <h1>{_("Network Interfaces")}</h1>
-@@ -36,6 +41,7 @@ export default function Interfaces({ ws }) {
+@@ -36,6 +41,7 @@ export default function Interfaces({ ws
                      endpoint: API_URLs.interfaces,
                      wsModule: "networks",
                  }}
@@ -41,11 +39,9 @@ index 863d56fa..2a1616b7 100644
                  prepDataToSubmit={prepDataToSubmit}
                  validator={validateInterfaces}
              >
-diff --git a/js/src/wan/WAN.js b/js/src/wan/WAN.js
-index 4321d6b7..3e2dadd6 100644
 --- a/js/src/wan/WAN.js
 +++ b/js/src/wan/WAN.js
-@@ -20,9 +20,14 @@ import WANForm, { validateWANForm } from "./WANForm";
+@@ -21,9 +21,14 @@ import WANForm, { validateWANForm } from
  
  WAN.propTypes = {
      ws: PropTypes.object.isRequired,
@@ -61,7 +57,7 @@ index 4321d6b7..3e2dadd6 100644
      return (
          <>
              <h1>{_("WAN")}</h1>
-@@ -40,6 +45,7 @@ export default function WAN({ ws }) {
+@@ -41,6 +46,7 @@ export default function WAN({ ws }) {
                  prepData={prepData}
                  prepDataToSubmit={prepDataToSubmit}
                  validator={validator}
@@ -69,6 +65,3 @@ index 4321d6b7..3e2dadd6 100644
              >
                  <WANForm />
                  <WAN6Form />
--- 
-2.34.1
-
