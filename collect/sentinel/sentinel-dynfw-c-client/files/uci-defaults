@@ -1,0 +1,14 @@
+#!/bin/sh
+set -e
+. /lib/functions/sentinel-firewall.sh
+
+# Remove old rules
+uci -q delete firewall.sentinel_dynfw_client || :
+uci -q delete firewall.sentinel_dynfw_client_ipset || :
+
+
+# Enable for default wan interface
+config_firewall_default_enable "sentinel_dynfw"
+
+# Always reload firewall to use latest version of sentinel-firewall script
+/etc/init.d/firewall reload
