@@ -54,12 +54,6 @@ else
     fi
 fi
 
-# Enable dependencies
-/etc/init.d/mysqld start
-/etc/init.d/mysqld enable
-/etc/init.d/php8-fpm start
-/etc/init.d/php8-fpm enable
-
 DELAY=5
 
 # Make sure we have passwords at hand
