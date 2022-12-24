@@ -1,0 +1,10 @@
+{
+  "id": "Syncthing",
+  "title": "syncthing",
+  "url": "/syncthing",
+  "icon": "/icons/syncthing.svg",
+  "description": {
+      "en": "Program to synchronize files to multiple devices. ",
+      "cs": "Program určený pro synchronizaci souborů napříč různými zařízeni."
+  }
+}
