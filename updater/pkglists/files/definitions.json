@@ -191,6 +191,11 @@
 		"url": "https://docs.turris.cz/geek/nextcloud/nextcloud/",
 		"labels": ["experimental", "storage"]
 	},
+	"syncthing": {
+                "title": "Syncthing",
+                "description": "Application which synchronizes files between two or more computer",
+                "labels": ["community", "storage"]
+        },
 	"openvpn": {
 		"title": "OpenVPN",
 		"description": "Easy setup of the OpenVPN client and server from Foris.",
