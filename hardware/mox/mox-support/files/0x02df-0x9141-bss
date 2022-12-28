@@ -1,0 +1,4 @@
+#!/bin/sh
+if [ "$wpa" = 3 ]; then
+	wpa='2'
+fi

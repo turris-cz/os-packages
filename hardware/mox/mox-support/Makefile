@@ -57,6 +57,9 @@ define Package/mox-support/install
 	ln -s boot/boot-ext4.scr "$(1)"/boot.scr
 	ln -s boot.scr "$(1)"/boot/boot-ext4.scr
 	ln -s boot.scr "$(1)"/boot/boot-btrfs.scr
+	$(INSTALL_DIR) $(1)/lib/netifd/wireless/hacks
+	$(INSTALL_DATA) ./files/0x02df-0x9141-bss $(1)/lib/netifd/wireless/hacks
+	$(INSTALL_DATA) ./files/0x02df-0x9141-device $(1)/lib/netifd/wireless/hacks
 	$(INSTALL_DIR) $(1)/usr/share/mox
 	$(INSTALL_BIN) ./files/mox_autosetup $(1)/usr/share/mox
 	$(INSTALL_DIR) $(1)/etc/init.d
