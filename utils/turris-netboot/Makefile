@@ -41,6 +41,7 @@ endef
 
 define Build/Prepare
 	$(PKG_UNPACK)
+	$(Build/Patch)
 	mkdir -p "$(PKG_BUILD_DIR)/rootfs/sbin"
 	mkdir -p "$(PKG_BUILD_DIR)/rootfs/etc"
 	echo -e 'nameserver 193.17.47.1\nnameserver 2001:148f:ffff::1\nnameserver 185.43.135.1' > "$(PKG_BUILD_DIR)/rootfs/etc/resolv.conf"
