@@ -39,6 +39,8 @@ define Package/turris-webapps-syncthing/install
 	$(INSTALL_DATA) ./files/31_syncthing.json $(1)/usr/share/turris-webapps/
 	$(INSTALL_DIR) $(1)/www/webapps-icons
 	$(INSTALL_DATA) ./files/syncthing.svg $(1)/www/webapps-icons
+	$(INSTALL_DIR) $(1)/etc/lighttpd/conf.d
+	$(CP) ./files/syncthing.lighttpd $(1)/etc/lighttpd/conf.d/80-syncthing.conf
 endef
 
 $(eval $(call BuildPackage,turris-webapps-syncthing))
