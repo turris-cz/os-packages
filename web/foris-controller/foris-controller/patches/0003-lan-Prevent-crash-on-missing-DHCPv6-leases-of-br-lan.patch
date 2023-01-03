@@ -1,0 +1,57 @@
+From 54c1b29aad6fcff178aa8f75f2218ccff8e443ea Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Martin=20Mat=C4=9Bjek?= <martin.matejek@nic.cz>
+Date: Tue, 3 Jan 2023 15:17:32 +0100
+Subject: [PATCH] lan: Prevent crash on missing DHCPv6 leases of br-lan
+
+Prevent crash of foris-controller in case when `br-lan` is not managed
+by `odhcpd`, for instance when `br-lan` is missing or IPv6 is
+explicitly disabled for `br-lan`.
+
+Return empty list (no DHCPv6 leases) instead.
+
+Closes: #253
+---
+ foris_controller_backends/lan/__init__.py | 10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
+
+diff --git a/foris_controller_backends/lan/__init__.py b/foris_controller_backends/lan/__init__.py
+index 839b603..91842cd 100644
+--- a/foris_controller_backends/lan/__init__.py
++++ b/foris_controller_backends/lan/__init__.py
+@@ -1,6 +1,6 @@
+ #
+ # foris-controller
+-# Copyright (C) 2019-2021 CZ.NIC, z.s.p.o. (http://www.nic.cz/)
++# Copyright (C) 2019-2022 CZ.NIC, z.s.p.o. (http://www.nic.cz/)
+ #
+ # This program is free software; you can redistribute it and/or modify
+ # it under the terms of the GNU General Public License as published by
+@@ -18,11 +18,11 @@
+ #
+ 
+ import ipaddress
++import json
+ import logging
+ import typing
+ 
+ import pkg_resources
+-import json
+ 
+ from foris_controller.exceptions import UciException
+ from foris_controller.utils import parse_to_list, unwrap_list
+@@ -197,7 +197,11 @@ class LanUci:
+     def get_ipv6_client_list(self, interface="br-lan"):
+         lease_data = LanUci.call_ubus("dhcp", "ipv6leases")
+         res = []
+-        if lease_data:
++
++        # Interface (e.g. `br-lan`) might not be actively managed by odhcpd, if for instance,
++        # IPv6 is explicitely disabled on it.
++        # Do not rely on assumption that interface has IPv6 always enabled.
++        if lease_data and interface in lease_data["device"]:
+             for lease in lease_data["device"][interface]["leases"]:
+                 addresses = lease["ipv6-addr"]
+                 for address in addresses:
+-- 
+2.38.1
+
