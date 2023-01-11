@@ -12,6 +12,13 @@ config smtp smtp
 	#option security 'ssl' # or 'starttls' or 'none'
 	#list to 'user@example.com'
 
+config ntfy ntfy
+	option enable 0
+	# Set to your secret ntfy URL
+	option url ''
+	# Define the priority of the notification, see https://docs.ntfy.sh/publish/#message-priority
+	option priority 'high'
+
 config notifications notifications
 	# 1: restarts
 	# 2: restarts and errors
