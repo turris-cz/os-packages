@@ -8,13 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=turris-webapps
-PKG_VERSION:=3.7.1
+PKG_VERSION:=91e9db9c
 PKG_RELEASE:=$(AUTORELEASE)
 
-PKG_SOURCE_PROTO:=git
-PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/webapps
-PKG_MIRROR_HASH:=67e355dd98edd09df77dfc7c2c41655e0d6b40e89c364ac861d108b2d6b287f6
-PKG_SOURCE_VERSION:=v$(PKG_VERSION)
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
+PKG_SOURCE_URL:=https://gitlab.nic.cz/api/v4/projects/962/packages/generic/turris-webapps/4.0.0/
+PKG_HASH:=db1eb1d6db9d5b119ff964bce1f5968259421459d7722e3f3573a8707ffd6eae
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 PKG_LICENSE:=GPL-3.0-or-later
@@ -42,21 +41,22 @@ define Package/turris-webapps/install
 
 	$(INSTALL_DIR) $(1)/usr/share/turris-webapps
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/turris-webapps-json-cgi $(1)/usr/share/turris-webapps
-	$(INSTALL_DATA) $(PKG_BUILD_DIR)/l10n.json $(1)/usr/share/turris-webapps
 
 	$(INSTALL_DIR) $(1)/www/turris-webapps
-	$(INSTALL_DATA) $(PKG_BUILD_DIR)/favicon-*.png $(1)/www/turris-webapps
-	$(INSTALL_DATA) $(PKG_BUILD_DIR)/favicon.ico $(1)/www/turris-webapps
+	$(INSTALL_DATA) $(PKG_BUILD_DIR)/*.png $(1)/www/turris-webapps
 	$(INSTALL_DATA) $(PKG_BUILD_DIR)/index.html $(1)/www/turris-webapps
+	$(INSTALL_DATA) $(PKG_BUILD_DIR)/manifest.json $(1)/www/turris-webapps
 
-	$(INSTALL_DIR) $(1)/www/turris-webapps/css
-	$(INSTALL_DATA) $(PKG_BUILD_DIR)/css/*.min.css $(1)/www/turris-webapps/css
+	$(INSTALL_DIR) $(1)/www/turris-webapps/static
 
-	$(INSTALL_DIR) $(1)/www/turris-webapps/js
-	$(INSTALL_DATA) $(PKG_BUILD_DIR)/js/*.min.js $(1)/www/turris-webapps/js
-	$(INSTALL_DIR) $(1)/www/webapps-icons
-	$(INSTALL_DATA) $(PKG_BUILD_DIR)/icons/turris-dark.svg $(1)/www/webapps-icons
+	$(INSTALL_DIR) $(1)/www/turris-webapps/static/css
+	$(INSTALL_DATA) $(PKG_BUILD_DIR)/static/css/* $(1)/www/turris-webapps/static/css
 
+	$(INSTALL_DIR) $(1)/www/turris-webapps/static/js
+	$(INSTALL_DATA) $(PKG_BUILD_DIR)/static/js/* $(1)/www/turris-webapps/static/js
+
+	$(INSTALL_DIR) $(1)/www/turris-webapps/static/media/
+	$(INSTALL_DATA) $(PKG_BUILD_DIR)/static/media/turris-dark.*.svg $(1)/www/turris-webapps/static/media
 endef
 
 define Package/turris-webapps/postinst
