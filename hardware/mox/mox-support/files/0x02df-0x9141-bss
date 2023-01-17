@@ -2,3 +2,11 @@
 if [ "$wpa" = 3 ]; then
 	wpa='2'
 fi
+if [ "$auth_type" = "psk-sae" -o "$auth_type" = "sae" ]; then
+	auth_type='psk'
+	data="$(echo "$data" | sed 's|auth_type":"[^"]*"|auth_type":"psk"|g')"
+fi
+if [ "$encryption" = "sae-mixed" -o "$encryption" = "sae" ]; then
+	encryption='psk2+ccmp'
+	data="$(echo "$data" | sed 's|encryption":"[^"]*"|encryption":"pks2+ccmp"|g')"
+fi
