@@ -46,4 +46,9 @@ define Package/turris-webapps-transmission/install
 	$(CP) ./files/transmission.lighttpd $(1)/etc/lighttpd/conf.d/80-transmission.conf
 endef
 
+define Package/turris-webapps-transmission/postinst
+#!/bin/sh
+[ -n "$$IPKG_INSTROOT" ] || /etc/init.d/lighttpd restart
+endef
+
 $(eval $(call BuildPackage,turris-webapps-transmission))
