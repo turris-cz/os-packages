@@ -46,4 +46,9 @@ define Package/turris-webapps-tvheadend/install
 	$(CP) ./files/tvheadend.lighttpd $(1)/etc/lighttpd/conf.d/80-tvheadend.conf
 endef
 
+define Package/turris-webapps-tvheadend/postinst
+#!/bin/sh
+[ -n "$$IPKG_INSTROOT" ] || /etc/init.d/lighttpd restart
+endef
+
 $(eval $(call BuildPackage,turris-webapps-tvheadend))
