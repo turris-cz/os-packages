@@ -44,4 +44,9 @@ define Package/turris-webapps-syncthing/install
 	$(CP) ./files/syncthing.lighttpd $(1)/etc/lighttpd/conf.d/80-syncthing.conf
 endef
 
+define Package/turris-webapps-syncthing/postinst
+#!/bin/sh
+[ -n "$$IPKG_INSTROOT" ] || /etc/init.d/lighttpd restart
+endef
+
 $(eval $(call BuildPackage,turris-webapps-syncthing))
