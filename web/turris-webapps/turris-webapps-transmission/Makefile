@@ -23,7 +23,9 @@ define Package/turris-webapps-transmission
   TITLE:=Transmission integration
   DEPENDS:=+transmission-daemon +transmission-web \
     +turris-webapps \
-    +lighttpd-mod-authn_pam +lighttpd-mod-proxy
+    +turris-auth \
+    +lighttpd-mod-proxy \
+    +lighttpd-mod-setenv
   URL:=https://gitlab.nic.cz/turris/webapps
 endef
 
