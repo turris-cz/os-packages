@@ -39,7 +39,7 @@ endef
 
 define Package/omnia-uboot/install
 	$(INSTALL_DIR) $(1)/usr/share/omnia
-	$(CP) $(STAGING_DIR_IMAGE)/omnia-u-boot-spl.kwb $(1)/usr/share/omnia/uboot-devel
+	$(CP) $(STAGING_DIR_IMAGE)/omnia-u-boot-with-spl.kwb $(1)/usr/share/omnia/uboot-devel
 endef
 
 $(eval $(call BuildPackage,omnia-uboot))
