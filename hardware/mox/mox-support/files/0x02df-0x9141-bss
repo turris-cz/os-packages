@@ -8,5 +8,5 @@ if [ "$auth_type" = "psk-sae" -o "$auth_type" = "sae" ]; then
 fi
 if [ "$encryption" = "sae-mixed" -o "$encryption" = "sae" ]; then
 	encryption='psk2+ccmp'
-	data="$(echo "$data" | sed 's|encryption":"[^"]*"|encryption":"pks2+ccmp"|g')"
+	data="$(echo "$data" | sed 's|encryption":"[^"]*"|encryption":"psk2+ccmp"|g')"
 fi
