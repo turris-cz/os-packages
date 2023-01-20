@@ -19,11 +19,24 @@ define Package/sentinel-firewall
   SECTION:=collect
   CATEGORY:=Collect
   SUBMENU:=Sentinel
-  TITLE:=Firewall
+  TITLE:=Turris Sentinel Firewall integration
   DEPENDS:=+firewall
 endef
 
 Build/Compile:=:
+
+define Package/sentinel-dynfw-cert
+  SECTION:=collect
+  CATEGORY:=Collect
+  SUBMENU:=Sentinel
+  TITLE:=Certificate for Turris Sentinel Dynamic Firewall
+endef
+
+
+define Package/sentinel-dynfw-cert/install
+	$(INSTALL_DIR) $(1)/etc
+	$(INSTALL_BIN) ./files/server.pub $(1)/etc/sentinel_dynfw_server.pub
+endef
 
 define Package/sentinel-firewall/install
 	$(INSTALL_DIR) $(1)/usr/libexec/sentinel/firewall.d
@@ -36,3 +49,4 @@ define Package/sentinel-firewall/install
 endef
 
 $(eval $(call BuildPackage,sentinel-firewall))
+$(eval $(call BuildPackage,sentinel-dynfw-cert))
