@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=sentinel-proxy
-PKG_VERSION:=1.4
+PKG_VERSION:=2.0.0
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/sentinel/proxy.git
-PKG_MIRROR_HASH:=fd595c07673f23bf4ce54fb5bf28f03bc15c63eb8a7adfff9948e184085cf288
+PKG_MIRROR_HASH:=2d0cf8b4904844b2be4283f5d0e82bc8f75afc3b63ed6a5b22b9324374eec654
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
@@ -38,6 +38,8 @@ define Package/sentinel-proxy
     +zlib \
     +libopenssl \
     +libconfig \
+    +logc \
+    +logc-argp \
     +msgpack-c \
     +sentinel-certgen \
     +sentinel-eula
