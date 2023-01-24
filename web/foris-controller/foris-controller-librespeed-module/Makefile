@@ -14,7 +14,7 @@ PKG_RELEASE:=$(AUTORELEASE)
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/foris-controller/foris-controller-librespeed-module.git
 PKG_MIRROR_HASH:=adbd28a59a6fb15ad7ec87ca47f3d020c5452b6c6b968cc81bfd100a6ee02cb5
-PKG_SOURCE_VERSION:=3fd355958c73f0ffc76a6cf6013dccd34056c538
+PKG_SOURCE_VERSION:=f7b03d062db14a51192f561948692ae0581f845d
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 PKG_LICENSE:=GPL-3.0-or-later
@@ -30,6 +30,7 @@ define Package/foris-controller-librespeed-module
   SUBMENU:=Foris Controller
   TITLE:=Foris controller librespeed module
   DEPENDS:=\
+    +cronie \
     +foris-controller \
     +python3-dateutil \
     +librespeed-cli
@@ -49,6 +50,24 @@ endef
 define ForisControllerModule/foris-controller-librespeed-module/install
 	$(INSTALL_DIR) $(1)/etc/config
 	$(INSTALL_DATA) ./files/librespeed.uci $(1)/etc/config/librespeed
+	$(INSTALL_DIR) $(1)/usr/libexec/foris-controller
+	$(INSTALL_BIN) ./files/librespeed.sh $(1)/usr/libexec/foris-controller/librespeed.sh
+	$(INSTALL_DIR) $(1)/etc/cron.d
+	$(INSTALL_DATA) ./files/librespeed.cron $(1)/etc/cron.d/librespeed
+endef
+
+define Package/foris-controller-librespeed-module/postinst
+#!/bin/sh
+if [ -z "$$IPKG_INSTROOT" ]; then
+	/etc/init.d/foris-controller restart
+fi
+endef
+
+define Package/foris-controller-librespeed-module/postrm
+#!/bin/sh
+if [ -z "$$IPKG_INSTROOT" ]; then
+	/etc/init.d/foris-controller restart
+fi
 endef
 
 $(eval $(call ForisControllerModule,foris-controller-librespeed-module))
