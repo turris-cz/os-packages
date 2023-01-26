@@ -8,7 +8,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=sentinel-proxy
-PKG_VERSION:=2.0.0
+PKG_VERSION:=2.1.0
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
@@ -40,6 +40,7 @@ define Package/sentinel-proxy
     +libconfig \
     +logc \
     +logc-argp \
+    +logc-czmq \
     +msgpack-c \
     +sentinel-certgen \
     +sentinel-eula

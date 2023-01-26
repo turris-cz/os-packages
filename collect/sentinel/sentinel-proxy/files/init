@@ -11,8 +11,8 @@ start_service() {
     config_load sentinel
     local device_token
     config_get device_token main device_token ""
-    if ! sentinel-device-token --validate "${device_token}" --quite; then
-        device_token="$(sentinel-device-token --create --quite)";
+    if ! sentinel-device-token --validate "${device_token}" --quiet; then
+        device_token="$(sentinel-device-token --create --quiet)";
         uci -q set sentinel.main.device_token="${device_token}";
         uci -q commit sentinel.main;
         echo "New device token created" >&2;
