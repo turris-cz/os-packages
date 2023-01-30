@@ -49,10 +49,7 @@ init_header() {
 	echo "  , 'policy'" >> $CONFIGFILE
 	if [ "$prefetch" \!= 0 ]; then
 		echo "  , 'stats'" >> $CONFIGFILE
-		echo "  , predict = {" >> $CONFIGFILE
-		echo "        window = 30 -- 30 minutes sampling window" >> $CONFIGFILE
-		echo "      , period = 24*(60/30) -- track last 24 hours" >> $CONFIGFILE
-		echo "  }" >> $CONFIGFILE
+		echo "  , predict = { window = 0, period = 0 }" >> $CONFIGFILE
 	fi
 	echo "}" >> $CONFIGFILE
 
