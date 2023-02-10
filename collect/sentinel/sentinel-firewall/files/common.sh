@@ -19,6 +19,12 @@ iptables_chain_exists() {
 	iptables -S "$1" >/dev/null 2>&1
 }
 
+# This is simple helper to check for existence of given chain
+ip6tables_chain_exists() {
+	ip6tables -S "$1" >/dev/null 2>&1
+}
+
+
 # Add drop rule
 # zone: name of firewall zone incoming packets are coming from
 # chain: chain to be affected (input/forward)
@@ -39,6 +45,28 @@ iptables_drop() {
 	fi
 
 	iptables -I "zone_${zone}_${chain}" 1 "$@" -j "$drop_zone"
+}
+
+# Add IPv6 drop rule
+# zone: name of firewall zone incoming packets are coming from
+# chain: chain to be affected (input/forward)
+# Any additional arguments are passed to iptables call adding this rule
+ip6tables_drop() {
+	local zone="$1"
+	local chain="$2"
+	shift 2
+	local drop_zone="zone_${zone}_src_DROP"
+
+	# fw3 won't create chain for drop if no rule in UCI requires it. This just
+	# recreates it if it is missing.
+	if ! ip6tables_chain_exists "$drop_zone"; then
+		ip6tables -N "$drop_zone"
+		ip6tables -A "$drop_zone" \
+			-m comment --comment "!sentinel" \
+			-j DROP
+	fi
+
+	ip6tables -I "zone_${zone}_${chain}" 1 "$@" -j "$drop_zone"
 }
 
 # Add port redirect rule.

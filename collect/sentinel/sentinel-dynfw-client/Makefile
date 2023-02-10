@@ -28,7 +28,7 @@ define Package/sentinel-dynfw-client
   TITLE:=Dynamic firewall client
   DEPENDS:=+python3-light +python3-zmq +python3-msgpack +python3-urllib \
     +ipset \
-    +sentinel-firewall
+    +sentinel-dynfw-cert +sentinel-firewall
 endef
 
 define Package/sentinel-dynfw-client/description
@@ -42,8 +42,6 @@ Build/Install:=:
 define Package/sentinel-dynfw-client/install
 	$(INSTALL_DIR) $(1)/usr/bin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/client.py $(1)/usr/bin/sentinel-dynfw-client
-	$(INSTALL_DIR) $(1)/etc/
-	$(INSTALL_BIN) ./files/server.pub $(1)/etc/sentinel_dynfw.pub
 	$(INSTALL_DIR) $(1)/etc/init.d
 	$(INSTALL_BIN) files/init $(1)/etc/init.d/sentinel-dynfw-client
 	$(INSTALL_DIR) $(1)/etc/uci-defaults
