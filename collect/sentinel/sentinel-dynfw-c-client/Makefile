@@ -85,7 +85,7 @@ define Package/libdynfw/install
 		$(LN) libdynfw.so.1.0.0 libdynfw.so.1.0
 endef
 
-define Package/sentinel-dynfw-c-client-iptables/install
+define Package/sentinel-dynfw-c-client-snapshoter/install
 	$(INSTALL_DIR) $(1)/usr/bin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/install/usr/bin/dynfw-snapshoter $(1)/usr/sbin
 endef
