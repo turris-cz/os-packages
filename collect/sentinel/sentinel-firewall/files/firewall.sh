@@ -23,7 +23,7 @@ fi
 # Remove any existing rule
 # (firewall3 removes only rules in chains it knows so we have to do this to
 # potentially clean after ourselves)
-for IPTABLES in iptables ip6tables; do
+for IPTABLES in iptables-legacy ip6tables-legacy; do
 	for table in filter nat mangle raw; do
 		$IPTABLES -t "$table" -S \
 			| grep -F ' --comment "!sentinel:' \

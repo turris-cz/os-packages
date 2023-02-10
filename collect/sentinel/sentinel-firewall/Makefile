@@ -8,19 +8,20 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=sentinel-firewall
-PKG_VERSION:=0.1.2
+PKG_VERSION:=0.1.3
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 
 include $(INCLUDE_DIR)/package.mk
 
-define Package/sentinel-firewall
+define Package/sentinel-firewall-iptables
   SECTION:=collect
   CATEGORY:=Collect
   SUBMENU:=Sentinel
-  TITLE:=Turris Sentinel Firewall integration
-  DEPENDS:=+firewall
+  PROVIDES:=sentinel-firewall
+  TITLE:=Turris Sentinel Firewall iptables integration
+  DEPENDS:=+firewall +iptables-zz-legacy +ip6tables-zz-legacy
 endef
 
 Build/Compile:=:
@@ -38,8 +39,7 @@ define Package/sentinel-dynfw-cert/install
 	$(INSTALL_BIN) ./files/server.pub $(1)/etc/sentinel_dynfw_server.pub
 endef
 
-define Package/sentinel-firewall/install
-	$(INSTALL_DIR) $(1)/usr/libexec/sentinel/firewall.d
+define Package/sentinel-firewall-iptables/install
 	$(INSTALL_BIN) ./files/firewall.sh $(1)/usr/libexec/sentinel/
 	$(INSTALL_DATA) ./files/common.sh $(1)/usr/libexec/sentinel/firewall.d/
 	$(INSTALL_DIR) $(1)/etc/uci-defaults
@@ -48,5 +48,5 @@ define Package/sentinel-firewall/install
 	$(INSTALL_DATA) ./files/functions.sh $(1)/lib/functions/sentinel-firewall.sh
 endef
 
-$(eval $(call BuildPackage,sentinel-firewall))
+$(eval $(call BuildPackage,sentinel-firewall-iptables))
 $(eval $(call BuildPackage,sentinel-dynfw-cert))
