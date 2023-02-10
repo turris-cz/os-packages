@@ -1,0 +1,72 @@
+#!/bin/sh
+
+set -e
+
+# This fix script intends to rename guest network bridge name on TOS 6.0+: `br-guest_turris` -> `br-guest-turris`.
+#
+# There is a slight discrepancy in naming scheme after migration to TOS 6.0, which might lead to non-working QoS.
+# Also it is confusing in general, because there can be two different valid configurations on TOS 6.0 and we would
+# like to have the same configuration on every device.
+# 
+# Few additional details:
+# * After migration from TOS 5.x, the guest network bridge name is `br-guest_turris`.
+# * After clean install of TOS 6.x, the guest network bridge name is `br-guest-turris`.
+# * Foris-controller expects it to be `br-guest-turris`, but it can overwrite configuration to the new one on update
+#   of guest network settings from reforis.
+
+# backup the network config first
+config_network="/etc/config/network"
+config_network_backup="$config_network.backup"
+cp "$config_network" "$config_network_backup"
+
+cleanup() {
+	local ec=$?
+	if [ $ec -ne 0 ]; then
+		mv "$config_network_backup" "$config_network"
+		echo "The guest network bridge name migration failed. Reverting to the original state. Please migrate the guest network configuration manually!" >&2
+		exit $ec
+	fi
+	rm -f "$config_network_backup"
+}
+trap cleanup EXIT TERM INT QUIT ABRT
+
+if ! uci get network.br_guest_turris > /dev/null;
+then
+	echo "Config section 'device br_guest_turris' is not present. Nothing to be done here."
+	exit 0
+fi
+
+interface_brname=$(uci get network.guest_turris.device)
+device_brname=$(uci get network.br_guest_turris.name)
+# In case that `name` is missing or malformed,
+# it should fail with "uci: Entry not found" and exit code 1.
+
+if [ "$interface_brname" != "$device_brname" ];
+then
+	echo "Mismatch in device name between guest network interface and device."
+	exit 1
+fi
+
+newbrname="br-guest-turris"
+if [ "$device_brname" = "$newbrname" ];
+then
+	echo "Guest bridge name already has correct value, nothing to be done here."
+	exit 0
+fi
+
+# rename interface section
+if ! uci set network.guest_turris.device="$newbrname";
+then
+	echo "Failed to rename guest network bridge in interface section."
+	exit 1
+fi
+
+# rename device section
+if ! uci set network.br_guest_turris.name="$newbrname";
+then
+	echo "Failed to rename guest network bridge in device section."
+	exit 1
+fi
+
+uci commit network
+/etc/init.d/network restart
