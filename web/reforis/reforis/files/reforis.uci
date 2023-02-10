@@ -1,1 +1,6 @@
-# void for now
+package 'reforis'
+
+config server 'server'
+	#option debug 0
+	#option port 9090
+	#option scriptname "/reforis"

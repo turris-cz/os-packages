@@ -23,6 +23,9 @@ PKG_LICENSE_FILES:=LICENSE
 HOST_PYTHON3_PACKAGE_BUILD_DEPENDS:=reforis-distutils
 PKG_BUILD_DEPENDS:=node/host
 
+# REFORIS_PREFIX needs to be set while the package is build
+PYTHON3_PKG_SETUP_VARS:="REFORIS_PREFIX=/reforis"
+
 include $(INCLUDE_DIR)/package.mk
 include $(TOPDIR)/feeds/packages/lang/python/python3-package.mk
 include ./files/reforis-translations.mk
@@ -44,11 +47,12 @@ define Package/reforis
     +lighttpd-mod-fastcgi \
     +lighttpd-mod-redirect \
     +lighttpd-mod-setenv \
+    +lighttpd-mod-proxy \
     +turris-auth \
     +python3-flask \
     +python3-flask-babel \
     +python3-flask-seasurf \
-    +python3-flup \
+    +python3-flask-socketio \
     +python3-light \
     +python3-paho-mqtt \
     +turris-maintain
@@ -87,16 +91,12 @@ define Py3Package/reforis/install
 	$(INSTALL_DIR) $(1)/etc/config
 	$(INSTALL_DATA) ./files/reforis.uci $(1)/etc/config/reforis
 
-	$(INSTALL_DIR) $(1)/usr/share/foris/external-links
-	$(INSTALL_DATA) ./files/updater-external-redirect.csv $(1)/usr/share/foris/external-links/
-	$(INSTALL_DIR) $(1)/usr/share/foris/reforis-links
-	$(INSTALL_DATA) ./files/updater-internal-redirect.csv $(1)/usr/share/foris/reforis-links
-
 endef
 
 define Package/reforis/postinst
 #!/bin/sh
 [ -n "$$IPKG_INSTROOT" ] || {
+	/etc/init.d/reforis enable
 	/etc/init.d/lighttpd enable
 	/usr/bin/maintain-lighttpd-restart
 }
@@ -106,6 +106,34 @@ define Package/reforis/prerm
 #!/bin/sh
 [ -n "$$IPKG_INSTROOT" ] || /usr/bin/maintain-lighttpd-restart
 endef
+
+define Package/reforis-full/
+  SECTION:=web
+  CATEGORY:=Web
+  SUBMENU:=reForis
+  TITLE:=reforis
+  URL:=https://gitlab.nic.cz/turris/reforis
+  DEPENDS:= \
+    +reforis \
+    +python3-eventlet
+endef
+
+define Package/reforis/description
+  Web administration interface for Turris router. (with better web server)
+endef
+
+define Package/reforis-full/postinst
+#!/bin/sh
+[ -n "$$IPKG_INSTROOT" ] || {
+	/etc/init.d/reforis restart
+}
+endef
+
+define Package/reforis-full/postrm
+#!/bin/sh
+[ -n "$$IPKG_INSTROOT" ] || /etc/init.d/reforis restart
+endef
+
 
 $(eval $(call Py3Package,reforis))
 $(eval $(call BuildPackage,reforis))
