@@ -87,7 +87,7 @@ endef
 
 define Package/sentinel-dynfw-c-client-snapshoter/install
 	$(INSTALL_DIR) $(1)/usr/bin
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/install/usr/bin/dynfw-snapshoter $(1)/usr/sbin
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/install/usr/bin/dynfw-snapshoter $(1)/usr/bin
 endef
 
 define Package/sentinel-dynfw-c-client-iptables/install
