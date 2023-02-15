@@ -1,7 +1,6 @@
 $HTTP["url"] =~ "^/miniflux/" {
   proxy.header = (
     "map-host-request" => ( "-" => "127.0.0.1" ),
-    "map-urlpath" => ( "/miniflux" => "", "/miniflux/" => "/" ),
     "https-remap" => "enable"
   )
   proxy.server = ( "" => ( ( "host" => "127.0.0.1", "port" => "5433") ) )
