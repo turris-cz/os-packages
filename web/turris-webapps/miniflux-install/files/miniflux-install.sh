@@ -27,4 +27,5 @@ done
 
 sed -i "s/option user .*/option user $user/" /etc/config/miniflux
 sed -i "s/option dbname .*/option dbname $dbname/" /etc/config/miniflux
+sed -i "s,option base_url .*,option base_url 'http://127.0.0.1/miniflux/,'" /etc/config/miniflux
 /etc/init.d/miniflux start
