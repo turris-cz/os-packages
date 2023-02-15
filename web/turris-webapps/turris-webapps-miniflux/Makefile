@@ -43,4 +43,9 @@ define Package/turris-webapps-miniflux/install
 	$(INSTALL_DATA) ./files/miniflux.svg $(1)/www/webapps-icons
 endef
 
+define Package/turris-webapps-miniflux/postinst
+#!/bin/sh
+[ -n "$$IPKG_INSTROOT" ] || /etc/init.d/lighttpd restart
+endef
+
 $(eval $(call BuildPackage,turris-webapps-miniflux))
