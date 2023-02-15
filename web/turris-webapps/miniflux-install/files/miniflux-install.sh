@@ -4,6 +4,8 @@ mkdir -p /srv/postgresql
 chown postgres:postgres /srv/postgresql
 /etc/init.d/postgresql start
 
+sleep 10
+
 user=miniflux
 dbname=miniflux
 
