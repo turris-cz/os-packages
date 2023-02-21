@@ -1,16 +1,10 @@
 $HTTP["url"] =~ "^/syncthing" {
-  auth.backend = "pam"
-  auth.require = ( "" =>
-                   (
-                     "method"    => "basic",
-                     "realm"     => "Syncthing",
-                     "require"   => "valid-user"
-                   )
-                 )
+  fastcgi.server = ( "/" => ( turris_auth_scriptname => turris_auth ))
   proxy.header = (
     "map-host-request" => ( "-" => "127.0.0.1" ),
     "map-urlpath" => ( "/syncthing" => "", "/syncthing/" => "/" ),
     "https-remap" => "enable"
   )
   proxy.server = ( "" => ( ( "host" => "127.0.0.1", "port" => "8384") ) )
+  setenv.add-response-header = ("Cache-Control" => "must-revalidate, proxy-revalidate, max-age=0")
 }

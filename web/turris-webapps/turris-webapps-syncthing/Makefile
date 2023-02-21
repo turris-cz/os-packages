@@ -23,7 +23,9 @@ define Package/turris-webapps-syncthing
   TITLE:=syncthing integration
   DEPENDS:=+syncthing \
     +turris-webapps \
-    +lighttpd-mod-authn_pam +lighttpd-mod-proxy
+    +turris-auth \
+    +lighttpd-mod-proxy \
+    +lighttpd-mod-setenv
   URL:=https://gitlab.nic.cz/turris/webapps
 endef
 
