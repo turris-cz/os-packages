@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=foris-controller
-PKG_VERSION:=5.5.0
+PKG_VERSION:=5.5.1
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/foris-controller/foris-controller.git
-PKG_MIRROR_HASH:=024d6ab791efc2e97d9a68b3447ccecd7013822ef19e08302801b8a5f73c24f6
+PKG_MIRROR_HASH:=570a757e9c9182cdcfb813ebeb972b8c4edec46406a4ce3aea679e6742b55867
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
