@@ -1,5 +1,5 @@
 #
-## Copyright (C) 2019-2020 CZ.NIC, z. s. p. o. (https://www.nic.cz/)
+## Copyright (C) 2019-2023 CZ.NIC, z. s. p. o. (https://www.nic.cz/)
 #
 ## This is free software, licensed under the GNU General Public License v3.
 # See /LICENSE for more information.
@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=sentinel-eula
-PKG_VERSION:=1.1
+PKG_VERSION:=1.1.1
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/sentinel/eula.git
-PKG_MIRROR_HASH:=132e37610c6b51c8a1c9f1a0b676fbc7a033c890d91f0962796f742eed6f2d99
+PKG_MIRROR_HASH:=843ca56f7793d70a74adcef70a9efcd70813314334f684c866113df21c1fd7c6
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
