@@ -1,5 +1,5 @@
 #
-## Copyright (C) 2019-2020 CZ.NIC z.s.p.o. (https://www.nic.cz/)
+## Copyright (C) 2019-2023 CZ.NIC z.s.p.o. (https://www.nic.cz/)
 #
 ## This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -235,6 +235,9 @@ define Package/fix-turris1x-kernel-install/description
   Ensure that kernel is installed properly on Turris 1.x.
 endef
 
+define Package/fix-guest-network-device-name/description
+  Ensure that we use the correct guest network bridge name after migration from TOS 5 to TOS 6.
+endef
 
 $(eval $(call FIX,sentinel-remove-invalid-firewall-rules,+firewall +uci))
 $(eval $(call FIX,samba-migrate-to-samba4,+samba4-server +uci))
@@ -265,3 +268,4 @@ $(eval $(call FIX,turris1x-leds-migrate,+rainbow @TARGET_mpc85xx_p2020_DEVICE_cz
 $(eval $(call FIX,firewall-doublesafe))
 $(eval $(call FIX,firewall-check-reboot))
 $(eval $(call FIX,turris1x-kernel-install))
+$(eval $(call FIX,guest-network-device-name))
