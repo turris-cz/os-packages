@@ -36,7 +36,8 @@ define Package/reforis-librespeed-plugin
   URL:=https://gitlab.nic.cz/turris/reforis/reforis-librespeed
   DEPENDS:=\
     +reforis\
-    +foris-controller-librespeed-module
+    +foris-controller-librespeed-module \
+    @(TARGET_mvebu_cortexa9_DEVICE_cznic_turris-omnia||TARGET_mvebu_cortexa53_DEVICE_cznic_turris-mox)
 endef
 
 define Package/reforis-librespeed-plugin/description
