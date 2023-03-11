@@ -131,25 +131,10 @@ class Kresd:
             log("Kresd is probably not running no socket found.", LOG_ERR)
             sys.exit(1)
 
-    def _remove_hints_hosts(self, filename):
-        with open(filename, "r") as handle:
-            for line in handle:
-                line = line.strip()
-                if not line or line.startswith("#"):
-                    continue
-                try:
-                    host = line.strip().split()[1]
-                    self._call_kresd("hints.del('%s')" % host)
-                except:
-                    log("Wrong host format '%s' in host file %s " %
-                        (filename, line), LOG_ERR)
-
     def _clean_hints(self):
         # clear kresd hints
-        if self.__static_leases_enabled:
-            self._remove_hints_hosts(self.__static_leases)
-        if self.__dynamic_leases_enabled:
-            self._remove_hints_hosts(self.__dynamic_leases)
+        # On kresd 5.6.0 no config file provided to `hints.config()` will clear all hints
+        self._call_kresd("hints.config()")
 
     def _call_kresd(self, cmd):
         sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
