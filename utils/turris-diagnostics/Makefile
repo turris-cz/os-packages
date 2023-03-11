@@ -1,5 +1,5 @@
 #
-## Copyright (C) 2018-2022 CZ.NIC z.s.p.o. (https://www.nic.cz/)
+## Copyright (C) 2018-2023 CZ.NIC z.s.p.o. (https://www.nic.cz/)
 #
 ## This is free software, licensed under the GNU General Public License v3.
 # See /LICENSE for more information.
@@ -8,7 +8,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=turris-diagnostics
-PKG_VERSION:=17.0.1
+PKG_VERSION:=17.0.2
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
@@ -34,7 +34,7 @@ endef
 define Package/turris-diagnostics
   $(call Package/Common)
   TITLE:=Turris Diagnostics
-  DEPENDS:=+lsblk +hwinfo +socat +crypto-wrapper +gettext-tools +file
+  DEPENDS:=+lsblk +hwinfo +socat +crypto-wrapper +gettext-tools +file +ethtool
 endef
 
 define Package/turris-diagnostics-web
