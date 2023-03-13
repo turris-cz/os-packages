@@ -9,7 +9,7 @@ define ReForisPluginTranslation
     SUBMENU:=reForis
     TITLE:=$(1)-l10n-$(3)
     DEPENDS:=\
-      +reforis +reforis-l10n-$(3)
+      +reforis +reforis-l10n-$(3) +$(1)
     MAINTAINER:=CZ.NIC <packaging@turris.cz>
  endef
 
