@@ -152,8 +152,14 @@
 			"netmetr": {
 				"title": "Internet connection speed measurement",
 				"description": "Actively measures speed of Internet connection using netmetr.cz service.",
-				"url": "https://docs.turris.cz/basics/apps/netmetr/"
+				"url": "https://docs.turris.cz/basics/apps/netmetr/",
+				"labels": ["deprecated"]
 			},
+ifdef(`GO',`
+			"librespeed": {
+				"title": "Internet connection speed measurement",
+				"description": "Actively measures speed of Internet connection using a public network of LibreSpeed servers."
+			},')
 			"dev_detect": {
 				"title": "New devices detection",
 				"description": "Software for detecting new devices on local network.",
@@ -191,11 +197,12 @@
 		"url": "https://docs.turris.cz/geek/nextcloud/nextcloud/",
 		"labels": ["experimental", "storage"]
 	},
+ifdef(`GO',`
 	"syncthing": {
                 "title": "Syncthing",
                 "description": "Application which synchronizes files between two or more computer",
                 "labels": ["community", "storage"]
-        },
+        },')
 	"openvpn": {
 		"title": "OpenVPN",
 		"description": "Easy setup of the OpenVPN client and server from Foris.",

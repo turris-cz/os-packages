@@ -8,7 +8,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=pkglists
-PKG_VERSION:=1.8.2
+PKG_VERSION:=1.9
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
@@ -30,7 +30,11 @@ endef
 
 define Package/pkglists/install
 	$(INSTALL_DIR) $(1)/usr/share/updater/
-	$(INSTALL_DATA) ./files/definitions.json $(1)/usr/share/updater/pkglists.json
+ifeq ($(ARCH),powerpc)
+	m4 ./files/definitions.json > $(1)/usr/share/updater/pkglists.json
+else
+	m4 -DGO ./files/definitions.json > $(1)/usr/share/updater/pkglists.json
+endif
 	$(INSTALL_DATA) ./files/labels.json $(1)/usr/share/updater/pkglists-labels.json
 
 	$(INSTALL_DIR) $(1)/etc/config $(1)/etc/updater/conf.d
