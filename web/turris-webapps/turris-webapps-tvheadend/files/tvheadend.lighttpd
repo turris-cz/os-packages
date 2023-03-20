@@ -1,8 +1,2 @@
-$HTTP["url"] =~ "^/tvheadend" {
-  proxy.header = (
-    "map-host-request" => ( "-" => "127.0.0.1" ),
-    "map-urlpath" => ( "/tvheadend" => "", "/tvheadend/" => "/" ),
-    "https-remap" => "enable"
-  )
-  proxy.server = ( "" => ( ( "host" => "127.0.0.1", "port" => "9981") ) )
-}
+# config generates based on UCI settings
+include_shell "sh /usr/libexec/multimedia/tvheadend-dynamic"

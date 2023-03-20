@@ -42,6 +42,9 @@ define Package/turris-webapps-tvheadend/install
 	$(INSTALL_DIR) $(1)/www/webapps-icons
 	$(INSTALL_DATA) ./files/tvheadend.svg $(1)/www/webapps-icons
 
+	$(INSTALL_DIR) $(1)/usr/libexec/multimedia/
+	$(INSTALL_DATA) ./files/tvheadend-dynamic.sh $(1)/usr/libexec/multimedia/tvheadend-dynamic
+
 	$(INSTALL_DIR) $(1)/etc/lighttpd/conf.d
 	$(CP) ./files/tvheadend.lighttpd $(1)/etc/lighttpd/conf.d/80-tvheadend.conf
 endef
