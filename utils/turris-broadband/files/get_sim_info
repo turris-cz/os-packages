@@ -1,27 +1,13 @@
-#!/bin/bash
+#!/bin/sh
 
 # set expected default DEV_PATH with no params
 DEV_PATH="/dev/cdc-wdm0"
 
-if [ "$#" -eq 1 ]; then
+if [[ "$#" -eq 1 ]]; then
     if [[ "$1" =~ /dev/cdc-wdm[0-9] ]]; then
         DEV_PATH=$1
     fi
 fi
-
-# Extract Country Code
-extract_cc()
-{
-    eval string="$1"
-    echo "Country Code: $(echo $string | awk '{print substr($0, 4, 3 )}')"
-}
-
-# Extract operator ID
-extract_id()
-{
-    eval string="$1"
-    echo "Operator ID: $(echo $string | awk '{print substr($0, 7, 2 )}')"
-}
 
 # set the name of executable
 PROG="qmicli -p -d"
@@ -29,8 +15,7 @@ PROG="qmicli -p -d"
 # set the parameters
 PARAMS="--uim-read-transparent=0x3F00,0x7FFF,0x6F07"
 
-CALL="$PROG $DEV_PATH $PARAMS"
-
+CALL="${PROG} ${DEV_PATH} ${PARAMS}"
 
 # RES=$($CALL)
 
@@ -46,15 +31,18 @@ CALL="$PROG $DEV_PATH $PARAMS"
 # grep -E '([0-9]{2}:){8}[0-9]{2}'
 
 # remove blanks and
-# sed -E 's/ //g;
+# sed -E 's/^[/t]//g'
 
 # switch even with odd characters 08 > 80 etc.
-# sed -E 's/(.)(.):?/\2\1/g;'
+# sed -E 's/(.)(.):?/\2\1/g'
 
 # replace `cat mock` by $RES
-IMSI=$(cat mock | grep -E '([0-9]{2}:){8}[0-9]{2}' | sed -E 's/ //g;s/(.)(.):?/\2\1/g;')
+IMSI=$(cat mock | grep -E '([0-9]{2}:){8}[0-9]{2}' | sed -E 's/^[/t]//g;s/(.)(.):?/\2\1/g;' | tail -c 16)
 
 # TODO: check=success_check $IMSI
 
-extract_cc $IMSI
-extract_id $IMSI
+echo $DEV_PATH
+
+echo "ISMSI: ${IMSI}"
+echo "MCC: ${IMSI:0:3}"
+echo "MNC: ${IMSI:3:2}"
