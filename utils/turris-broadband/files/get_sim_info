@@ -1,4 +1,5 @@
 #!/bin/sh
+# test shebang on router
 
 # set expected default DEV_PATH with no params
 DEV_PATH="/dev/cdc-wdm0"
