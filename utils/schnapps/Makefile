@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=schnapps
-PKG_VERSION:=2.10.1
+PKG_VERSION:=2.11.0
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/schnapps.git
-PKG_MIRROR_HASH:=2bb4f9a847ab6ffca7625d3f4d634b7f58c33ece914e126fecbd4f9137cb17c5
+PKG_MIRROR_HASH:=f2009db2bc5ebfea9bbdda70f5135c0d3b3d826450ea8e897b71b57a9e13bdc1
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@nic.cz>
