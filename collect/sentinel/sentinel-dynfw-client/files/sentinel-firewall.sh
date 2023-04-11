@@ -6,7 +6,8 @@ set -e
 IPSET="turris-sn-dynfw-block"
 
 # Always create IP set to prevent iptables error about missing ipset.
-ipset create "$IPSET" hash:ip -exist
+ipset create "$IPSET"_v4 hash:ip -exist
+ipset create "$IPSET"_v6 hash:net family inet6 -exist
 
 dynfw_block() {
 	local config_section="$1"
@@ -25,8 +26,7 @@ dynfw_block() {
 		bypass_mark=""
 		[ "${chain}" == "input" ] && bypass_mark="-m mark ! --mark 0x10/0x10"
 
-		iptables_drop "${zone}" "${chain}" \
-			-m set --match-set "$IPSET" src \
+		iptables_set_drop "${zone}" "${chain}" "$IPSET" \
 			${bypass_mark} \
 			-m conntrack --ctstate NEW \
 			-m comment --comment "!sentinel: dynamic firewall block"

@@ -38,9 +38,10 @@ ip6tables_nat_chain_exists() {
 # zone: name of firewall zone incoming packets are coming from
 # chain: chain to be affected (input/forward)
 # Any additional arguments are passed to iptables call adding this rule
-iptables_drop() {
+iptables_set_drop() {
 	local zone="$1"
 	local chain="$2"
+	local set="$3"
 	shift 2
 	local drop_zone="zone_${zone}_src_DROP"
 
@@ -53,21 +54,8 @@ iptables_drop() {
 			-j DROP
 	fi
 
-	iptables-legacy -I "zone_${zone}_${chain}" 1 "$@" -j "$drop_zone"
-}
+	iptables-legacy -I "zone_${zone}_${chain}" 1 -m set --match-set "$IPSET"_v4 src "$@" -j "$drop_zone"
 
-# Add IPv6 drop rule
-# zone: name of firewall zone incoming packets are coming from
-# chain: chain to be affected (input/forward)
-# Any additional arguments are passed to iptables call adding this rule
-ip6tables_drop() {
-	local zone="$1"
-	local chain="$2"
-	shift 2
-	local drop_zone="zone_${zone}_src_DROP"
-
-	# fw3 won't create chain for drop if no rule in UCI requires it. This just
-	# recreates it if it is missing.
 	if ! ip6tables_chain_exists "$drop_zone"; then
 		ip6tables-legacy -N "$drop_zone"
 		ip6tables-legacy -A "$drop_zone" \
@@ -75,7 +63,9 @@ ip6tables_drop() {
 			-j DROP
 	fi
 
-	ip6tables-legacy -I "zone_${zone}_${chain}" 1 "$@" -j "$drop_zone"
+	if ip6tables_chain_exists "zone_${zone}_${chain}"; then
+		ip6tables-legacy -I "zone_${zone}_${chain}" 1  -m set --match-set "$IPSET"_v6 src "$@" -j "$drop_zone"
+	fi
 }
 
 # Add port redirect rule.
