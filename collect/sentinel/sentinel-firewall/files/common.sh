@@ -24,6 +24,15 @@ ip6tables_chain_exists() {
 	ip6tables-legacy -S "$1" >/dev/null 2>&1
 }
 
+# This is simple helper to check for existence of given chain in nat table
+iptables_nat_chain_exists() {
+	iptables-legacy -t nat -S "$1" >/dev/null 2>&1
+}
+
+# This is simple helper to check for existence of given chain in nat table
+ip6tables_nat_chain_exists() {
+	ip6tables-legacy -t nat -S "$1" >/dev/null 2>&1
+}
 
 # Add drop rule
 # zone: name of firewall zone incoming packets are coming from
@@ -81,14 +90,18 @@ iptables_redirect() {
 	local description="$4"
 
 	report_operation "$description on zone '$zone' ($port -> $local_port)"
-	iptables-legacy -t nat -A "zone_${zone}_prerouting" \
-		-p tcp \
-		-m tcp --dport "$port" \
-		-m comment --comment "!sentinel: $description port redirect" \
-		-j REDIRECT --to-ports "$local_port"
-	ip6tables-legacy -t nat -A "zone_${zone}_prerouting" \
-		-p tcp \
-		-m tcp --dport "$port" \
-		-m comment --comment "!sentinel: $description port redirect" \
-		-j REDIRECT --to-ports "$local_port"
+	if iptables_nat_chain_exists "zone_${zone}_prerouting"; then
+		iptables-legacy -t nat -A "zone_${zone}_prerouting" \
+			-p tcp \
+			-m tcp --dport "$port" \
+			-m comment --comment "!sentinel: $description port redirect" \
+			-j REDIRECT --to-ports "$local_port"
+	fi
+	if ip6tables_nat_chain_exists "zone_${zone}_prerouting"; then
+		ip6tables-legacy -t nat -A "zone_${zone}_prerouting" \
+			-p tcp \
+			-m tcp --dport "$port" \
+			-m comment --comment "!sentinel: $description port redirect" \
+			-j REDIRECT --to-ports "$local_port"
+	fi
 }
