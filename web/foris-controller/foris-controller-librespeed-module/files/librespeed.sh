@@ -12,7 +12,7 @@ trigger_measurement () {
 	[ "$enabled" == "1" ] || return 0
 
 	local data_dir
-	config_get_bool data_dir "client" "data_dir" "/tmp/librespeed-data/"
+	config_get data_dir "client" "data_dir" "/tmp/librespeed-data/"
 
 	turris-librespeed --data-dir "$data_dir"
 }
