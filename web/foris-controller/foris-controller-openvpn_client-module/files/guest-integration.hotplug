@@ -1,0 +1,9 @@
+#!/bin/sh
+IPTABLES="iptables"
+[ ! -x "$(which iptables-legacy)" ] || IPTABLES="iptables-legacy"
+if [ "$ACTION" = "route-up" ] && [ "$redirect_gateway" = 1 ]; then
+	$IPTABLES -I zone_tr_guest_forward -m comment --comment "Turris: Guest to VPN forwarding policy" -j zone_tr_vpn_cl_dest_ACCEPT
+fi
+if [ "$ACTION" = "down" ] || [ "$ACTION" = "route-pre-down" ]; then
+	$IPTABLES -D zone_tr_guest_forward -m comment --comment "Turris: Guest to VPN forwarding policy" -j zone_tr_vpn_cl_dest_ACCEPT
+fi

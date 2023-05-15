@@ -42,6 +42,8 @@ endef
 define ForisControllerModule/foris-controller-openvpn_client-module/install
 	$(INSTALL_DIR) $(1)/etc/uci-defaults
 	$(INSTALL_BIN) ./files/openvpn_cl.uci $(1)/etc/uci-defaults/50_add-vpn-client-network
+	$(INSTALL_DIR) $(1)/etc/hotplug.d/openvpn
+	$(INSTALL_BIN) ./files/guest-integration.hotplug $(1)/etc/hotplug.d/openvpn/60_guest-integration
 endef
 
 $(eval $(call ForisControllerModule,foris-controller-openvpn_client-module))
