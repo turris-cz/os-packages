@@ -239,6 +239,10 @@ define Package/fix-guest-network-device-name/description
   Ensure that we use the correct guest network bridge name after migration from TOS 5 to TOS 6.
 endef
 
+define Package/fix-rainbow-button-sync-enable/description
+  Ensure that rainbow-button-sync service is enabled and running.
+endef
+
 $(eval $(call FIX,sentinel-remove-invalid-firewall-rules,+firewall +uci))
 $(eval $(call FIX,samba-migrate-to-samba4,+samba4-server +uci))
 $(eval $(call FIX,updater-v65.0-alternatives-update,+updater-ng +uci,prerm))
@@ -269,3 +273,4 @@ $(eval $(call FIX,firewall-doublesafe))
 $(eval $(call FIX,firewall-check-reboot))
 $(eval $(call FIX,turris1x-kernel-install))
 $(eval $(call FIX,guest-network-device-name))
+$(eval $(call FIX,rainbow-button-sync-enable,+rainbow +rainbow-button-sync))
