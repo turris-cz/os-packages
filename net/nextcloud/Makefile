@@ -22,6 +22,7 @@ PKG_LICENSE:=AGPL-3.0
 PKG_LICENSE_FILES:=COPYING
 
 PKG_INSTALL:=0
+PKG_UNPACK:=
 
 include $(INCLUDE_DIR)/package.mk
 
@@ -30,7 +31,7 @@ define Package/nextcloud
 	CATEGORY:=Network
 	TITLE:=Nextcloud server
 	URL:=https://nextcloud.com/
-	DEPENDS=+php8-mod-opcache +php8-fpm +php8-cli +sudo +php8-mod-ctype +php8-mod-fileinfo +php8-mod-xmlreader +php8-mod-openssl +php8-mod-gd +php8-mod-xml +php8-mod-xmlwriter +php8-mod-mbstring +php8-mod-pcntl +php8-mod-opcache +php8-mod-session +php8-mod-simplexml +php8-mod-iconv +php8-mod-curl +php8-mod-zip +php8-mod-dom +coreutils-stat +php8 +lighttpd-mod-access +php8-mod-intl +php8-mod-filter +icu-full-data
+	DEPENDS=+php8-mod-opcache +php8-fpm +php8-cli +sudo +php8-mod-ctype +php8-mod-fileinfo +php8-mod-xmlreader +php8-mod-openssl +php8-mod-gd +php8-mod-xml +php8-mod-xmlwriter +php8-mod-mbstring +php8-mod-pcntl +php8-mod-opcache +php8-mod-session +php8-mod-simplexml +php8-mod-iconv +php8-mod-curl +php8-mod-zip +php8-mod-dom +coreutils-stat +php8 +lighttpd-mod-access +php8-mod-intl +php8-mod-filter +php8-mod-phar +php8-mod-gmp +php8-mod-bcmath +icu-full-data
 endef
 
 define Package/nextcloud-install
@@ -56,9 +57,9 @@ endef
 
 define Package/$(PKG_NAME)/install
 	$(INSTALL_DIR) $(1)/srv/www/nextcloud
-	for i in `ls -1 $(PKG_BUILD_DIR)`; do \
-		expr $$$$i : ipkg || $(CP) -r $(PKG_BUILD_DIR)/$$$$i $(1)/srv/www/nextcloud;\
-	done
+	$(INSTALL_DIR) $(1)/usr/share/nextcloud
+	$(INSTALL_DATA) ./files/placeholder.php $(1)/usr/share/nextcloud/placeholder.php
+	$(INSTALL_DATA) $(DL_DIR)/$(PKG_SOURCE) $(1)/usr/share/nextcloud/nextcloud.tar.bz2
 	$(INSTALL_DIR) $(1)/etc/lighttpd/conf.d/
 	$(INSTALL_DATA) ./files/nextcloud.conf $(1)/etc/lighttpd/conf.d/80-nextcloud.conf
 	$(INSTALL_DIR) $(1)/etc/cron.d
@@ -78,6 +79,11 @@ define Package/$(PKG_NAME)/postinst
 # check if we are on real system
 if [ -z "$$IPKG_INSTROOT" ]; then
 	if [ -f /srv/www/nextcloud/config/config.php ]; then
+		if [ ! -f /srv/www/nextcloud/remote.php ]; then
+			tar -C /srv/www/nextcloud --strip-components 1 -oxjf /usr/share/nextcloud/nextcloud.tar.bz2
+			date +%s > /srv/www/nextcloud/data/.last_update_check
+			chown -Rh nobody:nogroup /srv/www/nextcloud
+		fi
 		cd /srv/www/nextcloud/
 		VER="`cat ./config/config.php | sed -n 's|.*version[^0-9]*\([0-9]\+\)\.\([0-9]\+\)\.\([0-9]\+\)\..*|\1\2\3|p'`"
 		sed -i 's|\(.*dbhost.*=>.*\)localhost\(.\),|\1127.0.0.1\2,|' config/config.php
@@ -85,11 +91,12 @@ if [ -z "$$IPKG_INSTROOT" ]; then
 			sudo -u nobody php-cli ./occ upgrade --no-interaction
 		fi
 	else
+		cp /usr/share/nextcloud/placeholder.php /srv/www/nextcloud/index.php
 		/etc/init.d/lighttpd restart
 	fi
 fi
-chown -R nobody "$$IPKG_INSTROOT"/srv/www/nextcloud/
-chown nobody "$$IPKG_INSTROOT"/usr/bin/nextcloud-cron.sh
+chown -R nobody:nogroup "$$IPKG_INSTROOT"/srv/www/nextcloud/
+chown nobody:nogroup "$$IPKG_INSTROOT"/usr/bin/nextcloud-cron.sh
 endef
 
 $(eval $(call BuildPackage,nextcloud))

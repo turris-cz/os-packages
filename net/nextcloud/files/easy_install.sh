@@ -27,6 +27,14 @@ if [ -f /srv/www/nextcloud/config/config.php ]; then
     die "Already configured"
 fi
 
+mkdir --parents /srv/www/nextcloud/
+if [ ! -f /srv/www/nextcloud/remote.php ]; then
+    tar -C /srv/www/nextcloud --strip-components 1 -oxjf /usr/share/nextcloud/nextcloud.tar.bz2 || \
+        die "Can't deploy Nextcloud to srv/www/nextcloud/"
+    date +%s > /srv/www/nextcloud/data/.last_update_check
+    chown -Rh nobody:nogroup /srv/www/nextcloud
+fi
+
 if [ "x$1" = x--daemon ] || [ "x$1" = x-d ]; then
     [ $# -gt 2 ] && shift $(($# - 2))
     "$0" --batch "$@" > /dev/null 2>&1 &
