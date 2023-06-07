@@ -40,6 +40,7 @@ define Package/sentinel-dynfw-cert/install
 endef
 
 define Package/sentinel-firewall-iptables/install
+	$(INSTALL_DIR) $(1)/usr/libexec/sentinel/firewall.d
 	$(INSTALL_BIN) ./files/firewall.sh $(1)/usr/libexec/sentinel/
 	$(INSTALL_DATA) ./files/common.sh $(1)/usr/libexec/sentinel/firewall.d/
 	$(INSTALL_DIR) $(1)/etc/uci-defaults
