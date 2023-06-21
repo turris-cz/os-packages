@@ -1,0 +1,45 @@
+From 6c6c619fac05583e4d768e5545ff6cb8484cebe1 Mon Sep 17 00:00:00 2001
+From: Glenn Strauss <gstrauss@gluelogic.com>
+Date: Sun, 18 Jun 2023 00:10:43 -0400
+Subject: [PATCH] Revert "[core] h2 http_request_parse_header() tweak"
+
+This reverts commit 4b9581ad0cc82b2795c40763b4c2745adc887b7c.
+
+(thx HenrikHolst)
+
+x-ref:
+  "A 400 error introduced in v1.4.70 from Chrome(?)"
+     (Chromium Embedded Framework)
+  https://redmine.lighttpd.net/boards/2/topics/11045
+---
+ src/request.c | 4 ----
+ 1 file changed, 4 deletions(-)
+
+--- a/src/request.c
++++ b/src/request.c
+@@ -673,7 +673,6 @@ http_request_parse_header (request_st * const restrict r, http_header_parse_ctx
+              *  below indicates any method, not only "GET") */
+             if (__builtin_expect( (hpctx->id == HTTP_HEADER_H2_UNKNOWN), 0)) {
+                 switch (klen-1) {
+-                 #if 0
+                   case 4:
+                     if (0 == memcmp(k+1, "path", 4))
+                         hpctx->id = HTTP_HEADER_H2_PATH;
+@@ -684,17 +683,14 @@ http_request_parse_header (request_st * const restrict r, http_header_parse_ctx
+                     else if (0 == memcmp(k+1, "scheme", 6))
+                         hpctx->id = HTTP_HEADER_H2_SCHEME;
+                     break;
+-                 #endif
+                   case 8:
+                     if (0 == memcmp(k+1, "protocol", 8))
+                         hpctx->id = HTTP_HEADER_H2_PROTOCOL;
+                     break;
+-                 #if 0
+                   case 9:
+                     if (0 == memcmp(k+1, "authority", 9))
+                         hpctx->id = HTTP_HEADER_H2_AUTHORITY;
+                     break;
+-                 #endif
+                   default:
+                     break;
+                 }
