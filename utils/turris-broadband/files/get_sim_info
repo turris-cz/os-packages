@@ -18,7 +18,7 @@ PARAMS="--uim-read-transparent=0x3F00,0x7FFF,0x6F07"
 
 CALL="${PROG} ${DEV_PATH} ${PARAMS}"
 
-# RES=$($CALL)
+RES=$CALL
 
 # root@omnia-1G:~# qmicli -p -d /dev/cdc-wdm0 --uim-read-transparent=0x3F00,0x7FFF,0x6F07
 # [/dev/cdc-wdm0] Successfully read information from the UIM:
@@ -38,11 +38,10 @@ CALL="${PROG} ${DEV_PATH} ${PARAMS}"
 # sed -E 's/(.)(.):?/\2\1/g'
 
 # replace `cat mock` by $RES
-IMSI=$(cat mock | grep -E '([0-9]{2}:){8}[0-9]{2}' | sed -E 's/^[/t]//g;s/(.)(.):?/\2\1/g;' | tail -c 16)
+
+IMSI=$($RES | grep -E '([0-9]{2}:){8}[0-9]{2}' | sed -E 's/^[/t]//g;s/(.)(.):?/\2\1/g;' | tail -c 16)
 
 # TODO: check=success_check $IMSI
-
-echo $DEV_PATH
 
 echo "ISMSI: ${IMSI}"
 echo "MCC: ${IMSI:0:3}"
