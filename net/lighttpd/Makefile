@@ -60,7 +60,7 @@ PKG_BUILD_DEPENDS:= \
   LIGHTTPD_CRYPTOLIB_WOLFSSL:wolfssl
 
 include $(INCLUDE_DIR)/package.mk
-include ../../devel/meson/meson.mk
+include $(TOPDIR)/feeds/packages/devel/meson/meson.mk
 
 # choose crypto lib for lighttpd to use for crypto algorithms (default: nettle)
 # (separate from lighttpd TLS modules, which are each standalone)
