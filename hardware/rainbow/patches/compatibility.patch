@@ -23,13 +23,13 @@
  	brightness_level="$(brightness)"
  	# The full range is only 0-100 but that is good enough so we don't adjust
  	# more. We just loose the precision on Omnia but who can see it anyway.
--	echo "$((brightness_level * 100 / 255))" > "$SYSFS/brightness"
-+	[ ! -e "$SYSFS/brightness" ] || echo "$((brightness_level * 100 / 255))" > "$SYSFS/brightness"
+-	echo "$(((brightness_level * 100 + 127) / 255))" > "$SYSFS/brightness"
++	[ ! -e "$SYSFS/brightness" ] || echo "$(((brightness_level * 100 + 127) / 255))" > "$SYSFS/brightness"
  }
  
  set_led() {
 @@ -96,14 +96,14 @@ set_led() {
- 	sysfs="$(led2sysfs "$led")"
+ 
  	# We have to disable trigger first to make sure that changes are correctly
  	# applied and not modified by this in the meantime.
 -	echo "none" > "$sysfs/trigger"
