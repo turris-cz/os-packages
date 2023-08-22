@@ -21,7 +21,7 @@ fi
 # Hash the relevant inputs and compare.
 #   The br-lan addresses aren't relevant if resolver.common.interface is set
 #   and apparently when unbound is used, but it shouldn't change often anyway.
-MD5_NEW=$( (ip address show br-lan; cat "$RESOLV_CONF_PATH") | md5sum - | cut -f1 -d' ')
+MD5_NEW=$( (ip -brief address show br-lan; cat "$RESOLV_CONF_PATH") | md5sum - | cut -f1 -d' ')
 MD5_OLD=$(cat /tmp/resolver-reload-inputs.md5 || true)
 if [ "$MD5_NEW" != "$MD5_OLD" ]; then
 	echo -n "$MD5_NEW" >/tmp/resolver-reload-inputs.md5
