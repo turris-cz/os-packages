@@ -4,6 +4,7 @@
 
 config_load network
 config_get IPADDR lan ipaddr "127.0.0.1"
+IPADDR=${IPADDR%/*}
 
 cat << EOF
 \$HTTP["url"] =~ "^/tvheadend" {
