@@ -118,7 +118,7 @@ done
 # Setup the server
 cd /srv/www/nextcloud
 sudo -u nobody php-cli ./occ maintenance:install --database=mysql --database-name=nextcloud --database-user=nextcloud --admin-user="$ALOGIN" --admin-pass="$APASS" --database-pass="$DBPASS" --database-host=127.0.0.1 --database-port=3306 --no-interaction || die "Installation failed"
-IP="`uci -q get network.lan.ipaddr`"
+IP="`uci -q get network.lan.ipaddr | sed -n 's|\([0-9.]*\)/.*|\1|p'`"
 [ -n "$IP" ] || IP="$(ip a s br-lan | sed -n 's|.*inet \([0-9.]*\)/.*|\1|p')"
 if [ -z "$IP" ]; then
     echo "Autodetection of your router IP failed, what is your routers IP address?"
