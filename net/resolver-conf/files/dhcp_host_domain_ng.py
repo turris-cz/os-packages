@@ -142,7 +142,7 @@ class Kresd:
                     self._call_kresd("hints.del('%s')" % host)
                 except:
                     log("Wrong host format '%s' in host file %s " %
-                        (filename, line), LOG_ERR)
+                        (line, filename), LOG_ERR)
 
     def _clean_hints(self):
         # clear kresd hints
