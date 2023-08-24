@@ -26,7 +26,7 @@ define Package/schnapps
   CATEGORY:=Utilities
   SUBMENU:=Filesystem
   TITLE:=Btrfs snapshots management tool
-  DEPENDS:=+btrfs-progs +mount-utils +tar +uci +cronie +cert-backup
+  DEPENDS:=+btrfs-progs +mount-utils +tar +uci +cronie +cert-backup +gnupg
 endef
 
 define Package/schnapps/description

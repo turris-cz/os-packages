@@ -1,0 +1,38 @@
+From b3b5ae01f67e2f54087e3bd039ca4ab76d0051f6 Mon Sep 17 00:00:00 2001
+From: Richard Muzik <richard.muzik@nic.cz>
+Date: Thu, 24 Aug 2023 13:20:32 +0200
+Subject: [PATCH] Change gpg to gpg1
+
+The OpenWrt package gnupg2 is missing some important components when
+compared to gnupg. When calling gpg without specifying a version, it
+defaults to gpg2 (if installed). However, due to the absence of required
+components in gpg2 on OpenWrt, executing the script might results in failure.
+---
+ schnapps.sh | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/schnapps.sh b/schnapps.sh
+index 31af04f..f1cdbba 100755
+--- a/schnapps.sh
++++ b/schnapps.sh
+@@ -619,7 +619,7 @@ tar_it() {
+         EXCLUDE="--exclude-from=$TEMP_DIR/export-exclude"
+     fi
+     [ ! -d /etc/schnapps/export-overlay ] || OVERLAY="-C /etc/schnapps/export-overlay ."
+-    if [ -n "$GPG_PASS" ] && [ -n "$(which gpg)" ]; then
++    if [ -n "$GPG_PASS" ] && [ -n "$(which gpg1)" ]; then
+         mk_tmp_dir
+         mkdir -p "$TEMP_DIR/gpg"
+         chmod -R 0700 "$TEMP_DIR/gpg"
+@@ -627,7 +627,7 @@ tar_it() {
+         echo "$GPG_PASS" > "$TEMP_DIR/gpg/pass"
+         [ "$output" = '-' ] || output="$output.gpg"
+         tar --numeric-owner $EXCLUDE --one-file-system -cpvf "$output" \
+-            --use-compress-program="gzip -c - | gpg  --batch --yes \
++            --use-compress-program="gzip -c - | gpg1  --batch --yes \
+                 --passphrase-file \"$TEMP_DIR/gpg/pass\" --cipher-algo=AES256 -c" \
+             -C "$dir" . $OVERLAY
+         ret="$?"
+-- 
+2.41.0
+
