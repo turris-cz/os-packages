@@ -1,0 +1,41 @@
+#!/bin/sh /etc/rc.common
+
+START=40
+END=40
+
+generate_certificate() {
+    openssl req -new \
+            -x509 -out /etc/lighttpd-self-signed.pem \
+            -nodes -keyout /etc/lighttpd-self-signed.pem \
+            -days 7300 \
+            -subj '/CN=turris.local'
+}
+
+status() {
+    return 0
+}
+
+start() {
+    [ -f /etc/lighttpd-self-signed.pem ] || \
+        generate_certificate
+
+    # Check if the certificate isn't expired or won't expire in 4 days
+    if ! openssl x509 -checkend 345600 -noout -in /etc/lighttpd-self-signed.pem; then
+        rm /etc/lighttpd-self-signed.pem
+        generate_certificate
+    fi
+
+    # Always apply updated lighttpd configuration
+    if pgrep lighttpd >/dev/null; then
+	/etc/init.d/lighttpd reload
+    fi
+}
+
+stop() {
+    true
+}
+
+restart() {
+    stop
+    start
+}
