@@ -20,6 +20,7 @@ PKG_MIRROR_HASH:=ab8fb7ca84ee22fa4f3ca96c3c130e619e346f9abad4c1da5c72cb951acb043
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
 
+PYTHON3_PKG_FORCE_DISTUTILS_SETUP:=1
 
 include $(INCLUDE_DIR)/package.mk
 include $(TOPDIR)/feeds/packages/lang/python/python3-package.mk
