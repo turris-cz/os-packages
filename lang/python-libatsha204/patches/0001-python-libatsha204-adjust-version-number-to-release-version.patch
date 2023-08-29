@@ -1,0 +1,26 @@
+From cbccf6ed6ebb0d65f00ddb75997dffd44a8ddcc6 Mon Sep 17 00:00:00 2001
+From: Magnus Kessler <Magnus.Kessler@gmx.net>
+Date: Wed, 2 Aug 2023 09:08:27 +0200
+Subject: [PATCH] python: adjust version number to release version
+
+This is needed so that the correct python wheel archive is generated
+with recent OpenWRT build scripts (23.05 / master).
+
+Signed-off-by: Magnus Kessler <Magnus.Kessler@gmx.net>
+---
+ src/python/setup.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/python/setup.py b/src/python/setup.py
+index 23a4abc..23fa3fb 100644
+--- a/src/python/setup.py
++++ b/src/python/setup.py
+@@ -18,4 +18,4 @@
+ from distutils.core import setup, Extension
+ 
+ extension = Extension('atsha204', ['atsha204.c'], libraries=['atsha204'], library_dirs=['../../lib'])
+-setup(name='atsha204', version='0.2', ext_modules=[extension], provides=['atsha204'])
++setup(name='atsha204', version='29.2', ext_modules=[extension], provides=['atsha204'])
+-- 
+2.34.1
+
