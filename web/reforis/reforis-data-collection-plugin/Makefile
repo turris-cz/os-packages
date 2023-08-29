@@ -23,6 +23,8 @@ PKG_LICENSE_FILES:=LICENSE
 HOST_PYTHON3_PACKAGE_BUILD_DEPENDS:=reforis-distutils
 PKG_BUILD_DEPENDS:=node/host
 
+PYTHON3_PKG_FORCE_DISTUTILS_SETUP:=1
+
 include $(INCLUDE_DIR)/package.mk
 include $(TOPDIR)/feeds/packages/lang/python/python3-package.mk
 include ../reforis/files/reforis-plugin.mk
