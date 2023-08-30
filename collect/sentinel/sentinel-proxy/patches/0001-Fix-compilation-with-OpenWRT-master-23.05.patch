@@ -1,0 +1,28 @@
+From 5da0dfe0b3a7ad0488ddf8550f15e6b0832fba59 Mon Sep 17 00:00:00 2001
+From: Magnus Kessler <Magnus.Kessler@gmx.net>
+Date: Wed, 2 Aug 2023 14:39:47 +0200
+Subject: [PATCH] Fix compilation with OpenWRT master / 23.05
+
+Recent versions of the msgpack C-library are installed as msgpack-c.
+
+Signed-of-by: Magnus Kessler <Magnus.Kessler@gmx.net>
+---
+ configure.ac | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/configure.ac b/configure.ac
+index a72921e..fea58a1 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -22,7 +22,7 @@ PKG_CHECK_MODULES([libcrypto], [libcrypto])
+ PKG_CHECK_MODULES([zlib], [zlib])
+ PKG_CHECK_MODULES([libczmq], [libczmq])
+ PKG_CHECK_MODULES([libconfig], [libconfig])
+-PKG_CHECK_MODULES([msgpack], [msgpack])
++PKG_CHECK_MODULES([msgpack], [msgpack-c])
+ PKG_CHECK_MODULES([logc], [logc >= 0.3.0 logc_argp])
+ PKG_CHECK_MODULES([logc_czmq], [libczmq_logc])
+ PKG_CHECK_MODULES([openssl], [openssl])
+-- 
+2.34.1
+
