@@ -23,6 +23,8 @@ PKG_BUILD_DEPENDS:=argp-standalone
 
 PKG_INSTALL:=1
 
+PKG_FIXUP:=autoreconf
+
 include $(INCLUDE_DIR)/package.mk
 include $(INCLUDE_DIR)/autotools.mk
 
