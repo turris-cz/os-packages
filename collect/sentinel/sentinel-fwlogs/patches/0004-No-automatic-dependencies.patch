@@ -1,0 +1,17 @@
+Index: sentinel-fwlogs-0.3.0/configure.ac
+===================================================================
+--- sentinel-fwlogs-0.3.0.orig/configure.ac
++++ sentinel-fwlogs-0.3.0/configure.ac
+@@ -2,11 +2,7 @@ AC_INIT([sentinel-fwlogs], [0.3.0], [tec
+ AC_CONFIG_MACRO_DIRS([.m4])
+ AC_CONFIG_AUX_DIR([.aux])
+ 
+-AM_INIT_AUTOMAKE([
+-  foreign silent-rules subdir-objects
+-  -Wall -Wno-portability
+-  dist-zip dist-xz
+-])
++AM_INIT_AUTOMAKE([foreign silent-rules subdir-objects no-dependencies -Wall -Wno-portability dist-zip dist-xz])
+ AM_SILENT_RULES([yes])
+ 
+ AC_PROG_CC
