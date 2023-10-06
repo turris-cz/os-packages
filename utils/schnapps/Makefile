@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=schnapps
-PKG_VERSION:=2.11.0
+PKG_VERSION:=2.12.2
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/schnapps.git
-PKG_MIRROR_HASH:=f2009db2bc5ebfea9bbdda70f5135c0d3b3d826450ea8e897b71b57a9e13bdc1
+PKG_MIRROR_HASH:=d3c935d4ce6785b6a3f54c65253c765838ffb1ad5c0982b3014ef6462baffea6
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@nic.cz>
@@ -26,7 +26,7 @@ define Package/schnapps
   CATEGORY:=Utilities
   SUBMENU:=Filesystem
   TITLE:=Btrfs snapshots management tool
-  DEPENDS:=+btrfs-progs +mount-utils +tar +uci +cronie +cert-backup
+  DEPENDS:=+btrfs-progs +mount-utils +tar +uci +cronie +cert-backup +gnupg
 endef
 
 define Package/schnapps/description

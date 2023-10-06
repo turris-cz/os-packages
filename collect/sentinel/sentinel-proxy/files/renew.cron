@@ -1,5 +1,8 @@
 ## crontab
 #
 
+# Random delay to spread checks/renewals across whole periods
+RANDOM_DELAY=719
+
 # Periodically check and renew Sentinel:Proxy certificate
-42 */12 * * * root sentinel-certgen certs --hooks-dir /usr/libexec/sentinel/renew_hooks.d
+0 */12 * * * root sentinel-certgen certs --hooks-dir /usr/libexec/sentinel/renew_hooks.d

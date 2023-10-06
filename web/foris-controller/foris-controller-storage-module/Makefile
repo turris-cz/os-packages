@@ -38,7 +38,11 @@ define Package/foris-controller-storage-module
     +coreutils-stat \
     +rsync \
     +partx-utils \
-    +blkid
+    +blkid \
+    +kmod-ata-ahci \
+    +kmod-fs-btrfs \
+    +kmod-nls-utf8 \
+    +hd-idle
 endef
 
 define Package/foris-controller-storage-module/description

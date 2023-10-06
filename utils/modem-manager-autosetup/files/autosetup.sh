@@ -1,0 +1,63 @@
+#!/bin/sh
+
+get_settings() {
+    local mcc="$(echo "$1" | head -c 3)"
+    local mnc="$(echo "$1" | tail -c +4)"
+    local info="$(jq '.apns.apn| [ .[] | select(.mcc == "'"$mcc"'" and .mnc == "'"$mnc"'" and (.type | contains("default"))) ][0]' < /usr/share/modem-manager-autosetup/apns-conf.json)"
+    [ -n "$info" ] || exit 1
+    [ "$info" != null ] || exit 1
+    APN="$(echo "$info" | jq -r .apn)"
+    USER="$(echo "$info" | jq -r .user)"
+    PASSWORD="$(echo "$info" | jq -r .password)"
+}
+
+get_operator_info() {
+    mmcli -i 0 -K | sed -n 's|^sim.properties.operator-code[[:blank:]]*:[[:blank:]]*||p'
+}
+
+disable_and_exit() {
+    rm -f /etc/cron.d/modem-manager-autosetup
+    exit 0
+}
+
+check_config() {
+    if uci show network | grep -q 'network\..*\.proto=.modemmanager.'; then
+        disable_and_exit
+    fi
+    if uci show network | grep -q 'network\..*\.proto=.qmi.'; then
+        disable_and_exit
+    fi
+}
+
+set_configs() {
+    if ! uci -q get network.gsm; then
+        uci batch << EOF
+            set network.gsm=interface
+            set network.gsm.apn="$APN"
+            set network.gsm.proto="modemmanager"
+            set network.gsm.device="$(mmcli -m 0 -K | sed -n 's|modem.generic.device[[:blank:]]*:[[:blank:]]*||p')"
+            set network.gsm.iptype="ipv4v6"
+            set network.gsm.metric="2048"
+EOF
+        if [ -n "$USER" ] && [ "$USER" != null ]; then
+            uci set network.gsm.user="$USER"
+        fi
+        if [ -n "$PASSWORD" ] && [ "$PASSWORD" != null ]; then
+            uci set network.gsm.password="$PASSWORD"
+        fi
+        uci commit network
+        ifup gsm
+    fi
+    local zone="$(uci show firewall | sed -n 's|^\(firewall\.@zone.*\)\.name=.wan.$|\1|p')"
+    if [ -n "$zone" ]; then
+        uci add_list "$zone.network=gsm"
+        uci commit firewall
+    fi
+}
+
+check_config
+OPERATOR="$(get_operator_info)"
+[ -n "$OPERATOR" ] || exit 0
+get_settings "$OPERATOR"
+[ -n "$APN" ] || exit 0
+set_configs

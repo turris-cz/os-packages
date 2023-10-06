@@ -408,7 +408,7 @@ opkg update || \
 	echo "OPKG update failed. Please see previous output to know what went wrong." >&2
 
 ## Run updater
-if updater-supervisor -d --ensure-run; then
+if updater-supervisor -d --ensure-run --reinstall-all; then
 	cat <<-EOF
 		Update is running in the background now. Make sure that system update finished before you reboot or power off the router.
 		You are going to be notified about changes by notification system once the update is finished.

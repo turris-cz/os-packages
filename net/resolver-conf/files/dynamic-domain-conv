@@ -35,9 +35,9 @@ if [ ! -f /etc/resolver/uc_converted ]; then
 	touch /etc/resolver/uc_converted
 fi
 
-#convert dhcp.@dnsmasq[0].dhcpscript to /etc/resolver/dhcp_host_domain_ng.py
+#delete dhcp.@dnsmasq[0].dhcpscript (now executed in hotplug)
 dd_script=$(uci get dhcp.@dnsmasq[0].dhcpscript)
-if [ "$dd_script" = "/etc/kresd/dhcp_host_domain_ng.sh" ]; then
-	uci set dhcp.@dnsmasq[0].dhcpscript="/etc/resolver/dhcp_host_domain_ng.py"
+if [ "$dd_script" = "/etc/kresd/dhcp_host_domain_ng.sh" -o "$dd_script" = "/etc/resolver/dhcp_host_domain_ng.py" ]; then
+	uci delete dhcp.@dnsmasq[0].dhcpscript
 	uci commit dhcp
 fi

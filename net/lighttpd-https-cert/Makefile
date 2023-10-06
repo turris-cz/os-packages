@@ -25,14 +25,21 @@ define Package/lighttpd-https-cert
 endef
 
 define Package/lighttpd-https-cert/install
-	$(INSTALL_DIR) $(1)/etc/lighttpd/conf.d/ $(1)/etc/uci-defaults
+	$(INSTALL_DIR) $(1)/etc/lighttpd/conf.d/ $(1)/etc/init.d
 	$(INSTALL_CONF) ./files/ssl-enable.conf $(1)/etc/lighttpd/conf.d/40-ssl-enable.conf
-	$(INSTALL_BIN) ./files/uci-defaults $(1)/etc/uci-defaults/99_lighttpd_https_cert
+	$(INSTALL_BIN) ./files/lighttpd-https-cert.init $(1)/etc/init.d/lighttpd-https-cert
 endef
 
 define Package/lighttpd-https-cert/postrm
 #!/bin/sh
 /etc/init.d/lighttpd restart
+endef
+
+define Package/lighttpd-https-cert/postinst
+#!/bin/sh
+if [ -z "$${IPKG_INSTROOT}" ]; then
+	/etc/init.d/lighttpd-https-cert enable
+fi
 endef
 
 Build/Compile:=:
