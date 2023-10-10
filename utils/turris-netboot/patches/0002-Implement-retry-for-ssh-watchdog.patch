@@ -1,0 +1,70 @@
+From 930bc369c99c94bef4c064bc7cf012fb8068886c Mon Sep 17 00:00:00 2001
+From: Michal Hrusecky <michal.hrusecky@turris.com>
+Date: Tue, 18 May 2021 20:29:35 +0200
+Subject: [PATCH 2/7] Implement retry for ssh watchdog
+
+---
+ rescue.sh | 25 +++++++++++++++++++++++--
+ server.sh |  3 ++-
+ 2 files changed, 25 insertions(+), 3 deletions(-)
+
+diff --git a/rescue.sh b/rescue.sh
+index 0e4b12e..db28c61 100755
+--- a/rescue.sh
++++ b/rescue.sh
+@@ -34,6 +34,25 @@ get_reg_keys() {
+     sed -n 's|^pub_key=|'"$SERVER_IP"' ssh-ed25519 |p' > /root/.ssh/known_hosts
+ }
+ 
++ssh_watchdog() {
++    local timeout="$1"
++    local retry="$2"
++    local try=0
++    local version=""
++
++    sleep 120 # initial timeout to boot up
++    while [ "$try" -lt "$retry" ]; do
++        sleep "$timeout"
++        version="$(my_netboot get_root_version)"
++        if [ -z "$version" -o "$version" != "$(cat /chroot/root-version)" ]; then
++            try="$((try + 1))"
++        else
++            try=0
++        fi
++    done
++    reboot -f
++}
++
+ my_netboot() {
+     echo "$1" | ssh -i /root/.ssh/my_ssh_key $SSH_OPTS turris-netboot@"$SERVER_IP"
+ }
+@@ -116,8 +135,10 @@ my_netboot get_root | tar -C /chroot -xzvf - || die "Can't get rootfs"
+ my_netboot get_root_overlay 2> /dev/null | tar -C /chroot -xvf - 2> /dev/null || :
+ my_netboot get_root_version > /chroot/root-version
+ TIMEOUT="$(my_netboot get_timeout 2> /dev/null)"
+-[ -n "$TIMEOUT" ] || TIMEOUT=60
+-( sleep 120; while sleep $TIMEOUT; do [ "$(my_netboot get_root_version)" = "$(cat /chroot/root-version)" ] || reboot -f; done ) &
++[ -n "$TIMEOUT" ] || TIMEOUT=20
++RETRY="$(my_netboot get_retry 2> /dev/null)"
++[ -n "$RETRY" ] || RETRY=3
++ssh_watchdog "$TIMEOUT" "$RETRY" &
+ mkdir -p /chroot/etc/ssl/ca/remote
+ if my_netboot get_remote_access 2> /dev/null | tar -C /chroot/etc/ssl/ca -xvf - 2> /dev/null; then
+ 	configure_fosquitto /chroot
+diff --git a/server.sh b/server.sh
+index 4db3ad6..1db22d3 100755
+--- a/server.sh
++++ b/server.sh
+@@ -56,7 +56,8 @@ case "$comm" in
+     get_id)   echo "$ID" ;;
+     get_version)   echo "$ID" ;;
+     get_aes)  cat "$BASE_DIR"/clients/accepted/$ID/aes | hexdump -e '4/4 "%02x "' ;;
+-    get_timeout)  uci -q get netboot.setup.timeout || echo 60 ;;
++    get_timeout)  uci -q get netboot.setup.timeout || echo 20 ;;
++    get_retry)  uci -q get netboot.setup.retry || echo 3 ;;
+     setup)  setup ;;
+     *) echo "Unknown command" ;;
+ esac
+-- 
+2.42.0
+

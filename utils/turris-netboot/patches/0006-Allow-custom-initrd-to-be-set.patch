@@ -1,0 +1,26 @@
+From 02979f3c7d3b02b6382c0c741482aad922002f0f Mon Sep 17 00:00:00 2001
+From: Michal Hrusecky <michal.hrusecky@turris.com>
+Date: Fri, 30 Dec 2022 13:18:37 +0100
+Subject: [PATCH 6/7] Allow custom initrd to be set
+
+Not going to extra document it, mainly helpful in testing.
+---
+ manage.sh | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/manage.sh b/manage.sh
+index 5df2f2a..f2e7c1a 100755
+--- a/manage.sh
++++ b/manage.sh
+@@ -87,6 +87,8 @@ get_rootfs() {
+     cd "$HOME"/rootfs/
+     rm -rf ./boot ./usr mox.its
+     tar -xzf rootfs.tar.gz ./boot/Image ./boot/armada-3720-turris-mox.dtb ./usr/share/turris-netboot/initrd-aarch64 ./usr/share/turris-netboot/mox.its || die "Wrong rootfs"
++    local initrd="$(sudo uci -q get netboot.system.custom_initrd)"
++    [ -z "$initrd" ] || cp "$initrd" ./usr/share/turris-netboot/initrd-aarch64
+     rm -f mox.its
+     cp ./usr/share/turris-netboot/mox.its .
+     /usr/sbin/mkimage -f mox.its /srv/tftp/turris-netboot/mox || die "Can't create image"
+-- 
+2.42.0
+

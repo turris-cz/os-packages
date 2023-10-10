@@ -1,0 +1,68 @@
+From 3b5ec7fa316c5f1339eb831fc37ed431523998f7 Mon Sep 17 00:00:00 2001
+From: Michal Hrusecky <michal.hrusecky@turris.com>
+Date: Fri, 30 Dec 2022 13:33:44 +0100
+Subject: [PATCH 7/7] Use absolute paths with sudo
+
+To make sudo work, we should use absolute paths. There were also few
+places where uci was called without sudo and given the OpenWrt setup,
+you might need to be root to read some config files.
+---
+ manage.sh |  2 +-
+ server.sh | 14 +++++++-------
+ 2 files changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/manage.sh b/manage.sh
+index f2e7c1a..67e86d1 100755
+--- a/manage.sh
++++ b/manage.sh
+@@ -87,7 +87,7 @@ get_rootfs() {
+     cd "$HOME"/rootfs/
+     rm -rf ./boot ./usr mox.its
+     tar -xzf rootfs.tar.gz ./boot/Image ./boot/armada-3720-turris-mox.dtb ./usr/share/turris-netboot/initrd-aarch64 ./usr/share/turris-netboot/mox.its || die "Wrong rootfs"
+-    local initrd="$(sudo uci -q get netboot.system.custom_initrd)"
++    local initrd="$(sudo /sbin/uci -q get netboot.system.custom_initrd)"
+     [ -z "$initrd" ] || cp "$initrd" ./usr/share/turris-netboot/initrd-aarch64
+     rm -f mox.its
+     cp ./usr/share/turris-netboot/mox.its .
+diff --git a/server.sh b/server.sh
+index 1db22d3..bcfc7fe 100755
+--- a/server.sh
++++ b/server.sh
+@@ -16,8 +16,8 @@ get_root() {
+ }
+ 
+ get_root_version() {
+-    wireless_sha="$(sudo sha256sum /etc/config/wireless)"
+-    netboot_sha="$(sudo sha256sum /etc/config/netboot)"
++    wireless_sha="$(sudo /bin/sha256sum /etc/config/wireless)"
++    netboot_sha="$(sudo /bin/sha256sum /etc/config/netboot)"
+     overlay_sha="$(find "$BASE_DIR"/rootfs/overlay/$ID "$BASE_DIR"/rootfs/overlay/common -type f -exec sha256sum \{\} \; 2> /dev/null | sort)"
+     echo "$(cat "$BASE_DIR"/rootfs/rootfs.tar.gz.sha256)" "$wireless_sha" "$netboot_sha" "$overlay_sha" | sha256sum
+     mkdir -p /tmp/turris-netboot-status/ 2> /dev/null
+@@ -25,9 +25,9 @@ get_root_version() {
+ }
+ 
+ setup() {
+-    SSID="$(sudo uci -q get wireless.@wifi-iface[0].ssid)"
+-    KEY="$(sudo uci -q get wireless.@wifi-iface[0].key)"
+-    COUNTRY="$(sudo uci -q get wireless.@wifi-device[0].country)"
++    SSID="$(sudo /sbin/uci -q get wireless.@wifi-iface[0].ssid)"
++    KEY="$(sudo /sbin/uci -q get wireless.@wifi-iface[0].key)"
++    COUNTRY="$(sudo /sbin/uci -q get wireless.@wifi-device[0].country)"
+     {
+         echo '#!/bin/sh'
+         echo 'cat > /etc/config/netboot << EOF'
+@@ -56,8 +56,8 @@ case "$comm" in
+     get_id)   echo "$ID" ;;
+     get_version)   echo "$ID" ;;
+     get_aes)  cat "$BASE_DIR"/clients/accepted/$ID/aes | hexdump -e '4/4 "%02x "' ;;
+-    get_timeout)  uci -q get netboot.setup.timeout || echo 20 ;;
+-    get_retry)  uci -q get netboot.setup.retry || echo 3 ;;
++    get_timeout)  sudo /sbin/uci -q get netboot.setup.timeout || echo 60 ;;
++    get_retry)  sudo /sbin/uci -q get netboot.setup.retry || echo 3 ;;
+     setup)  setup ;;
+     *) echo "Unknown command" ;;
+ esac
+-- 
+2.42.0
+

@@ -1,0 +1,66 @@
+From 02c2947279cac8ca7afe264b3daca482f7f76f3c Mon Sep 17 00:00:00 2001
+From: Michal Hrusecky <michal.hrusecky@turris.com>
+Date: Thu, 29 Dec 2022 16:51:12 +0100
+Subject: [PATCH 5/7] Allow to choose different branch
+
+Make it possible to switch netboot to a different branch, mainly to help
+with debugging and testing.
+---
+ manage.sh       | 10 ++++++----
+ netboot         |  4 ++++
+ netboot.sudoers |  1 +
+ 3 files changed, 11 insertions(+), 4 deletions(-)
+
+diff --git a/manage.sh b/manage.sh
+index decbda1..5df2f2a 100755
+--- a/manage.sh
++++ b/manage.sh
+@@ -67,9 +67,10 @@ get_rootfs() {
+     cd "$HOME"/rootfs/ || die "Can't cd to $HOME/rootfs/"
+     echo "Getting new rootfs..." >&2
+     rm -f rootfs-new.tar.gz*
+-    wget -O "$HOME"/rootfs/rootfs-new.tar.gz https://repo.turris.cz/hbs/netboot/mox-netboot-latest.tar.gz || die "Can't download tarball"
+-    wget -O "$HOME"/rootfs/rootfs-new.tar.gz.sha256 https://repo.turris.cz/hbs/netboot/mox-netboot-latest.tar.gz.sha256 || die "Can't download checksum"
+-    wget -O "$HOME"/rootfs/rootfs-new.tar.gz.sig https://repo.turris.cz/hbs/netboot/mox-netboot-latest.tar.gz.sig || die "Can't download signature"
++    branch="$(sudo /sbin/uci -q get netboot.system.branch || echo hbs)"
++    wget -O "$HOME"/rootfs/rootfs-new.tar.gz https://repo.turris.cz/$branch/netboot/mox-netboot-latest.tar.gz || die "Can't download tarball"
++    wget -O "$HOME"/rootfs/rootfs-new.tar.gz.sha256 https://repo.turris.cz/$branch/netboot/mox-netboot-latest.tar.gz.sha256 || die "Can't download checksum"
++    wget -O "$HOME"/rootfs/rootfs-new.tar.gz.sig https://repo.turris.cz/$branch/netboot/mox-netboot-latest.tar.gz.sig || die "Can't download signature"
+     sed -i 's|mox-netboot-.*|rootfs-new.tar.gz|' "$HOME"/rootfs/rootfs-new.tar.gz.sha256
+     sha256sum -c ./rootfs-new.tar.gz.sha256 || {
+         rm -f ./rootfs-new.tar.gz*
+@@ -100,7 +101,8 @@ update_rootfs() {
+         get_rootfs
+         return
+     fi
+-    wget -O /tmp/rootfs-check.tar.gz.sha256 https://repo.turris.cz/hbs/netboot/mox-netboot-latest.tar.gz.sha256
++    branch="$(sudo /sbin/uci -q get netboot.system.branch || echo hbs)"
++    wget -O /tmp/rootfs-check.tar.gz.sha256 https://repo.turris.cz/$branch/netboot/mox-netboot-latest.tar.gz.sha256
+     sed -i 's|mox-netboot-.*|rootfs.tar.gz|' /tmp/rootfs-check.tar.gz.sha256
+     cd "$HOME"/rootfs/
+     sha256sum -c /tmp/rootfs-check.tar.gz.sha256 || {
+diff --git a/netboot b/netboot
+index ade77c7..6f79e50 100644
+--- a/netboot
++++ b/netboot
+@@ -1,3 +1,7 @@
++# Which branch to boot
++config system system
++	option branch 'hbs'
++
+ # Defaults to be overriden later
+ config wifi default
+ 	option ssid '@@SSID@@'
+diff --git a/netboot.sudoers b/netboot.sudoers
+index d2e9d71..226100d 100644
+--- a/netboot.sudoers
++++ b/netboot.sudoers
+@@ -1,4 +1,5 @@
+ turris-netboot ALL=(root) NOPASSWD:/sbin/uci -q get wireless*
++turris-netboot ALL=(root) NOPASSWD:/sbin/uci -q get netboot*
+ turris-netboot ALL=(root) NOPASSWD:/bin/cat /etc/config/netboot
+ turris-netboot ALL=(root) NOPASSWD:/bin/sha256sum /etc/config/netboot
+ turris-netboot ALL=(root) NOPASSWD:/bin/sha256sum /etc/config/wireless
+-- 
+2.42.0
+

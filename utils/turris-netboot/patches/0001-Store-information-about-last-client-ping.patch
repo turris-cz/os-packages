@@ -1,0 +1,25 @@
+From e01c6d6f22a16244ea191762ef739dd54df4e2fd Mon Sep 17 00:00:00 2001
+From: Michal Hrusecky <michal.hrusecky@turris.com>
+Date: Sun, 11 Dec 2022 23:04:41 +0100
+Subject: [PATCH 1/7] Store information about last client ping
+
+---
+ server.sh | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/server.sh b/server.sh
+index 9616493..4db3ad6 100755
+--- a/server.sh
++++ b/server.sh
+@@ -20,6 +20,8 @@ get_root_version() {
+     netboot_sha="$(sudo sha256sum /etc/config/netboot)"
+     overlay_sha="$(find "$BASE_DIR"/rootfs/overlay/$ID "$BASE_DIR"/rootfs/overlay/common -type f -exec sha256sum \{\} \; 2> /dev/null | sort)"
+     echo "$(cat "$BASE_DIR"/rootfs/rootfs.tar.gz.sha256)" "$wireless_sha" "$netboot_sha" "$overlay_sha" | sha256sum
++    mkdir -p /tmp/turris-netboot-status/ 2> /dev/null
++    date +%s > /tmp/turris-netboot-status/"$ID"
+ }
+ 
+ setup() {
+-- 
+2.42.0
+

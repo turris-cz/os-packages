@@ -1,0 +1,25 @@
+From 237a6250b9499a82099017bbb315b3485e4af6ed Mon Sep 17 00:00:00 2001
+From: Michal Hrusecky <michal.hrusecky@turris.com>
+Date: Wed, 19 May 2021 12:24:44 +0200
+Subject: [PATCH 3/7] Make sure we don't send out any IPv6 RA
+
+---
+ network-setup.sh | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/network-setup.sh b/network-setup.sh
+index 03fde0a..c815b6f 100755
+--- a/network-setup.sh
++++ b/network-setup.sh
+@@ -6,6 +6,8 @@ uci set network.lan.macaddr="$(cat /sys/class/net/eth0/address)"
+ uci set network.lan.force_link='1'
+ uci set network.lan.type='bridge'
+ uci set network.wan.ifname=''
++uci set dhcp.lan.ra=disabled
++uci set dhcp.lan.dhcpv6=disabled
+ uci delete network.lan.ipaddr
+ uci delete network.lan.netmask
+ uci delete network.lan.ip6assign
+-- 
+2.42.0
+
