@@ -27,6 +27,9 @@ check_config() {
     if uci show network | grep -q 'network\..*\.proto=.qmi.'; then
         disable_and_exit
     fi
+    if uci show network | grep -q 'network\..*\.proto=.3g.'; then
+        disable_and_exit
+    fi
 }
 
 set_configs() {
@@ -50,7 +53,11 @@ EOF
     fi
     local zone="$(uci show firewall | sed -n 's|^\(firewall\.@zone.*\)\.name=.wan.$|\1|p')"
     if [ -n "$zone" ]; then
-        uci add_list "$zone.network=gsm"
+        if uci show "$zone.network" | grep "='[^[:blank:]']\\+[[:blank:]][^[:blank:]']\\+.*'"; then
+            uci set "$zone.network='$(uci get "$zone.network") gsm'"
+        else
+            uci add_list "$zone.network=gsm"
+        fi
         uci commit firewall
     fi
 }
