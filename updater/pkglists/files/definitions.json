@@ -236,5 +236,10 @@ ifdef(`GO',`
 			}
 		},
 		"labels": ["advanced", "community"]
+	},
+	"firmware_update": {
+		"title": "Latest firmware",
+		"description": "Keeps your NOR content, MCU firmware and factory image up-to-date.",
+		"labels": ["experimental"]
 	}
 }
