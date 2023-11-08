@@ -1,0 +1,13 @@
+diff --git a/js/src/overview/Overview.js b/js/src/overview/Overview.js
+index bcea4296..90315ee8 100644
+--- a/js/src/overview/Overview.js
++++ b/js/src/overview/Overview.js
+@@ -62,7 +62,7 @@ function OverviewCards({ packages, ws }) {
+                 <AutomaticUpdatesCard />
+                 <DataCollectionCard />
+                 <DynamicFirewallCard
+-                    activated={displayCard(packages, "dynfw")}
++                    activated={displayCard(packages, "dynfw") || displayCard(packages, "dynfw_new")}
+                 />
+                 {displayCard(packages, "netmetr") &&
+                     isPluginInstalled("NetMetr") && <NetmetrCard />}
