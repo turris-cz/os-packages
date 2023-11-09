@@ -21,7 +21,7 @@ PKG_LICENSE_FILES:=LICENSE
 
 HOST_BUILD_DEPENDS:= \
 	python3/host \
-	python3-babel/host \
+	python-babel/host \
 	node/host
 
 include $(TOPDIR)/feeds/packages/lang/python/pypi.mk

@@ -20,7 +20,7 @@ PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 PKG_LICENSE:=GPL-3.0-only
 PKG_LICENSE_FILES:=COPYING
 
-HOST_PYTHON3_PACKAGE_BUILD_DEPENDS:=Babel
+PKG_BUILD_DEPENDS:=python-babel/host
 
 include $(INCLUDE_DIR)/package.mk
 include $(TOPDIR)/feeds/packages/lang/python/python3-package.mk

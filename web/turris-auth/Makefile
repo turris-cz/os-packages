@@ -20,7 +20,7 @@ PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 PKG_LICENSE:=GPL-3.0-or-later
 PKG_LICENSE_FILES:=COPYING
 
-HOST_PYTHON3_PACKAGE_BUILD_DEPENDS:=MarkupSafe $(if $(wildcard $(TOPDIR)/feeds/packages/lang/python/host-pip-requirements/Jinja2.txt),Jinja2,)
+PKG_BUILD_DEPENDS:=python-markupsafe/host
 
 PYTHON3_PKG_FORCE_DISTUTILS_SETUP:=1
 

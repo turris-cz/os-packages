@@ -20,8 +20,9 @@ PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 PKG_LICENSE:=GPL-3.0-or-later
 PKG_LICENSE_FILES:=LICENSE
 
-HOST_PYTHON3_PACKAGE_BUILD_DEPENDS:=reforis-distutils
-PKG_BUILD_DEPENDS:=node/host
+PKG_BUILD_DEPENDS:=\
+      node/host \
+      reforis-distutils/host \
 
 PYTHON3_PKG_FORCE_DISTUTILS_SETUP:=1
 
