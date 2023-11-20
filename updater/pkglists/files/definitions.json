@@ -1,8 +1,9 @@
 {
 	"3g": {
-		"title": "Extensions of network protocols for 3G/LTE",
-		"description": "Support for Turris Omnia and Turris MOX LTE pack.",
-		"url": "https://wiki.turris.cz/doc/en/howto/lte_modem_install"
+		"title": "Extensions of network protocols for 3G/4G/5G",
+		"description": "Support for Turris Omnia and Turris MOX LTE pack. Nowadays installed automatically whenever needed.",
+		"url": "https://wiki.turris.cz/doc/en/howto/lte_modem_install",
+		"labels": ["deprecated"]
 	},
 	"datacollect": {
 		"title": "Advanced security & analytics - Turris Sentinel",
@@ -22,7 +23,7 @@
 			},
 			"dynfw_new": {
 				"title": "Experimental client for Dynamic Firewall",
-				"description": "New client that adds firewall rules to block attackers detected by Turris Sentinel network.",
+				"description": "New client that adds firewall rules to block attackers detected by Turris Sentinel network (replaces the old one).",
 				"default": false,
 				"labels": ["experimental"],
 				"url": "https://docs.turris.cz/basics/collect/dynfw/collect-dynfw/"
@@ -235,5 +236,10 @@ ifdef(`GO',`
 			}
 		},
 		"labels": ["advanced", "community"]
+	},
+	"firmware_update": {
+		"title": "Latest firmware",
+		"description": "Keeps your NOR content, MCU firmware and factory image up-to-date.",
+		"labels": ["experimental"]
 	}
 }
