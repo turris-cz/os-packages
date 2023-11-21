@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2021 CZ.NIC, z. s. p. o. (https://www.nic.cz/)
+# Copyright (C) 2023 CZ.NIC, z. s. p. o. (https://www.nic.cz/)
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -8,15 +8,19 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=turris-timezone
-PKG_VERSION:=0.2.1
+PKG_VERSION:=0.3.1
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE:=$(PKG_NAME)-v$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/foris-controller/$(PKG_NAME)/-/archive/v$(PKG_VERSION)/
-PKG_HASH:=0042a108d81b56c414e229638d432c15acc75ed1591a68ab213ad21db657441c
+PKG_HASH:=2575dd863634cbed3568d95dbb67cdb3c661559d6c76032b6c5ce85dbc93acba
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-v$(PKG_VERSION)
 
-PKG_BUILD_DEPENDS:=python-l18n/host python-six/host python-pytz/host
+PKG_BUILD_DEPENDS:=\
+	python-hatchling/host \
+	python-l18n/host \
+	python-six/host \
+	python-pytz/host
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 PKG_LICENSE:=GPL-3.0-or-later
