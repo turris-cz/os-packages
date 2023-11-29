@@ -1,0 +1,160 @@
+<%+header%>
+<script type="text/javascript">//<![CDATA[
+
+function table_begin(header, entries, h = 4) {
+    var ret = `<h${h}>${header}</h${h}>`;
+    ret += '<div><table class="table" id="status-table"><tr>';
+    entries.forEach(function(e) {
+        if(e instanceof Object) {
+            ret+= `<th class="th ${e.align || "left"}" width="${e.width || ""}">${e.content}</th>`;
+        } else {
+            ret+= `<th class="th left">${e}</th>`;
+        }
+    });
+    ret += '</tr>';
+    return ret;
+}
+
+function table_add(entries) {
+    var ret = '<tr class="tr">';
+    entries.forEach(function(e) {
+        if(e instanceof Object) {
+            ret+= `<td class="th ${e.align || "left"}" width="${e.width || ""}">${e.content}</td>`;
+        } else {
+            ret+= `<td class="th left">${e}</td>`;
+        }
+    });
+    ret += '</tr>';
+    return ret;
+}
+
+function table_end(entries) {
+    return '</table></div>';
+}
+
+function update_ospf_status(x, st) {
+    var ospf_status = document.getElementById('ospf-status');
+    if(st) {
+        var status = "<h4><%:Routers%><h4>";
+        for (var r in st["routers"]) {
+            var router = st["routers"][r];
+            status += table_begin(`${r} (<%:distance%> ${router.distance})`, [{ width: "50%", content: "<%:Network%>"}, { width: "25%", content: "<%:Metric%>", align: "center"}, {width: "25%", content: "<%:Type%>"}], 5);
+            for (var n in router.networks) {
+                status += table_add([n, {content: router.networks[n].metric, align: "center"}, router.networks[n].type]);
+            }
+            status += table_end();
+        }
+        status += table_begin('<%:Networks%>', [{ width: "50%", content: "<%:Network%>"}, { width: "25%", content: "<%:Distance%>", align: "center"}, { width: "25%", content: "<%:Designated router%>"}], 5);
+        for (var n in st["networks"]) {
+            var network = st["networks"][n];
+            status += table_add([n, {content: network.distance, align: "center"}, network.dr]);
+        }
+        status += table_end();
+        ospf_status.innerHTML = status;
+    }
+}
+
+function update_babel_status(x, st) {
+    var babel_status = document.getElementById('babel-status');
+    if(st) {
+        var status = "";
+        status += table_begin('Routers', [{width: "50%", content: "<%:Router%>"}, {width: "15%", content: "<%:Metric%>", align: "center"}, {width: "20%", content: "<%:Interface%>"}, {width: "15%", content: "<%:Hellos%>", align: "center"}]);
+        for (var n in st["routers"]) {
+            var router = st["routers"][n];
+            status += table_add([router.ip, {content: router.metric, align: "center"}, router.interface, {content: router.hellos, align: "center"}]);
+        }
+        status += table_end();
+        status += table_begin('Networks', [{width: "50%", content: "<%:Network%>"}, {width: "25%", content: "<%:Router%>"}, {widt: "25%", content: "<%:Metric%>", align: "center"}]);
+        for (var n in st["networks"]) {
+            var network = st["networks"][n];
+            status += table_add([network.ip, network.router, {content: network.metric, align: "center"}]);
+        }
+        status += table_end();
+        babel_status.innerHTML = status;
+    }
+}
+
+function update_status(x, st) {
+    var running = document.getElementById('running');
+    var down = document.getElementById('down');
+    var version = document.getElementById('bird_version');
+    var router_id = document.getElementById('router_id');
+    var last_reconfig = document.getElementById('last_reconfig');
+    var protocols = document.getElementById('protocols');
+    var ospf = document.getElementById('ospf');
+    var babel = document.getElementById('babel');
+    if(st && st.version) {
+        version.innerText = st.version;
+    }
+    if(!st || !st.running) {
+        running.style.display = "none";
+        down.style.display = "";
+        router_id.parentElement.style.display = "none";
+        last_reconfig.parentElement.style.display = "none";
+        protocols.parentElement.style.display = "none";
+        ospf.style.display = "none";
+        babel.style.display = "none";
+    } else {
+        running.style.display = "";
+        down.style.display = "none";
+        router_id.innerText = st.router_id;
+        last_reconfig.innerText = st.last_reconfig;
+        router_id.parentElement.style.display = "";
+        last_reconfig.parentElement.style.display = "";
+        protocols.parentElement.style.display = "";
+        protocols.innerText = st.protocols.sort().join();
+        if(st.protocols.includes('OSPF')) {
+            ospf.style.display = "";
+            XHR.get('<%=luci.dispatcher.build_url("admin", "status", "easybird", "ospf")%>', null, update_ospf_status);
+        } else {
+            ospf.style.display = "none";
+        }
+        if(st.protocols.includes('Babel')) {
+            babel.style.display = "";
+            XHR.get('<%=luci.dispatcher.build_url("admin", "status", "easybird", "babel")%>', null, update_babel_status);
+        } else {
+            babel.style.display = "none";
+        }
+    }
+}
+
+XHR.poll(60, '<%=luci.dispatcher.build_url("admin", "status", "easybird", "overview")%>', null, update_status);
+window.onload = function() {
+    XHR.get('<%=luci.dispatcher.build_url("admin", "status", "easybird", "overview")%>', null, update_status);
+};
+
+
+//]]></script>
+
+<div class="cbi-map">
+    <h2 name="content">Bird</h2>
+    <div id="view">
+        <div class="cbi-section fade-in" style="">
+            <h3><%:Status:%> <span id="running"><%:Running%></span><span id="down"><%:Down%></span></h3>
+            <div>
+                <table class="table" id="status-table">
+                    <tr class="tr"><td class="td left" width="33%"><%:Bird version%></td><td class="td left" id="bird_version">NA</td></tr>
+                    <tr class="tr"><td class="td left" width="33%"><%:Router ID%></td><td class="td left" id="router_id">NA</td></tr>
+                    <tr class="tr"><td class="td left" width="33%"><%:Last reconfiguration%></td><td class="td left" id="last_reconfig">NA</td></tr>
+                    <tr class="tr"><td class="td left" width="33%"><%:Active protocols%></td><td class="td left" id="protocols">NA</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div id="ospf">
+        <div class="cbi-section fade-in" style="">
+            <h3>OSPF</h3>
+            <div id="ospf-status">
+            </div>
+        </div>
+    </div>
+    <div id="babel">
+        <div class="cbi-section fade-in" style="">
+            <h3>Babel</h3>
+            <div id="babel-status">
+            </div>
+        </div>
+    </div>
+
+</div>
+<%+footer%>
