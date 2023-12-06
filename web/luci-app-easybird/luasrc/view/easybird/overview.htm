@@ -19,7 +19,7 @@ function table_add(entries) {
     var ret = '<tr class="tr">';
     entries.forEach(function(e) {
         if(e instanceof Object) {
-            ret+= `<td class="th ${e.align || "left"}" width="${e.width || ""}">${e.content}</td>`;
+            ret+= `<td class="th ${e.align || "left"}" width="${e.width || ""}" rowspan="${e.rowspan || 1}">${e.content}</td>`;
         } else {
             ret+= `<td class="th left">${e}</td>`;
         }
@@ -48,6 +48,22 @@ function update_ospf_status(x, st) {
         for (var n in st["networks"]) {
             var network = st["networks"][n];
             status += table_add([n, {content: network.distance, align: "center"}, network.dr]);
+        }
+        status += table_end();
+        status += table_begin('<%:Neighbors%>', [{ width: "30%", content: "<%:Router%>"}, { width: "20%", content: "<%:Interface%>"}, { width: "30%", content: "<%:IP%>"}, { width: "20%", content: "<%:State%>"}], 5);
+        for (var n in st["neighbors"]) {
+            var nb = st["neighbors"][n]['ipv4'];
+            if (nb) {
+                status += table_add([{content: n, rowspan: st["neighbors"][n]['ipv6'] ? 2 : 1}, nb['interface'], nb['ip'], nb['state']]);
+            }
+            nb = st["neighbors"][n]['ipv6'];
+            if (nb) {
+                if (st["neighbors"][n]['ipv4']) {
+                    status += table_add([nb['interface'], nb['ip'], nb['state']]);
+                } else {
+                    status += table_add([n, nb['interface'], nb['ip'], nb['state']]);
+                }
+            }
         }
         status += table_end();
         ospf_status.innerHTML = status;

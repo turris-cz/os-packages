@@ -68,7 +68,7 @@ create_ospf() {
 protocol ospf v3 ospf6 {
   ipv6 {
     import all;
-    export all;
+    export where source != RTS_DEVICE;
   };
   area 0 {
 EOF
@@ -80,7 +80,7 @@ EOF
 protocol ospf v2 ospf4 {
   ipv4 {
     import all;
-    export all;
+    export where source != RTS_DEVICE;
   };
   area 0 {
 EOF

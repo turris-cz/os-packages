@@ -95,7 +95,7 @@ function ospf_store_element(status, element)
 end
 
 function ospf_status()
-    local status = { routers = {}, networks = {}}
+    local status = { routers = {}, networks = {}, neighbors = {}}
     local api = nil
     local lines = ""
     for _, cmd in pairs({"show ospf state ospf4", "show ospf state ospf6", "show ospf topology ospf4", "show ospf topology ospf6"}) do
@@ -106,12 +106,12 @@ function ospf_status()
         local metric = ""
         local element = nil
         for ln in string.gmatch(lines,'([^\n]+)') do
-            tmp = string.match(ln, "^\trouter ([%d%.]+)")
+            tmp = string.match(ln, "^\trouter ([%d.]+)")
             if tmp then
                 ospf_store_element(status, element)
                 element = { id = tmp, type = "routers" }
             end
-            tmp = string.match(ln, "^\tnetwork ([%x%.%/:]+)")
+            tmp = string.match(ln, "^\tnetwork ([%x./:]+)")
             if tmp then
                 ospf_store_element(status, element)
                 element = { id = tmp, type = "networks" }
@@ -120,12 +120,12 @@ function ospf_status()
             if tmp and element then
                 element["distance"] = tmp
             end
-            tmp = string.match(ln, "^\t\tdr ([%d%.]+)")
+            tmp = string.match(ln, "^\t\tdr ([%d.]+)")
             if tmp and element then
                 element["dr"] = tmp
             end
             for _, net in pairs({ "network", "stubnet", "external" }) do
-                _, _, tmp, metric = string.find(ln, "^\t\t" .. net .. " ([%x%.%/:]+) metric%d* (%d+)")
+                _, _, tmp, metric = string.find(ln, "^\t\t" .. net .. " ([%x./:]+) metric (%d+)")
                 if tmp and element then
                     if not element["networks"] then
                         element["networks"] = { }
@@ -140,6 +140,22 @@ function ospf_status()
         end
     end
     ospf_store_element(status, element)
+    api = io.popen("/usr/sbin/birdcl -s /var/run/easybird.ctl show ospf neighbors", "r")
+    lines = api:read("*a")
+    api:close()
+    for ln in string.gmatch(lines,'([^\n]+)') do
+        _, _, rtr, pri, st, iface, ip = string.find(ln, "^([%d.]+)%s+(%d+)%s+([^%s]+)%s+[%d.]+%s+([^%s]+)%s+([%d.]+)$")
+        if ip ~= nil then
+            if status['neighbors'][rtr] == nil then status['neighbors'][rtr] = {} end
+            status['neighbors'][rtr]['ipv4'] = { router = rtr, piority = pri, state = st, interface = iface, ip = ip }
+        end
+        ip = nil
+        _, _, rtr, pri, st, iface, ip = string.find(ln, "^([%d.]+)%s+(%d+)%s+([^%s]+)%s+[%d.]+%s+([^%s]+)%s+([%x:]+)$")
+        if ip ~= nil then
+            if status['neighbors'][rtr] == nil then status['neighbors'][rtr] = {} end
+            status['neighbors'][rtr]['ipv6'] = { router = rtr, piority = pri, state = st, interface = iface, ip = ip }
+        end
+    end
     luci.http.status(200, "OK")
     luci.http.prepare_content("application/json")
     luci.http.write_json(status)

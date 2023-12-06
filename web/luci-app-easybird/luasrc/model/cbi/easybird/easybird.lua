@@ -42,7 +42,7 @@ hello:depends("easybird.global.ospf", 1)
 local ifaces = s:option(StaticList, "interface", translate("Interfaces to run OSPF on"))
 ifaces:depends("easybird.global.ospf", 1)
 iface_select({ ifaces })
-ifaces = s:option(StaticList, "propagate", translate("Interfaces to propagate"))
+ifaces = s:option(StaticList, "propagate", translate("Passive interfaces"))
 ifaces:depends("easybird.global.ospf", 1)
 iface_select({ ifaces })
 
@@ -57,7 +57,7 @@ rxcost.optional = true
 ifaces = s:option(StaticList, "interface", translate("Interfaces to run Babel on"))
 ifaces:depends("easybird.global.babel", 1)
 iface_select({ ifaces })
-ifaces = s:option(StaticList, "propagate", translate("Interfaces to propagate"))
+ifaces = s:option(StaticList, "propagate", translate("Passive interfaces"))
 ifaces:depends("easybird.global.babel", 1)
 iface_select({ ifaces })
 
