@@ -125,6 +125,7 @@ load_uci_config_common() {
 		fi
 	else
 		echo "trust_anchors.remove('.')">>$CONFIGFILE
+		#FIXME: check this with forwarding, to be sure
 	fi
 
 	# verbosity
@@ -174,29 +175,14 @@ load_uci_config_common() {
 		fi
 	fi
 
-	#check custom forwarding
+	# Configure forwarding
 	if [ -n "$forward_dns" ] && [ "$do_forward" = "1" ]; then
 		dns_config_load "$forward_dns" print_kresd_forward_config
-	else
-		if [ "$do_forward" = "1" ] ; then
-			local SERVERS
-
-			# Get IP list for forwarding with respect to net_ipv4/6 setting
-			# Max number of servers used for forwarding is 4
-			SERVERS=$(get_servers_ip_addresses "$net_ipv4" "$net_ipv6" "$resolv_conf_path" 4)
-			if [ -n "$SERVERS" ]; then
-				# Slight hack around https://gitlab.nic.cz/knot/knot-resolver/issues/205#note_94566
-				echo "table.insert(policy.special_names, { count = 0, cb = policy.all(" >> $CONFIGFILE
-				if [ "$ignore_root_key" = "1"  ] ; then
-					echo "policy.STUB({" >> $CONFIGFILE
-				else
-					echo "policy.FORWARD({" >> $CONFIGFILE
-				fi
-				for SERVER in $SERVERS ; do
-					echo "	'$SERVER',">>$CONFIGFILE
-				done
-				echo "}))})" >> $CONFIGFILE
-			fi
+	elif [ "$do_forward" = "1" ] ; then
+		# Get IP list for forwarding with respect to net_ipv4/6 setting
+		local SERVERS=$(get_servers_ip_addresses "$net_ipv4" "$net_ipv6" "$resolv_conf_path" 4)
+		if [ -n "$SERVERS" ]; then
+			print_kresd_forward_config "$SERVERS"
 		fi
 	fi
 
@@ -333,57 +319,39 @@ print_kresd_forward_config() {
 	local hostname="$5"
 	local ca_files="$6"
 
-	# Slight hack around https://gitlab.nic.cz/knot/knot-resolver/issues/205#note_94566
-	echo "table.insert(policy.special_names, { count = 0, cb = policy.all(" >> $CONFIGFILE
-	if [ "$enable_tls" == "1" ]; then
-		echo "policy.TLS_FORWARD(" >> $CONFIGFILE
-	else
-		echo "policy.FORWARD(" >> $CONFIGFILE
-	fi
-
-	echo -ne "{" >> $CONFIGFILE
+	echo "policy.rule_forward_add('.', {}, {" >> $CONFIGFILE
 	for ip in $ip_list
 	do
+		if [ -z "$ip" ]; then continue; fi
+		echo -ne "  {" >> $CONFIGFILE
 
-		[ "$enable_tls" == "1" ] && echo -ne "{" >> $CONFIGFILE
-		if [ ! -z "$ip" ]; then
-			#check nonstandard port
-			if [ "$port" == "853" ] || [ -z "$port" ]; then
-				echo "'$ip'" >> $CONFIGFILE
-			else
-				echo "'$ip@$port'" >> $CONFIGFILE
-			fi
+		#check nonstandard port
+		if [ "$port" == "853" ] || [ -z "$port" ]; then
+			echo "'$ip', " >> $CONFIGFILE
+		else
+			echo "'$ip@$port', " >> $CONFIGFILE
+		fi
 
-			#check of DNS-over-TLS
-			if [ "$enable_tls" == "1" ]; then
+		#check of DNS-over-TLS
+		if [ "$enable_tls" == "1" ]; then
+			echo "    tls = true, " >> $CONFIGFILE
 
-				#prefer pin
-				if [ ! -z "$pin_sha256" ];then
-					echo -ne "," >> $CONFIGFILE
-					echo "pin_sha256='$pin_sha256'" >> $CONFIGFILE
-				#else use hostname and certificate from system ca storage
-				elif [ ! -z "$hostname" ]; then
-					echo -ne "," >> $CONFIGFILE
-					echo "hostname='$hostname'" >> $CONFIGFILE
-					#or use ca file if defined
-					if [ ! -z "$ca_file" ] && [ -f "$ca_file" ];then
-						echo -ne "," >> $CONFIGFILE
-						echo "ca_file='$ca_file'" >> $CONFIGFILE
-					fi
+			#prefer pin
+			if [ ! -z "$pin_sha256" ]; then
+				echo "    pin_sha256 = '$pin_sha256', " >> $CONFIGFILE
+			#else use hostname and certificate from system ca storage
+			elif [ ! -z "$hostname" ]; then
+				echo "    hostname = '$hostname', " >> $CONFIGFILE
+				#or use ca file if defined
+				if [ ! -z "$ca_file" ] && [ -f "$ca_file" ]; then
+					echo "    ca_file = '$ca_file', " >> $CONFIGFILE
 				fi
 			fi
 		fi
 
-		last_item=$(echo $ip_list | awk '{print $NF}')
-		if [ "$enable_tls" == "1" ] && [ "$last_item" != "$ip" ] ; then
-			echo -ne "}," >> $CONFIGFILE
-		elif [ "$enable_tls" == "1" ] && [ "$last_item" == "$ip" ] ; then
-			echo -ne "}" >> $CONFIGFILE
-		elif ([ "$enable_tls" == "0" ] || [ -z "$enable_tls" ]) && [ "$last_item" != "$ip" ]; then
-			echo -ne "," >> $CONFIGFILE
-		fi
+		echo "  }," >> $CONFIGFILE
 	done
-	echo "}))})" >> $CONFIGFILE
+	echo "})" >> $CONFIGFILE
 }
 
 start_service() {
