@@ -42,7 +42,9 @@ add_listen_addr() {
 }
 
 init_header() {
-	echo "--Automatically generated file; DO NOT EDIT" > $CONFIGFILE
+	echo "--Automatically generated file; DO NOT EDIT" > "$CONFIGFILE"
+	echo "ffi = require('ffi')" >> "$CONFIGFILE"
+
 	echo "modules = {" >> $CONFIGFILE
 	config_get_bool prefetch common prefetch 0
 	echo "    'hints > iterate'"  >> $CONFIGFILE
@@ -218,8 +220,15 @@ get_dnsmasq_dhcp_script() {
 
 add_rpz_file() {
 	local rpz_file="$1"
-	if [ -e "$rpz_file" ]; then
-		echo "policy.add(policy.rpz(policy.DENY, '$rpz_file'))" >>$CONFIGFILE
+	if [ -e "$rpz_file" ]; then cat >> $CONFIGFILE <<EOF
+
+rpzfc = ffi.new('struct kr_rule_zonefile_config')
+rpzfc.nodata = true
+rpzfc.is_rpz = true
+rpzfc.filename = '${rpz_file}'
+assert(ffi.C.kr_rule_zonefile(rpzfc) == 0)
+
+EOF
 	fi
 }
 
@@ -265,7 +274,7 @@ load_uci_config_kresd() {
 	# hostnames for local DNS
 	config_list_foreach "$section" hostname_config add_hostname_config
 
-	#add rpz files
+	# add rpz files
 	config_list_foreach "$section" rpz_file add_rpz_file
 
 	config_load dhcp
