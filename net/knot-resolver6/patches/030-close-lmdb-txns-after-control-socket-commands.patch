@@ -1,0 +1,31 @@
+From 4d54f5e228af9960ed7c9075c713b380f43e50f8 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Vladim=C3=ADr=20=C4=8Cun=C3=A1t?= <vladimir.cunat@nic.cz>
+Date: Tue, 12 Dec 2023 10:32:30 +0100
+Subject: [PATCH] daemon/io: close LMDB txns after control socket commands
+
+There's the issue that during config-file loading we prefer to do all
+changes in rule DB inside a single transaction, so the normal commands
+do not close them.  However with control socket commands we can't afford
+to leave transactions open (unclear for how long), especially RW transactions.
+---
+ daemon/io.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/daemon/io.c b/daemon/io.c
+index c077d91bb..d54019d2a 100644
+--- a/daemon/io.c
++++ b/daemon/io.c
+@@ -806,6 +806,10 @@ void io_tty_process_input(uv_stream_t *stream, ssize_t nread, const uv_buf_t *bu
+ 	if (stream_fd != STDIN_FILENO) {
+ 		fclose(out);
+ 	}
++	/* If a LMDB transaction got open, we can't leave it hanging.
++	 * We accept the changes, if any. */
++	kr_cache_commit(&the_resolver->cache);
++	kr_rules_commit(true);
+ }
+ 
+ void io_tty_alloc(uv_handle_t *handle, size_t suggested, uv_buf_t *buf)
+-- 
+GitLab
+
