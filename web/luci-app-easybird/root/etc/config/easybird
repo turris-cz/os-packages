@@ -1,0 +1,26 @@
+# Global settings
+config global 'global'
+    # Router id
+    option id      ''
+    # Enable OSPF
+    option ospf    0
+    # Enable Babel
+    option babel   0
+
+# OSPF settings
+config ospf 'ospf'
+    # List of interfaces to listen on
+    list interface 'lan'
+    # List of interfaces whose routes to propagate further
+    list propagate 'wan'
+    # Optional hello interval
+    # option hello ''
+
+# Babel settings
+config babel 'babel'
+    # List of interfaces to listen on
+    list interface 'lan'
+    # List of interfaces whose routes to propagate further
+    list propagate 'wan'
+    # Optional receive cost
+    # option rxcost ''

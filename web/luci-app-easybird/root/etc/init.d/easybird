@@ -1,0 +1,163 @@
+#!/bin/sh /etc/rc.common
+# Copyright (C) 2023 CZ.NIC, z. s. p. o.
+
+USE_PROCD=1
+START=70
+
+BIRD_BIN="/usr/sbin/bird"
+BIRD_CONF="/var/run/easybird.conf"
+BIRD_SOCK="/var/run/easybird.ctl"
+BIRD_PID_FILE="/var/run/easybird.pid"
+
+create_globals() {
+    config_get ID global id
+    if [ -z "$ID" ]; then
+    	ID="$RANDOM"
+	uci set easybird.global=global
+    	uci set easybird.global.id="$ID"
+    	uci commit easybird.global.id
+    fi
+    echo "router id $ID;"
+    cat << EOF
+
+log syslog all;
+
+protocol device {}
+
+protocol kernel kernel6 {
+  ipv6 { export all; };
+}
+
+protocol kernel kernel4 {
+  ipv4 { export all; };
+}
+EOF
+}
+
+get_iface() {
+    local iface="$(ifstatus "$1" | jsonfilter -e '@.l3_device' 2> /dev/null)"
+    [ -n "$iface" ] || iface=$1
+    [ -e "/sys/class/net/$iface" ] || return
+    echo "$iface"
+}
+
+create_ospf_interface() {
+    IFACE="$(get_iface "$1")"
+    [ -n "$IFACE" ] || return
+    if [ -n "$HELLO" ]; then
+         echo "    interface \"$IFACE\" { hello $HELLO; };"
+    else
+         echo "    interface \"$IFACE\" {};"
+    fi
+}
+
+create_ospf_stub_interface() {
+    IFACE="$(get_iface $1)"
+    [ -n "$IFACE" ] || return
+    echo "    interface \"$IFACE\" { stub; };"
+}
+
+create_ospf_area() {
+    config_get HELLO ospf hello
+    config_list_foreach ospf interface create_ospf_interface
+    config_list_foreach ospf propagate create_ospf_stub_interface
+}
+
+create_ospf() {
+    cat << EOF
+protocol ospf v3 ospf6 {
+  ipv6 {
+    import all;
+    export where source != RTS_DEVICE;
+  };
+  area 0 {
+EOF
+    create_ospf_area
+    cat << EOF
+  };
+}
+
+protocol ospf v2 ospf4 {
+  ipv4 {
+    import all;
+    export where source != RTS_DEVICE;
+  };
+  area 0 {
+EOF
+    create_ospf_area
+    echo "  };"
+    echo "}"
+}
+
+create_babel_interface() {
+    IFACE="$(get_iface "$1")"
+    [ -n "$IFACE" ] || return
+    if [ -n "$RXCOST" ]; then
+         echo "  interface \"$IFACE\" { rxcost $RXCOST; };"
+    else
+         echo "  interface \"$IFACE\";"
+    fi
+}
+
+create_direct() {
+    cat << EOF
+protocol direct {
+  ipv6;
+  ipv4;
+EOF
+    RXCOST=""
+    config_list_foreach babel propagate create_babel_interface
+    echo "}"
+}
+
+create_babel() {
+    create_direct
+    cat << EOF
+protocol babel {
+  ipv6 {
+    import all;
+    export all;
+  };
+  ipv4 {
+    import all;
+    export all;
+  };
+EOF
+    config_get RXCOST babel rxcost
+    config_list_foreach babel interface create_babel_interface
+    echo "}"
+}
+
+create_conf() {
+    . /lib/functions/network.sh
+    config_load easybird
+    create_globals > "$BIRD_CONF"
+    config_get_bool OSPF global ospf 0
+    if [ "$OSPF" -gt 0 ]; then
+        create_ospf >> "$BIRD_CONF"
+    fi
+    config_get_bool BABEL global babel 0
+    if [ "$BABEL" -gt 0 ]; then
+        create_babel >> "$BIRD_CONF"
+    fi
+}
+
+start_service() {
+    mkdir -p /var/run
+    create_conf
+    procd_open_instance
+    procd_set_param command $BIRD_BIN -f -c $BIRD_CONF -P $BIRD_PID_FILE -s $BIRD_SOCK
+    procd_set_param stdout 1
+    procd_set_param stderr 1
+    procd_set_param respawn
+    procd_close_instance
+}
+
+service_triggers() {
+    procd_add_reload_trigger easybird
+}
+
+reload_service() {
+    create_conf
+    procd_send_signal bird
+}
