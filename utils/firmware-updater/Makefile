@@ -17,9 +17,6 @@ include $(INCLUDE_DIR)/package.mk
 
 define Package/firmware-updater
   TITLE:=Tool to update firmwares in Turris routers
-  DEPENDS:=+schnapps +turris-nor-update \
-           +@TARGET_mvebu_cortexa9_DEVICE_cznic_turris-omnia:omnia-mcu-tool \
-           +@TARGET_mvebu_cortexa9_DEVICE_cznic_turris-omnia:omnia-mcu-firmware
 endef
 
 define Package/firmware-updater/description
