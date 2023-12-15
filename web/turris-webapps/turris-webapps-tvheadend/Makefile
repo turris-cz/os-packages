@@ -52,6 +52,8 @@ endef
 define Package/turris-webapps-tvheadend/postinst
 #!/bin/sh
 [ -n "$$IPKG_INSTROOT" ] || /etc/init.d/lighttpd restart
+/etc/init.d/tvheadend enable
+/etc/init.d/tvheadend start
 endef
 
 $(eval $(call BuildPackage,turris-webapps-tvheadend))
