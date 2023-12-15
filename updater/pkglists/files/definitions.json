@@ -108,6 +108,11 @@
 				"description": "Gather and render diagrams for system statistics by using collectd.",
 				"url": "https://openwrt.org/docs/guide-user/perf_and_log/statistic.collectd"
 			},
+			"easybird": {
+				"title": "Bird",
+				"description": "Simplified Bird configuration supporting OSPF and Babel.",
+				"labels": ["advanced", "experimental"]
+			},
 			"wireguard": {
 				"title": "WireGuard",
 				"description": "Alternative to OpenVPN, it provides fast, modern and secure VPN tunnel.",
@@ -207,14 +212,20 @@ ifdef(`GO',`
 	},
 ifdef(`GO',`
 	"syncthing": {
-                "title": "Syncthing",
-                "description": "Application which synchronizes files between two or more computer",
-                "labels": ["community", "storage"]
-        },')
+		"title": "Syncthing",
+		"description": "Application which synchronizes files between two or more computer",
+		"labels": ["community", "storage"]
+	},')
 	"openvpn": {
 		"title": "OpenVPN",
 		"description": "Easy setup of the OpenVPN client and server from Foris.",
 		"url": "https://docs.turris.cz/basics/apps/openvpn-server/openvpn/"
+	},
+	"kresd6": {
+		"title": "Knot Resolver 6",
+		"description": "Upcoming version of Knot Resolver. Currently without manager module.",
+		"url": "https://knot.pages.nic.cz/knot-resolver/upgrading-to-6.html",
+		"labels": ["experimental"]
 	},
 	"tor": {
 		"title": "Tor",
@@ -240,6 +251,20 @@ ifdef(`GO',`
 	"firmware_update": {
 		"title": "Latest firmware",
 		"description": "Keeps your NOR content, MCU firmware and factory image up-to-date.",
-		"labels": ["experimental"]
+		"labels": ["experimental"],
+		"options": {
+			"nor": {
+				"title": "U-Boot and rescue image",
+				"description": "Needed to boot your board, the most risky option. In case something goes wrong, reflash using serial cable."
+			},
+ifdef(`OMNIA',`
+			"mcu": {
+				"title": "MCU",
+				"description": "Controls power distribution and LEDs."
+			},`)
+			"factory": {
+				"title": "Factory image",
+				"description": "Keeps image that is used for factory reset up to date."
+			}
 	}
 }
