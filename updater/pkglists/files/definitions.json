@@ -266,5 +266,6 @@ ifdef(`OMNIA',`
 				"title": "Factory image",
 				"description": "Keeps image that is used for factory reset up to date."
 			}
+		}
 	}
 }
