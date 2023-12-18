@@ -261,10 +261,11 @@ ifdef(`OMNIA',`
 			"mcu": {
 				"title": "MCU",
 				"description": "Controls power distribution and LEDs."
-			},`)
+			},')
 			"factory": {
 				"title": "Factory image",
 				"description": "Keeps image that is used for factory reset up to date."
 			}
+		}
 	}
 }
