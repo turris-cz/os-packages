@@ -101,6 +101,13 @@ flash() {
 uboot_preupdate() {
     BACKUP_UBOOT_ENV="/usr/share/nor-update/uboot-env.backup"
     v_echo "Storing old U-boot environment to be preserved"
+
+    if ! fw_printenv >/dev/null 2>&1; then
+        echo "Updating configuration for U-Boot environment access."
+        rm -f /etc/config/ubootenv
+        fw_env-config-init.sh
+    fi
+
     fw_printenv >"$BACKUP_UBOOT_ENV" || {
         # Let's assume that there is a default environment if we can't read it.
         rm -f "$BACKUP_UBOOT_ENV"
