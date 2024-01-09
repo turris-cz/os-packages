@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2022 CZ.NIC z.s.p.o. (https://www.nic.cz/)
+# Copyright (C) 2019-2024 CZ.NIC z.s.p.o. (https://www.nic.cz/)
 #
 # This is free software, licensed under the GNU General Public License v3.
 # See /LICENSE for more information.
@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=reforis
-PKG_VERSION:=1.4.1
+PKG_VERSION:=1.5.0
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/reforis/reforis
-PKG_MIRROR_HASH:=c30d0a895efbb70d88cccbdbe42003dc2830c68855dcbacb6200a1e5cef742e3
+PKG_MIRROR_HASH:=54a903928f6647f11c65340207f4905f73da6116de1316bc4f7d716492424853
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
