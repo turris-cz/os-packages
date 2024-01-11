@@ -8,13 +8,13 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=turris-netboot
-PKG_VERSION:=0.7.1
+PKG_VERSION:=0.8.0
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/turris-netboot.git
-PKG_MIRROR_HASH:=6eae57a9b30157d004dd40a0e290885e00f7fef6fcb1c427aff7d49ac728b888
+PKG_MIRROR_HASH:=160f3aa7cf4186a735cc2edfa4bd200db5205d3a28cdb3cf2e446824c91ae23a
 
 BB_VERSION:=1.29.3
 PKG_BB_SOURCE:=busybox-$(BB_VERSION).tar.bz2
