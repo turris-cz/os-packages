@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2023 CZ.NIC z. s. p. o. (https://www.nic.cz/)
+# Copyright (C) 2024 CZ.NIC z. s. p. o. (https://www.nic.cz/)
 #
 # This is free software, licensed under the GNU General Public License v3.
 # See /LICENSE for more information.
@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=reforis-librespeed-plugin
-PKG_VERSION:=0.2.0
+PKG_VERSION:=0.2.1
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/reforis/reforis-librespeed
-PKG_MIRROR_HASH:=9cbdc83fbe66db3d3489676d23193b4cba0253c6501cde2b03e12930c09e190f
+PKG_MIRROR_HASH:=5c5c744a34280bfe77de998e32bf28b7c29e2860598c1cf42f6058a2f9f55637
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
