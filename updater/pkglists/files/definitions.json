@@ -250,21 +250,24 @@ ifdef(`GO',`
 	},
 	"firmware_update": {
 		"title": "Latest firmware",
-		"description": "Keeps your NOR content, MCU firmware and factory image up-to-date.",
+ifdef(`OMNIA',`		"description": "Keeps your NOR content, MCU firmware and factory image up-to-date",')
+ifndef(`OMNIA',`		"description": "Keeps your NOR content and factory image up-to-date",')
 		"labels": ["experimental"],
 		"options": {
 			"nor": {
 				"title": "U-Boot and rescue image",
-				"description": "Needed to boot your board, the most risky option. In case something goes wrong, reflash using serial cable."
+				"labels": ["experimental", "advanced"],
+				"description": "Most risky option, U-Boot is needed to boot your board. In case something goes wrong, your router will not boot and you will need to reflash it using serial cable.
+				"url": "https://docs.turris.cz/hw/omnia/serial-boot/"
 			},
 ifdef(`OMNIA',`
 			"mcu": {
 				"title": "MCU",
-				"description": "Controls power distribution and LEDs."
+				"description": "Controls power distribution and LEDs. Don't reboot during update, but otherwise quite safe."
 			},')
 			"factory": {
 				"title": "Factory image",
-				"description": "Keeps image that is used for factory reset up to date."
+				"description": "Keeps image that is used for factory reset up to date. The safest option of all."
 			}
 		}
 	}
