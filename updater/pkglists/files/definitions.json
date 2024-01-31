@@ -250,8 +250,7 @@ ifdef(`GO',`
 	},
 	"firmware_update": {
 		"title": "Latest firmware",
-ifdef(`OMNIA',`		"description": "Keeps your NOR content, MCU firmware and factory image up-to-date",')
-ifndef(`OMNIA',`		"description": "Keeps your NOR content and factory image up-to-date",')
+ifdef(`OMNIA',`		"description": "Keeps your NOR content, MCU firmware and factory image up-to-date",', `		"description": "Keeps your NOR content and factory image up-to-date",')
 		"labels": ["experimental"],
 		"options": {
 			"nor": {
