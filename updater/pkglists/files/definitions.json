@@ -256,7 +256,7 @@ ifdef(`OMNIA',`		"description": "Keeps your NOR content, MCU firmware and factor
 			"nor": {
 				"title": "U-Boot and rescue image",
 				"labels": ["experimental", "advanced"],
-				"description": "Most risky option, U-Boot is needed to boot your board. In case something goes wrong, your router will not boot and you will need to reflash it using serial cable.
+				"description": "Most risky option, U-Boot is needed to boot your board. In case something goes wrong, your router will not boot and you will need to reflash it using serial cable.",
 				"url": "https://docs.turris.cz/hw/omnia/serial-boot/"
 			},
 ifdef(`OMNIA',`
