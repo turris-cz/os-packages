@@ -262,7 +262,7 @@ ifdef(`OMNIA',`		"description": "Keeps your NOR content, MCU firmware and factor
 ifdef(`OMNIA',`
 			"mcu": {
 				"title": "MCU",
-				"description": "Controls power distribution and LEDs. Don't reboot during update, but otherwise quite safe."
+				"description": "Controls power distribution and LEDs. Do not reboot during update, but otherwise quite safe."
 			},')
 			"factory": {
 				"title": "Factory image",
