@@ -162,12 +162,6 @@
 		"title": "Network monitoring and parental control",
 		"description": "Tools to monitor local network and users on it.",
 		"options": {
-			"netmetr": {
-				"title": "Internet connection speed measurement",
-				"description": "Actively measures speed of Internet connection using netmetr.cz service.",
-				"url": "https://docs.turris.cz/basics/apps/netmetr/",
-				"labels": ["deprecated"]
-			},
 ifdef(`GO',`
 			"librespeed": {
 				"title": "Internet connection speed measurement",
