@@ -49,5 +49,10 @@ define Package/sentinel-firewall-iptables/install
 	$(INSTALL_DATA) ./files/functions.sh $(1)/lib/functions/sentinel-firewall.sh
 endef
 
+define Package/sentinel-firewall-iptables/postinst
+#!/bin/sh
+[ -n "$$IPKG_INSTROOT" ] || /etc/init.d/firewall restart
+endef
+
 $(eval $(call BuildPackage,sentinel-firewall-iptables))
 $(eval $(call BuildPackage,sentinel-dynfw-cert))
