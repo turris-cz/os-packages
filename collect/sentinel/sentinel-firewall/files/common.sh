@@ -42,7 +42,7 @@ iptables_set_drop() {
 	local zone="$1"
 	local chain="$2"
 	local set="$3"
-	shift 2
+	shift 3
 	local drop_zone="zone_${zone}_src_DROP"
 
 	# fw3 won't create chain for drop if no rule in UCI requires it. This just
@@ -54,7 +54,7 @@ iptables_set_drop() {
 			-j DROP
 	fi
 
-	iptables-legacy -I "zone_${zone}_${chain}" 1 -m set --match-set "$IPSET"_v4 src "$@" -j "$drop_zone"
+	iptables-legacy -I "zone_${zone}_${chain}" 1 -m set --match-set "${set}"_v4 src "$@" -j "$drop_zone"
 
 	if ! ip6tables_chain_exists "$drop_zone"; then
 		ip6tables-legacy -N "$drop_zone"
@@ -64,7 +64,7 @@ iptables_set_drop() {
 	fi
 
 	if ip6tables_chain_exists "zone_${zone}_${chain}"; then
-		ip6tables-legacy -I "zone_${zone}_${chain}" 1  -m set --match-set "$IPSET"_v6 src "$@" -j "$drop_zone"
+		ip6tables-legacy -I "zone_${zone}_${chain}" 1  -m set --match-set "${set}"_v6 src "$@" -j "$drop_zone"
 	fi
 }
 
