@@ -61,6 +61,13 @@ local script_options = {
 	}
 }
 
+-- Optional scripts
+local opt_script_options = {
+	security = "Remote",
+	pubkey = script_options.pubkey,
+	optional = true
+}
+
 -- Turris repository server URL (or override)
 local repo_url = "https://repo.turris.cz"
 local config, config_error = loadfile("/etc/updater/turris-repo.lua")
@@ -82,6 +89,36 @@ end
 local base_url
 if mode == "branch" then
 	base_url = repo_url .. "/" .. branch .. "/" .. board .. "/lists/"
+	-- Staged updates (only for hbs)
+	if branch == "hbs" then
+		local release_data = Fetch(base_url .. "release_date", {
+			pubkey = script_options.pubkey,
+			optional = true
+		}) or "0+17"
+		local release_date, release_spread = release_data:match"^(%d+)\+(%d+)"
+		if not release_spread then
+			release_spread = 17
+			release_date = release_data:match"^(%d+)"
+		end
+		if not release_date then
+			release_date = 0
+		end
+		-- Use only last 8 digits and discard the first 8 as that is the batch number anyway
+		local serial = tonumber(string.sub(get_turris_serial(),9,16), 16) or 0
+		-- `update_go_time` is time when the release will happen
+		-- It needs to be spread evenly and randomly between routers during `release_spread` days
+		--
+		-- `(release_date + serial) % release_spread` is a random number 0-16
+		-- It is fixed per release and router, but can be different for every release
+		--
+		local update_go_time = release_date + (((release_date + serial) % release_spread) * 3600 * 24)
+		-- Are we there yet?
+		if update_go_time > os.time() then
+			branch = "hbs-old"
+			base_url = repo_url .. "/" .. branch .. "/" .. board .. "/lists/"
+			WARN("There is a newer version available, but update is scheduled after another " .. string.format("%.1f", ((update_go_time - os.time()) / 3600)) .. " hours. If you want the latest and greatest all the time, switch to one of the development branches.")
+		end
+	end
 elseif mode == "version" then
 	base_url = repo_url .. "/archive/" .. version .. "/" .. board .. "/lists/"
 else
