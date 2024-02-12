@@ -68,6 +68,23 @@ iptables_set_drop() {
 	fi
 }
 
+ip6tables_nat_wan() {
+	local wan_device
+	wan_device="$(uci -q get network.wan6.device || true)"
+	if [ -z "$wan_device" ] || [ "$wan_device" = "@wan" ]; then
+		wan_device="$(uci -q get network.wan.device || true)"
+	fi
+	if [ -n "$wan_device" ]; then
+		ip6tables_nat_chain_exists zone_wan_prerouting || ip6tables-legacy -t nat -N zone_wan_prerouting
+		ip6tables-legacy -t nat -S | grep -q '!sentinel: Hacky way to get IPv6 NAT' || \
+			ip6tables-legacy -t nat -A PREROUTING -i eth2.5 -m comment --comment "!sentinel: Hacky way to get IPv6 NAT" -j zone_wan_prerouting
+	fi
+	ip6tables-legacy -S zone_wan_forward | grep -q "!sentinel: Hack to accept port forwards" || \
+		ip6tables-legacy -I zone_wan_forward -m conntrack --ctstate DNAT -m mark --mark 0x10/0x10 -m comment --comment "!sentinel: Hack to accept port forwards" -j ACCEPT
+	ip6tables-legacy -S zone_wan_input | grep -q "!sentinel: Hack to accept port forwards" || \
+		ip6tables-legacy -I zone_wan_input -m conntrack --ctstate DNAT -m mark --mark 0x10/0x10 -m comment --comment "!sentinel: Hack to accept port forwards" -j ACCEPT
+}
+
 # Add port redirect rule.
 # zone: name of firewall zone incoming packets are coming from
 # port: target port of packet
@@ -78,6 +95,10 @@ iptables_redirect() {
 	local port="$2"
 	local local_port="$3"
 	local description="$4"
+	local wan_ipv6=""
+
+	wan_ipv6="$(uci -q get sentinel.minipot.ipv6 || true)"
+	[ -n "${wan_ipv6}" ] || wan_ipv6="$(ifstatus wan6 | jsonfilter -e '@["ipv6-prefix-assignment"][*]["local-address"].address')"
 
 	report_operation "$description on zone '$zone' ($port -> $local_port)"
 	if iptables_nat_chain_exists "zone_${zone}_prerouting"; then
@@ -87,11 +108,15 @@ iptables_redirect() {
 			-m comment --comment "!sentinel: $description port redirect" \
 			-j REDIRECT --to-ports "$local_port"
 	fi
-	if ip6tables_nat_chain_exists "zone_${zone}_prerouting"; then
-		ip6tables-legacy -t nat -A "zone_${zone}_prerouting" \
-			-p tcp \
-			-m tcp --dport "$port" \
-			-m comment --comment "!sentinel: $description port redirect" \
-			-j REDIRECT --to-ports "$local_port"
-	fi
+	ip6tables_nat_wan
+	for ipv6 in ${wan_ipv6}; do
+		if ip6tables_nat_chain_exists "zone_${zone}_prerouting"; then
+			ip6tables-legacy -t nat -A "zone_${zone}_prerouting" \
+				-d "${ipv6}" \
+				-p tcp \
+				-m tcp --dport "$port" \
+				-m comment --comment "!sentinel: $description port redirect" \
+				-j DNAT --to-destination "[${ipv6}]:${local_port}"
+		fi
+	done
 }
