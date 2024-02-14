@@ -6,5 +6,5 @@
     [ ! -x /usr/bin/omnia-mcutool ] || \
     omnia-mcutool --upgrade
 [ "0$(uci get pkglists.firmware_update.factory)" -ne 1 ] || \
-    [ "$(schnapps factory-version | cut -f 1 -d .)"  -eq "$(cut -f 1 -d . /etc/turris-version)" ] || \
-    schnapps update-factory > /dev/null 2>&1
+   [ "$(schnapps factory-version | cut -f 1,2 -d .)" == "$(cut -f 1,2 -d . /etc/turris-version)" ] || \
+   schnapps update-factory > /dev/null 2>&1
