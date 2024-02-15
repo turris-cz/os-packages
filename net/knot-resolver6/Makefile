@@ -26,8 +26,13 @@ PKG_BUILD_DEPENDS:=meson/host protobuf-c/host
 
 PKG_INSTALL:=1
 
+PYTHON3_PKG_SETUP_DIR:=$(PKG_BUILD_DIR)/manager
+PYTHON3_PKG_BUILD:=0
+Hooks/Configure/Post+=Py3Build/FindStdlibDepends
+
 include $(INCLUDE_DIR)/package.mk
-include $(INCLUDE_DIR)/meson.mk
+include $(TOPDIR)/feeds/packages/devel/meson/meson.mk
+include $(TOPDIR)/feeds/packages/lang/python/python3-package.mk
 
 define Package/knot-resolver6
   SECTION:=net
@@ -57,6 +62,30 @@ define Package/knot-resolver6/description
   implementation, including both a resolver library and a daemon.
 endef
 
+define Package/knot-resolver6-manager
+  TITLE:=Knot DNS Resolver manager
+  DEPENDS=\
+    +knot-resolver6 \
+    +python3-aiohttp \
+    +python3-light \
+    +python3-supervisord \
+    +python3-typing-extensions \
+    +python3-yaml
+endef
+
+define Py3Package/knot-resolver6-manager/install
+	if [ -d $(PKG_INSTALL_DIR)/usr/bin ]; then \
+		$(INSTALL_DIR) $(1)/usr/bin ; \
+		$(CP) $(PKG_INSTALL_DIR)/usr/bin/* $(1)/usr/bin/ ; \
+	fi
+	$(INSTALL_DIR) $(1)/etc/knot-resolver
+	$(INSTALL_DATA) files/config.yaml $(1)/etc/knot-resolver
+endef
+
+define Package/knot-resolver6-manager/description
+  Management tool for Knot Resolver.
+endef
+
 define Package/knot-resolver6/config
 	source "$(SOURCE)/Config.in"
 endef
@@ -64,7 +93,7 @@ endef
 MESON_ARGS+= \
 	$(if $(CONFIG_PACKAGE_knot-resolver_dnstap), -Ddnstap=enabled,-Ddnstap=disabled) \
 	-Dcapng=disabled \
-	-Dmanager=disabled \
+	-Dclient=disabled \
 	-Dconfig_tests=disabled \
 	-Ddoc=disabled \
 	-Dinstall_kresd_conf=disabled \
@@ -72,11 +101,12 @@ MESON_ARGS+= \
 	-Dkeyfile_default=/etc/root.keys \
 	-Dprefix=/usr \
 	-Dunit_tests=disabled \
-	-Dutils=disabled
+	-Dutils=enabled
 
 define Package/knot-resolver6/install
 	$(INSTALL_DIR) $(1)/usr/sbin
 	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/sbin/kresd $(1)/usr/sbin/
+	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/sbin/kres-cache-gc $(1)/usr/sbin/
 
 	$(INSTALL_DIR) $(1)/usr/lib/knot-resolver
 	$(CP) $(PKG_INSTALL_DIR)/usr/lib/*.so* $(1)/usr/lib/
@@ -90,6 +120,11 @@ define Package/knot-resolver6/install
 	$(CP) $(PKG_INSTALL_DIR)/etc/knot-resolver/root.hints $(1)/etc/knot-resolver/
 
 	$(INSTALL_DIR) $(1)/etc/kresd
+endef
+
+define Build/Compile
+	$(call Build/Compile/Meson)
+	$(call Py3Build/Compile)
 endef
 
 define Package/knot-resolver6/postinst
@@ -155,3 +190,5 @@ fi
 endef
 
 $(eval $(call BuildPackage,knot-resolver6))
+$(eval $(call Py3Package,knot-resolver6-manager))
+$(eval $(call BuildPackage,knot-resolver6-manager))
