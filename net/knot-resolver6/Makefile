@@ -18,7 +18,7 @@ PKG_SOURCE_URL:=https://gitlab.nic.cz/knot/knot-resolver.git
 PKG_MIRROR_HASH:=7f68c99d6717c6c931a3533f320b9cf5d1d9648823eade2e7d08e8990e2c4d3d
 PKG_SOURCE_VERSION:=v${PKG_VERSION}
 
-PKG_MAINTAINER:=Knot DNS <knot-dns@labs.nic.cz>
+PKG_MAINTAINER:=Knot Resolver <knot-resolver@labs.nic.cz>
 PKG_LICENSE:=GPL-3.0-later
 PKG_LICENSE_FILES:=COPYING
 
@@ -33,7 +33,7 @@ define Package/knot-resolver6
   SECTION:=net
   CATEGORY:=Network
   SUBMENU:=IP Addresses and Names
-  TITLE:=Knot DNS Resolver
+  TITLE:=Knot Resolver
   URL:=https://www.knot-resolver.cz
   CONFLICTS:=knot-resolver
   DEPENDS=\
