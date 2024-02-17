@@ -31,7 +31,7 @@ PYTHON3_PKG_BUILD:=0
 Hooks/Configure/Post+=Py3Build/FindStdlibDepends
 
 include $(INCLUDE_DIR)/package.mk
-include $(TOPDIR)/feeds/packages/devel/meson/meson.mk
+include $(INCLUDE_DIR)/meson.mk
 include $(TOPDIR)/feeds/packages/lang/python/python3-package.mk
 
 define Package/knot-resolver6
