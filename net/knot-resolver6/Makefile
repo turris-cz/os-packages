@@ -93,7 +93,7 @@ endef
 MESON_ARGS+= \
 	$(if $(CONFIG_PACKAGE_knot-resolver_dnstap), -Ddnstap=enabled,-Ddnstap=disabled) \
 	-Dcapng=disabled \
-	-Dclient=disabled \
+	-Dmanager=disabled \
 	-Dconfig_tests=disabled \
 	-Ddoc=disabled \
 	-Dinstall_kresd_conf=disabled \
