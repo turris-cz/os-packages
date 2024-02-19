@@ -22,12 +22,14 @@ PKG_MAINTAINER:=Knot Resolver <knot-resolver@labs.nic.cz>
 PKG_LICENSE:=GPL-3.0-later
 PKG_LICENSE_FILES:=COPYING
 
-PKG_BUILD_DEPENDS:=meson/host protobuf-c/host
+PKG_BUILD_DEPENDS:=meson/host protobuf-c/host python-poetry-core/host
 
 PKG_INSTALL:=1
 
 PYTHON3_PKG_SETUP_DIR:=$(PKG_BUILD_DIR)/manager
 PYTHON3_PKG_BUILD:=0
+PYTHON3_PKG_WHEEL_NAME:=knot_resolver_manager
+PYTHON3_PKG_WHEEL_VERSION:=0.1.0
 Hooks/Configure/Post+=Py3Build/FindStdlibDepends
 
 include $(INCLUDE_DIR)/package.mk
@@ -120,6 +122,19 @@ define Package/knot-resolver6/install
 	$(CP) $(PKG_INSTALL_DIR)/etc/knot-resolver/root.hints $(1)/etc/knot-resolver/
 
 	$(INSTALL_DIR) $(1)/etc/kresd
+endef
+
+define Package/knot-resolver6-manager/install
+	$(call Python3/Run, \
+		$(PKG_BUILD_DIR), \
+		-m installer \
+			--destdir "$(1)" \
+			--no-compile-bytecode \
+			--prefix /usr \
+			"$(PYTHON3_PKG_BUILD_DIR)"/openwrt-build/$(PYTHON3_PKG_WHEEL_NAME)-$(PYTHON3_PKG_WHEEL_VERSION)-*.whl \
+		, \
+		$(PYTHON3_PKG_INSTALL_VARS) \
+	)
 endef
 
 define Build/Compile
