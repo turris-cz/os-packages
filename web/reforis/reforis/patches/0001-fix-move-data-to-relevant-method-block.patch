@@ -1,0 +1,29 @@
+From 292b2811d74f9cbcec783f20d64f51361899f599 Mon Sep 17 00:00:00 2001
+From: Filip Hron <filip.hron@nic.cz>
+Date: Thu, 25 Jan 2024 16:04:53 +0000
+Subject: [PATCH] fix: move data to relevant method block
+
+---
+ reforis/foris_controller_api/modules/system.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/reforis/foris_controller_api/modules/system.py b/reforis/foris_controller_api/modules/system.py
+index 4802bcab..fcceaff7 100644
+--- a/reforis/foris_controller_api/modules/system.py
++++ b/reforis/foris_controller_api/modules/system.py
+@@ -13,11 +13,11 @@ def hostname():
+         See ``set_hostname`` action in the `foris-controller system module JSON schema
+         <https://gitlab.nic.cz/turris/foris-controller/foris-controller/blob/master/foris_controller_modules/system/schema/system.json>`_.
+     """
+-    data = request.json
+ 
+     if request.method == 'GET':
+         response = current_app.backend.perform('system', 'get_hostname')
+     elif request.method == 'POST':
++        data = request.json
+         response = current_app.backend.perform('system', 'set_hostname', data)
+     return jsonify(response)
+ 
+-- 
+2.43.0
+
