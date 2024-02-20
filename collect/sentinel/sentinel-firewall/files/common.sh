@@ -98,7 +98,13 @@ iptables_redirect() {
 	local wan_ipv6=""
 
 	wan_ipv6="$(uci -q get sentinel.minipot.ipv6 || true)"
-	[ -n "${wan_ipv6}" ] || wan_ipv6="$(ifstatus wan6 | jsonfilter -e '@["ipv6-prefix-assignment"][*]["local-address"].address')"
+	[ -n "${wan_ipv6}" ] || {
+		wan_ipv6="$(ifstatus wan6 | \
+			jsonfilter \
+				-e '@["ipv6-prefix-assignment"][*]["local-address"].address' \
+				-e '@["ipv6-address"][*]["address"]' \
+			|| true)"
+	}
 
 	report_operation "$description on zone '$zone' ($port -> $local_port)"
 	if iptables_nat_chain_exists "zone_${zone}_prerouting"; then
