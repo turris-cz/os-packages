@@ -1,5 +1,5 @@
 #
-## Copyright (C) 2019-2022 CZ.NIC z.s.p.o. (https://www.nic.cz/)
+## Copyright (C) 2019-2024 CZ.NIC z.s.p.o. (https://www.nic.cz/)
 #
 ## This is free software, licensed under the GNU General Public License v3.
 # See /LICENSE for more information.
@@ -26,7 +26,6 @@ include $(TOPDIR)/feeds/packages/lang/python/python3-package.mk
 define Package/mox-otp
   TITLE:=MOX OTP CLI
   URL:=https://gitlab.nic.cz/turris/mox-otp
-  PROVIDES:=turris-otp
   DEPENDS:=+python3-light
   DEPENDS+=@TARGET_mvebu_cortexa53_DEVICE_cznic_turris-mox
 endef

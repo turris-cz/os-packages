@@ -1,5 +1,5 @@
 #
-## Copyright (C) 2019 CZ.NIC z.s.p.o. (http://www.nic.cz/)
+## Copyright (C) 2019-2024 CZ.NIC z.s.p.o. (http://www.nic.cz/)
 #
 ## This is free software, licensed under the GNU General Public License v3.
 # See /LICENSE for more information.
@@ -24,7 +24,10 @@ include $(INCLUDE_DIR)/package.mk
 
 define Package/crypto-wrapper
   TITLE:=Crypto Wrapper CLI
-  DEPENDS:=+turris-otp
+  DEPENDS:=\
+    +TARGET_mpc85xx_p2020_DEVICE_cznic_turris1x:libatsha204 \
+    +TARGET_mvebu_cortexa9_DEVICE_cznic_turris-omnia:libatsha204 +TARGET_mvebu_cortexa9_DEVICE_cznic_turris-omnia:omnia-mcutool \
+    +TARGET_mvebu_cortexa53_DEVICE_cznic_turris-mox:mox-otp
 endef
 
 define Package/crypto-wrapper/description
