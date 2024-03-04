@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=omnia-mcutool
-PKG_VERSION:=0.2
+PKG_VERSION:=0.3-rc1
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.bz2
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/omnia-mcutool/-/archive/$(PKG_VERSION)/
-PKG_HASH:=e1b823dac9f908b86ce63e7f525a70fa40c004bcfee1c4766cfcf52dfd58382d
+PKG_HASH:=b573837ba2740bf988d2d977d215c364fed6a34f4756220c812a43372c41324a
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 PKG_LICENSE:=GPL-2.0-or-later
@@ -23,19 +23,25 @@ include $(INCLUDE_DIR)/package.mk
 define Package/omnia-mcutool
   TITLE:=Tool to manage MCU on Turris Omnia
   DEPENDS:=+omnia-mcu-firmware @TARGET_mvebu_cortexa9_DEVICE_cznic_turris-omnia
+  DEPENDS+=+libopenssl
 endef
 
 define Package/omnia-mcutool/description
   This package contains omnia-mcutool, the utility for accessing the MCU on the
   Turris Omnia router. Its main purpose is to upgrade new MCU firmware. It can
   also be used to print MCU firmware version and access other MCU settings.
+  On boards where board information and cryptography is provided by the MCU it
+  also supports accessing this functionality.
 endef
+
+TARGET_LDFLAGS += -lcrypto
 
 define Build/Compile
 	$(MAKE) -C $(PKG_BUILD_DIR) \
 		CC="$(TARGET_CC)" \
 		CFLAGS="$(TARGET_CFLAGS) -Wall" \
-		LDFLAGS="$(TARGET_LDFLAGS)"
+		LDFLAGS="$(TARGET_LDFLAGS)" \
+		MCUTOOL_VERSION="$(PKG_VERSION)"
 endef
 
 define Package/omnia-mcutool/install
