@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=crypto-wrapper
-PKG_VERSION:=0.4.1
+PKG_VERSION:=0.5
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/crypto-wrapper.git
-PKG_MIRROR_HASH:=bed966c136174c7cb5eb3837be21f7d671ec3f5d3b5983d2317dcd447212d814
+PKG_MIRROR_HASH:=0dd32c997b4034c47ecab31628d4de57c07df553dbf873f6cfc869b8bd267a86
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
