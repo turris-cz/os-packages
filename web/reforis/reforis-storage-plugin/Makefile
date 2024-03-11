@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2020-2021 CZ.NIC z.s.p.o. (https://www.nic.cz/)
+# Copyright (C) 2020-2024 CZ.NIC z.s.p.o. (https://www.nic.cz/)
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=reforis-storage-plugin
-PKG_VERSION:=0.2.2
+PKG_VERSION:=1.0.0
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/reforis/reforis-storage
-PKG_MIRROR_HASH:=fdf0ce5aafc05c10fb1253cd1c3d903c19bd2d56f5f3a9974ca45614909eb65a
+PKG_MIRROR_HASH:=7b0d210e5a25062c098c24060ecdfb0d74cebafb318d8146cf3d5ed429b031b8
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
@@ -22,9 +22,9 @@ PKG_LICENSE_FILES:=LICENSE
 
 PKG_BUILD_DEPENDS:=\
 	node/host \
-	reforis-distutils/host \
+	hatch-reforis/host
 
-PYTHON3_PKG_FORCE_DISTUTILS_SETUP:=1
+PYTHON3_PKG_WHEEL_NAME:=reforis_storage
 
 include $(INCLUDE_DIR)/package.mk
 include $(TOPDIR)/feeds/packages/lang/python/python3-package.mk
