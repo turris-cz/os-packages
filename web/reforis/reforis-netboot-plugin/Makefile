@@ -8,7 +8,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=reforis-netboot-plugin
-PKG_VERSION:=0.4.0
+PKG_VERSION:=1.0.0
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
