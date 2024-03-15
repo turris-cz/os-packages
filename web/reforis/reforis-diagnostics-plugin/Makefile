@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2021 CZ.NIC z.s.p.o. (https://www.nic.cz/)
+# Copyright (C) 2019-2024 CZ.NIC z.s.p.o. (https://www.nic.cz/)
 #
 # This is free software, licensed under the GNU General Public License v3.
 # See /LICENSE for more information.
@@ -8,7 +8,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=reforis-diagnostics-plugin
-PKG_VERSION:=2.5.1
+PKG_VERSION:=3.0.0
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
