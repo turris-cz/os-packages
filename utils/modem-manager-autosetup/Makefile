@@ -8,7 +8,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=modem-manager-autosetup
-PKG_VERSION:=1.0-2023-09-21
+PKG_VERSION:=1.1-2023-09-21
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
