@@ -4,11 +4,15 @@ get_settings() {
     local mcc="$(echo "$1" | head -c 3)"
     local mnc="$(echo "$1" | tail -c +4)"
     local info="$(jq '.apns.apn| [ .[] | select(.mcc == "'"$mcc"'" and .mnc == "'"$mnc"'" and (.type | contains("default"))) ][0]' < /usr/share/modem-manager-autosetup/apns-conf.json)"
-    [ -n "$info" ] || exit 1
-    [ "$info" != null ] || exit 1
-    APN="$(echo "$info" | jq -r .apn)"
-    USER="$(echo "$info" | jq -r .user)"
-    PASSWORD="$(echo "$info" | jq -r .password)"
+    if [ -n "$info" ] &&  [ "$info" != null ]; then
+        APN="$(echo "$info" | jq -r .apn)"
+        USER="$(echo "$info" | jq -r .user)"
+        PASSWORD="$(echo "$info" | jq -r .password)"
+    else 
+        APN="internet"
+        USER=""
+        PASSWORD=""
+    fi
 }
 
 get_operator_info() {
