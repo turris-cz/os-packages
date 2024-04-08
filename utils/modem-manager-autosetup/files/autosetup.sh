@@ -7,7 +7,7 @@ get_settings() {
     [ -n "$1" ] || return
     local mcc="$(echo "$1" | head -c 3)"
     local mnc="$(echo "$1" | tail -c +4)"
-    local info="$(jq '.apns.apn| [ .[] | select(.mcc == "'"$mcc"'" and .mnc == "'"$mnc"'" and (.type | contains("default"))) ][0]' < /usr/share/modem-manager-autosetup/apns-conf.json)"
+    local info="$(jq '.apns.apn| [ .[] | select(.mcc == "'"$mcc"'" and .mnc == "'"$mnc"'" and has("type") and (.type | contains("default"))) ][0]' < /usr/share/modem-manager-autosetup/apns-conf.json)"
     [ -n "$info" ] || info="$(jq '.apns.apn| [ .[] | select(.mcc == "'"$mcc"'" and .mnc == "'"$mnc"'") ][0]' < /usr/share/modem-manager-autosetup/apns-conf.json)"
     if [ -n "$info" ] &&  [ "$info" != null ]; then
         APN="$(echo "$info" | jq -r .apn)"
