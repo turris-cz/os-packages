@@ -18,7 +18,9 @@ PKG_BUILD_DIR:=$(BUILD_DIR)/uriparser-uriparser-$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 PKG_INSTALL:=1
-PKG_FIXUP:=autoreconf
+
+PKG_USE_NINJA=0
+HOST_USE_NINJA=0
 
 include $(INCLUDE_DIR)/host-build.mk
 include $(INCLUDE_DIR)/package.mk
