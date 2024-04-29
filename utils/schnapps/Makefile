@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2016-2021 CZ.NIC z.s.p.o. (http://www.nic.cz/)
+# Copyright (C) 2016-2024 CZ.NIC z.s.p.o. (http://www.nic.cz/)
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=schnapps
-PKG_VERSION:=2.13.0
+PKG_VERSION:=2.13.1
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/schnapps.git
-PKG_MIRROR_HASH:=c8a6d1c0cacfec715bddbe7cb062416d2161116f1ad3c31e2c1e5acbf4e8ba2e
+PKG_MIRROR_HASH:=fbc678026272e1a10b3fe5fed97f2bc0471bcac9d417bf1a1fa96a3949881d67
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@nic.cz>
