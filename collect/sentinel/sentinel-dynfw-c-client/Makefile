@@ -35,7 +35,7 @@ endef
 define Package/sentinel-dynfw-c-client-iptables
 $(call Package/sentinel-dynfw-c-client/Default)
   TITLE+= - iptables
-  DEPENDS+=+firewall4 +libdynfw +ipset +iptables +sentinel-firewall
+  DEPENDS+=+firewall +libdynfw +ipset +iptables +sentinel-firewall
   CONFLICTS:=sentinel-dynfw-client
 endef
 

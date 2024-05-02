@@ -21,7 +21,7 @@ define Package/sentinel-firewall
   SUBMENU:=Sentinel
   PROVIDES:=sentinel-firewall
   TITLE:=Turris Sentinel Firewall iptables integration
-  DEPENDS:=+firewall4 +iptables-zz-legacy +ip6tables-zz-legacy
+  DEPENDS:=+firewall +iptables-zz-legacy +ip6tables-zz-legacy
 endef
 
 Build/Compile:=:
