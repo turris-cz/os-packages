@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=omnia-mcutool
-PKG_VERSION:=0.3-rc1
+PKG_VERSION:=0.3-rc2
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.bz2
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/omnia-mcutool/-/archive/$(PKG_VERSION)/
-PKG_HASH:=04928c38fc49e8aa5a5736a1c1dada23811821f7f324de3d19f0448b0b6b1f57
+PKG_HASH:=68e407fca16ccaf4bd87401f710d6a4061029b4d474ac10c4c3253af73c242ac
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 PKG_LICENSE:=GPL-2.0-or-later
