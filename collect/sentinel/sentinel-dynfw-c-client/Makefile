@@ -105,7 +105,7 @@ endef
 
 define Package/sentinel-dynfw-c-client-nftables/install
 	$(INSTALL_DIR) $(1)/usr/sbin
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/install/usr/bin/dynfw-nftables-client $(1)/usr/sbin
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/install/usr/bin/dynfw-nfset-client $(1)/usr/sbin
 	$(INSTALL_DIR) $(1)/etc/init.d
 	$(INSTALL_BIN) ./files/init.nftables $(1)/etc/init.d/sentinel-dynfw-client
 endef
