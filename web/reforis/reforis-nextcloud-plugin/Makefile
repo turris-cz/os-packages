@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=reforis-nextcloud-plugin
-PKG_VERSION:=1.0.0
+PKG_VERSION:=1.0.1
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/reforis/reforis-nextcloud
-PKG_MIRROR_HASH:=345920f7e6ef47a41df98a80d1e61b2ebb9464acecd9fff8756226a2ee697cf6
+PKG_MIRROR_HASH:=4e62feccd34edcb61f0ad1c7ec13053e2051673772dd064b0664cb9f493278f6
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
