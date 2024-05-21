@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2023 CZ.NIC z.s.p.o. (http://www.nic.cz/)
+# Copyright (C) 2023-2024 CZ.NIC z.s.p.o. (http://www.nic.cz/)
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -9,13 +9,13 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=omnia-mcu-firmware
 PKG_DISTNAME:=omnia_hw_ctrl
-PKG_VERSION:=3.4
+PKG_VERSION:=4.0
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_SUBDIR:=$(PKG_DISTNAME)-binaries-v$(PKG_VERSION)
 PKG_SOURCE:=$(PKG_SOURCE_SUBDIR).tar.bz2
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/hw/$(PKG_DISTNAME)/-/releases/v$(PKG_VERSION)/downloads/
-PKG_HASH:=2b0888fb065b279dc5eac90a76fea8e2353bd554b16df07515c4114d6d0a2c8e
+PKG_HASH:=64b6010f587d89c192685d152644075a5e0abf431eb069ac42981524065a0053
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 PKG_LICENSE:=GPL-3.0-or-later
