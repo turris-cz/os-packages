@@ -1,0 +1,50 @@
+#
+# Copyright (C) 2024 CZ.NIC z. s. p. o. (https://www.nic.cz/)
+#
+# This is free software, licensed under the GNU General Public License v3.
+# See /LICENSE for more information.
+#
+
+include $(TOPDIR)/rules.mk
+
+PKG_NAME:=reforis-gsm-plugin
+PKG_VERSION:=0.1.0
+PKG_RELEASE:=$(AUTORELEASE)
+
+PKG_SOURCE_PROTO:=git
+PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/reforis/reforis-gsm
+PKG_MIRROR_HASH:=6f12eb72426f906465f2576cf447fd435f7f5c59cefef274b22c767cd87e4105
+PKG_SOURCE_VERSION:=v$(PKG_VERSION)
+
+PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
+PKG_LICENSE:=GPL-3.0-or-later
+PKG_LICENSE_FILES:=LICENSE
+
+PKG_BUILD_DEPENDS:=node/host hatch-reforis/host
+
+PYTHON3_PKG_WHEEL_NAME:=reforis_gsm
+
+include $(INCLUDE_DIR)/package.mk
+include $(TOPDIR)/feeds/packages/lang/python/python3-package.mk
+include ../reforis/files/reforis-plugin.mk
+include ../reforis/files/reforis-translations.mk
+
+define Package/reforis-gsm-plugin
+  SECTION:=web
+  CATEGORY:=Web
+  SUBMENU:=reForis
+  TITLE:=reForis GSM plugin
+  URL:=https://gitlab.nic.cz/turris/reforis/reforis-gsm-plugin
+  DEPENDS:=\
+    +reforis\
+    +foris-controller-lte-module
+endef
+
+define Package/reforis-gsm-plugin/description
+  reForis GSM plugin allows seamlessly configure your GSM module.
+endef
+
+REFORIS_TRANSLATIONS:=cs
+
+$(eval $(call ReForisPlugin,reforis-gsm-plugin,reforis_gsm))
+# call BuildPackage <= assures OWR build system that this is package
