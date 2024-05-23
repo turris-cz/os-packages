@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2020, 2022 CZ.NIC, z. s. p. o. (https://www.nic.cz/)
+# Copyright (C) 2020-2024 CZ.NIC, z. s. p. o. (https://www.nic.cz/)
 #
 # This is free software, licensed under the GNU General Public License v3.
 # See /LICENSE for more information.
@@ -8,19 +8,17 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=foris-controller-nextcloud-module
-PKG_VERSION:=0.2.0
+PKG_VERSION:=1.0.0
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/foris-controller/foris-controller-nextcloud-module.git
-PKG_MIRROR_HASH:=c73fb5d0778c21bfed99d13f68bf17a707a6d75376bef7a8272dc7a979bc0405
+PKG_MIRROR_HASH:=0f4a2e67f6f30521fca5587fa3619b5dcbc93f24bfb0701d63d358303c2a597e
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 PKG_LICENSE:=GPL-3.0-or-later
 PKG_LICENSE_FILES:=LICENSE
-
-PYTHON3_PKG_FORCE_DISTUTILS_SETUP:=1
 
 include $(INCLUDE_DIR)/package.mk
 include $(TOPDIR)/feeds/packages/lang/python/python3-package.mk

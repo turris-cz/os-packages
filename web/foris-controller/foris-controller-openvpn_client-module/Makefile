@@ -8,19 +8,17 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=foris-controller-openvpn_client-module
-PKG_VERSION:=0.7.0
+PKG_VERSION:=1.0.0
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/foris-controller/foris-controller-openvpn_client-module.git
-PKG_MIRROR_HASH:=c453b6d3f61fe50c7a4ddc23b532440ab024535d0e7799ccfb4961f573ff3db5
+PKG_MIRROR_HASH:=00a6858bda5fd75f4d35a61ddebb6e899496f172f3d97c8b4a1ccfdf7f05f54d
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 PKG_LICENSE:=GPL-3.0-or-later
 PKG_LICENSE_FILES:=LICENSE
-
-PYTHON3_PKG_FORCE_DISTUTILS_SETUP:=1
 
 include $(INCLUDE_DIR)/package.mk
 include $(TOPDIR)/feeds/packages/lang/python/python3-package.mk

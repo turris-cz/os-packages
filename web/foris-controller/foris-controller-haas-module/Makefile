@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2020-2021 CZ.NIC z. s. p. o. (https://www.nic.cz/)
+# Copyright (C) 2020-2024 CZ.NIC z. s. p. o. (https://www.nic.cz/)
 #
 # This is free software, licensed under the GNU General Public License v3.
 # See /LICENSE for more information.
@@ -8,19 +8,17 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=foris-controller-haas-module
-PKG_VERSION:=0.1.1
+PKG_VERSION:=1.0.0
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/foris-controller/foris-controller-haas-module.git
-PKG_MIRROR_HASH:=5d8f50fc5be4755a12565ff8cb9759cdca22d616c10de898da17c4eca4b5469a
+PKG_MIRROR_HASH:=c2a42a015869206d8808144ee166f2eea210c48547e84a359e8ed443e3a4b07e
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 PKG_LICENSE:=GPL-3.0-or-later
 PKG_LICENSE_FILES:=LICENSE
-
-PYTHON3_PKG_FORCE_DISTUTILS_SETUP:=1
 
 include $(INCLUDE_DIR)/package.mk
 include $(TOPDIR)/feeds/packages/lang/python/python3-package.mk
