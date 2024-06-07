@@ -41,7 +41,6 @@ define Package/sentinel-minipot
     +logc-libevent \
     +msgpack-c \
     +base64c \
-    +sentinel-firewall \
     +sentinel-proxy
 endef
 

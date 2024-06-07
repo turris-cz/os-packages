@@ -1,0 +1,45 @@
+#!/bin/sh /etc/rc.common
+
+USE_PROCD=1
+START=25
+STOP=80
+
+CERT_KEY="/etc/sentinel_dynfw_server.pub"
+TABLE="turris-sentinel"
+SET="dynfw"
+CHAIN="dynfw"
+
+setup_firewall() {
+    nft list table "$TABLE" 2> /dev/null || nft create table inet "$TABLE"
+    nft delete chain "$CHAIN" table "$TABLE"_input 2> /dev/null
+    nft create chain "$CHAIN" table "$TABLE"_input '{ type filter hook input priority -5; }'
+    nft add rule inet "$TABLE"_input "$CHAIN" ct state established accept
+    nft add rule inet "$TABLE"_input "$CHAIN" ip saddr @"$SET"_v4 drop
+    nft add rule inet "$TABLE"_input "$CHAIN" ip6 saddr @"$SET"_v6 drop
+    nft delete chain "$CHAIN" table "$TABLE"_forward 2> /dev/null
+    nft create chain "$CHAIN" table "$TABLE"_forward '{ type filter hook forward priority -5; }'
+    nft add rule inet "$TABLE"_forward "$CHAIN" ct state established accept
+    nft add rule inet "$TABLE"_forward "$CHAIN" ip saddr @"$SET"_v4 drop
+    nft add rule inet "$TABLE"_forward "$CHAIN" ip6 saddr @"$SET"_v6 drop
+}
+
+teardown_firewall() {
+    nft delete chain "$CHAIN" table "$TABLE"_input
+    nft delete chain "$CHAIN" table "$TABLE"_forward
+}
+
+start_service() {
+    setup_firewall
+    procd_open_instance
+    procd_set_param command dynfw-nftables-client
+    procd_append_param command --table "$TABLE"
+    procd_append_param command --set "$SET"
+    procd_append_param command --cert "$CERT_KEY"
+    # If not started, try ten times while waiting for 5 secs between tries
+    procd_set_param respawn 600 5 10
+    procd_close_instance
+}
+
+stop_service() {
+    teardown_firewall
+}
