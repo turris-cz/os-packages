@@ -35,7 +35,14 @@ endef
 define Package/sentinel-dynfw-c-client-iptables
 $(call Package/sentinel-dynfw-c-client/Default)
   TITLE+= - iptables
-  DEPENDS+=+libdynfw +ipset +iptables +sentinel-firewall
+  DEPENDS+=+firewall +libdynfw +ipset +iptables +sentinel-firewall-iptables
+  CONFLICTS:=sentinel-dynfw-client
+endef
+
+define Package/sentinel-dynfw-c-client-nftables
+$(call Package/sentinel-dynfw-c-client/Default)
+  TITLE+= - nftables
+  DEPENDS+=+libdynfw +nftables
   CONFLICTS:=sentinel-dynfw-client
 endef
 
@@ -58,6 +65,12 @@ define Package/sentinel-dynfw-c-client-iptables/description
   $(call Package/sentinel-dynfw-c-client/description/Default)
 
   This package takes care of integration into iptables based OpenWrt firewall.
+endef
+
+define Package/sentinel-dynfw-c-client-nftables/description
+  $(call Package/sentinel-dynfw-c-client/description/Default)
+
+  This package takes care of integration into nftables based firewall.
 endef
 
 define Package/libdynfw/description
@@ -90,11 +103,18 @@ define Package/sentinel-dynfw-c-client-snapshoter/install
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/install/usr/bin/dynfw-snapshoter $(1)/usr/bin
 endef
 
+define Package/sentinel-dynfw-c-client-nftables/install
+	$(INSTALL_DIR) $(1)/usr/sbin
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/install/usr/bin/dynfw-nfset-client $(1)/usr/sbin
+	$(INSTALL_DIR) $(1)/etc/init.d
+	$(INSTALL_BIN) ./files/init.nftables $(1)/etc/init.d/sentinel-dynfw-client
+endef
+
 define Package/sentinel-dynfw-c-client-iptables/install
 	$(INSTALL_DIR) $(1)/usr/sbin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/install/usr/bin/dynfw-ipset-client $(1)/usr/sbin
 	$(INSTALL_DIR) $(1)/etc/init.d
-	$(INSTALL_BIN) ./files/init $(1)/etc/init.d/sentinel-dynfw-client
+	$(INSTALL_BIN) ./files/init.iptables $(1)/etc/init.d/sentinel-dynfw-client
 	$(INSTALL_DIR) $(1)/etc/uci-defaults
 	$(INSTALL_BIN) ./files/uci-defaults $(1)/etc/uci-defaults/99-sentinel-dynfw-client
 	$(INSTALL_DIR) $(1)/usr/libexec/sentinel/firewall.d
@@ -104,4 +124,5 @@ endef
 
 $(eval $(call BuildPackage,libdynfw))
 $(eval $(call BuildPackage,sentinel-dynfw-c-client-iptables))
+$(eval $(call BuildPackage,sentinel-dynfw-c-client-nftables))
 $(eval $(call BuildPackage,sentinel-dynfw-c-client-snapshoter))
