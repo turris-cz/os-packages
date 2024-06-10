@@ -16,7 +16,7 @@ port_redirect_zone() {
 	config_get_bool enabled "$config_section" "haas_proxy" "0"
 	[ "$enabled" = "1" ] || return 0
 
-	iptables_redirect "$zone" 22 "$local_port" "HaaS proxy"
+	port_redirect "$zone" 22 "$local_port" "HaaS proxy"
 }
 
 config_load "firewall"
