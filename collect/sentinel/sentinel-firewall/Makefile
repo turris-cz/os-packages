@@ -8,7 +8,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=sentinel-firewall
-PKG_VERSION:=0.1.4
+PKG_VERSION:=0.1.5
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
@@ -22,7 +22,8 @@ define Package/sentinel-firewall-iptables
   PROVIDES:=sentinel-firewall
   TITLE:=Turris Sentinel Firewall iptables integration
   DEPENDS:=+firewall +iptables-zz-legacy +ip6tables-zz-legacy
-  CONFLICTS:=sentinel-firewall-nftables
+  CONFLICTS:=sentinel-firewall-nftables \
+             firewall4
 endef
 
 define Package/sentinel-firewall-nftables
@@ -32,7 +33,8 @@ define Package/sentinel-firewall-nftables
   PROVIDES:=sentinel-firewall
   TITLE:=Turris Sentinel Firewall nftables integration
   DEPENDS:=+firewall4 +iptables-zz-legacy +ip6tables-zz-legacy
-  CONFLICTS:=sentinel-firewall-iptables
+  CONFLICTS:=sentinel-firewall-iptables \
+             firewall
 endef
 
 Build/Compile:=:
