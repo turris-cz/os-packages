@@ -23,7 +23,7 @@ PKG_LICENSE_FILES:=LICENSE
 HOST_BUILD_DEPENDS:= \
 	python3/host \
 	python-babel/host \
-	python3-hatchling/host
+	python-hatchling/host
 
 include $(TOPDIR)/feeds/packages/lang/python/pypi.mk
 include $(INCLUDE_DIR)/package.mk
