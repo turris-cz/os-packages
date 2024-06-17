@@ -43,7 +43,6 @@ define ReForisPlugin
 
  define Py3Package/$(1)/filespec
 +|$$(PYTHON3_PKG_DIR)
--|$$(PYTHON3_PKG_DIR)/reforis_static/__init__.py*
 -|$$(PYTHON3_PKG_DIR)/$(2)/translations/*
 +|$$(PYTHON3_PKG_DIR)/$(2)/translations/en
  endef
