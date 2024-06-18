@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=reforis-haas-plugin
-PKG_VERSION:=1.0.0
+PKG_VERSION:=1.1.0
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/reforis/reforis-haas
-PKG_MIRROR_HASH:=4d95dc21ebd4860bacfc8a7edda46ffbf9a3ee55a75c593fb45752b1b8d7d677
+PKG_MIRROR_HASH:=5f2b4f871afbcde9d85df6937682fcc121a5fbc2aba15acb896911f79c1e5e95
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
