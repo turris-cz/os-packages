@@ -1,5 +1,5 @@
 #
-## Copyright (C) 2022 CZ.NIC z.s.p.o. (https://www.nic.cz/)
+## Copyright (C) 2022-2024 CZ.NIC z.s.p.o. (https://www.nic.cz/)
 #
 ## This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=mox-a53-firmware
-PKG_VERSION:=2.7
+PKG_VERSION:=2.10
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE:=trusted-firmware-a-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://git.trustedfirmware.org/TF-A/trusted-firmware-a.git/snapshot
-PKG_HASH:=53422dc649153838e03820330ba17cb10afe3e330ecde0db11e4d5f1361a33e6
+PKG_HASH:=88215a62291b9ba87da8e50b077741103cdc08fb6c9e1ebd34dfaace746d3201
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 PKG_LICENSE:=BSD-3-Clause
