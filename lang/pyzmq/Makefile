@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2017-2021 CZ.NIC, z. s. p. o. (https://www.nic.cz/)
+# Copyright (C) 2017-2024 CZ.NIC, z. s. p. o. (https://www.nic.cz/)
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -8,13 +8,13 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=pyzmq
-PKG_VERSION:=22.3.0
+PKG_VERSION:=24.0.1
 PKG_RELEASE:=$(AUTORELEASE)
 
 PYPI_NAME:=pyzmq
-PKG_HASH:=8eddc033e716f8c91c6a2112f0a8ebc5e00532b4a6ae1eb0ccc48e027f9c671c
+PKG_HASH:=216f5d7dbb67166759e59b0479bca82b8acf9bed6015b526b8eb10143fb08e77
 
-PKG_BUILD_DEPENDS:=cython
+PKG_BUILD_DEPENDS:=python-cython/host
 
 include $(TOPDIR)/feeds/packages/lang/python/pypi.mk
 include $(INCLUDE_DIR)/package.mk
