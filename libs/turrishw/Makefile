@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2018-2022 CZ.NIC, z. s. p. o. (https://www.nic.cz/)
+# Copyright (C) 2018-2024 CZ.NIC, z. s. p. o. (https://www.nic.cz/)
 #
 # This is free software, licensed under the GNU General Public License v3.
 # See /LICENSE for more information.
@@ -19,6 +19,8 @@ PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 PKG_LICENSE:=BSL-1.0
 PKG_LICENSE_FILES:=LICENSE_1_0.txt
+
+PKG_BUILD_DEPENDS:=python-hatchling/host
 
 include $(INCLUDE_DIR)/package.mk
 include $(TOPDIR)/feeds/packages/lang/python/python3-package.mk
