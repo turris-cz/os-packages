@@ -42,7 +42,7 @@ endef
 define Package/sentinel-dynfw-c-client-nftables
 $(call Package/sentinel-dynfw-c-client/Default)
   TITLE+= - nftables
-  DEPENDS+=+libdynfw +nftables
+  DEPENDS+=+libdynfw +firewall4 +sentinel-firewall-nftables
   CONFLICTS:=sentinel-dynfw-client
 endef
 
