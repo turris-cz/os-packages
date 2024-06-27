@@ -39,7 +39,7 @@ define Package/sentinel-fwlogs
     +msgpack-c \
     +logc +logc-argp +logc-czmq \
     +libnetfilter-log \
-    +sentinel-firewall-iptables +iptables-mod-nflog \
+    +iptables-mod-nflog \
     +sentinel-proxy
   PROVIDES:=sentinel-nikola
   CONFLICTS:=sentinel-nikola

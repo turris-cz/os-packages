@@ -28,7 +28,19 @@ define Package/sentinel-dynfw-client
   TITLE:=Dynamic firewall client
   DEPENDS:=+python3-light +python3-zmq +python3-msgpack +python3-urllib \
     +ipset \
-    +sentinel-dynfw-cert +sentinel-firewall-iptables
+    +sentinel-firewall-iptables \
+    +sentinel-dynfw-cert
+endef
+
+define Package/sentinel-dynfw-client-nftables
+  SECTION:=collect
+  CATEGORY:=Collect
+  SUBMENU:=Sentinel
+  TITLE:=Dynamic firewall client
+  DEPENDS:=+python3-light +python3-zmq +python3-msgpack +python3-urllib \
+    +ipset \
+    +sentinel-firewall-nftables \
+    +sentinel-dynfw-cert
 endef
 
 define Package/sentinel-dynfw-client/description
@@ -51,4 +63,17 @@ define Package/sentinel-dynfw-client/install
 	$(INSTALL_DATA) ./files/sentinel-firewall-utils.sh $(1)/usr/libexec/sentinel/firewall.d/dynfw-utils.sh
 endef
 
+define Package/sentinel-dynfw-client-nftables/install
+	$(INSTALL_DIR) $(1)/usr/bin
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/client.py $(1)/usr/bin/sentinel-dynfw-client
+	$(INSTALL_DIR) $(1)/etc/init.d
+	$(INSTALL_BIN) files/init $(1)/etc/init.d/sentinel-dynfw-client
+	$(INSTALL_DIR) $(1)/etc/uci-defaults
+	$(INSTALL_BIN) ./files/uci-defaults $(1)/etc/uci-defaults/99-sentinel-dynfw-client
+	$(INSTALL_DIR) $(1)/usr/libexec/sentinel/firewall.d
+	$(INSTALL_BIN) ./files/sentinel-firewall.sh $(1)/usr/libexec/sentinel/firewall.d/50-dynfw.sh
+	$(INSTALL_DATA) ./files/sentinel-firewall-utils.sh $(1)/usr/libexec/sentinel/firewall.d/dynfw-utils.sh
+endef
+
 $(eval $(call BuildPackage,sentinel-dynfw-client))
+$(eval $(call BuildPackage,sentinel-dynfw-client-nftables))
