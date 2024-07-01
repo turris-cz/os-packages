@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=reforis-snapshots-plugin
-PKG_VERSION:=2.0.0
+PKG_VERSION:=2.1.0
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/reforis/reforis-snapshots
-PKG_MIRROR_HASH:=9fd0122dfffd077dcbebb37710521ff11fb9c11f8350d772b6cb3f8c06efacd7
+PKG_MIRROR_HASH:=6d14592b8cc71bdc896a5c6afd821b48877bd18437abab84bdc60c46203728d7
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
