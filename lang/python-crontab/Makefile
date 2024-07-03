@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2021 CZ.NIC, z. s. p. o. (https://www.nic.cz/)
+# Copyright (C) 2021-2024 CZ.NIC, z. s. p. o. (https://www.nic.cz/)
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -8,14 +8,14 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=python-crontab
-PKG_VERSION:=0.23.0
+PKG_VERSION:=1.0.1
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_LICENSE:=LGPL-3.0-or-later
 PKG_LICENSE_FILES:=LICENSE3
 
 PYPI_NAME:=crontab
-PKG_HASH:=ca79dede9c2f572bb32f38703e8fddcf3427e86edc838f2ffe7ae4b9ee2b0733
+PKG_HASH:=89477e3f93c81365e738d5ee2659509e6373bb2846de13922663e79aa74c6b91
 
 include $(TOPDIR)/feeds/packages/lang/python/pypi.mk
 include $(INCLUDE_DIR)/package.mk
