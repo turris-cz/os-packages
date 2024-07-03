@@ -1,5 +1,5 @@
 #
-## Copyright (C) 2019 CZ.NIC z.s.p.o. (http://www.nic.cz/)
+## Copyright (C) 2019-2024 CZ.NIC z.s.p.o. (http://www.nic.cz/)
 #
 ## This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=cronie
-PKG_VERSION:=1.6.1
+PKG_VERSION:=1.7.2
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://github.com/cronie-crond/cronie/archive
-PKG_HASH:=1ddbc8f8d07dfe1d45998b0a0cbd9a216cd4d7bc64d1626b2bc8b3a69e4641d1
+PKG_HASH:=241ecc1dcd8d4b2a6744fe93509932254d20b7bb9d979d27429809493806357f
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 PKG_LICENSE:=ISC
