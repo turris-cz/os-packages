@@ -15,6 +15,9 @@ port_redirect_zone() {
 	config_get zone "$config_section" "name"
 	config_get_bool enabled "$config_section" "haas_proxy" "0"
 	[ "$enabled" = "1" ] || return 0
+    if [ -x /sbin/fw4 ]; then
+        nftables_set_portfw
+    fi
 
 	port_redirect "$zone" 22 "$local_port" "HaaS proxy"
 }
