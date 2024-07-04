@@ -10,22 +10,24 @@ SET="dynfw"
 CHAIN="dynfw"
 
 setup_firewall() {
-    nft list table "$TABLE" 2> /dev/null || nft create table inet "$TABLE"
-    nft delete chain "$CHAIN" table "$TABLE"_input 2> /dev/null
-    nft create chain "$CHAIN" table "$TABLE"_input '{ type filter hook input priority -5; }'
-    nft add rule inet "$TABLE"_input "$CHAIN" ct state established accept
-    nft add rule inet "$TABLE"_input "$CHAIN" ip saddr @"$SET"_v4 drop
-    nft add rule inet "$TABLE"_input "$CHAIN" ip6 saddr @"$SET"_v6 drop
-    nft delete chain "$CHAIN" table "$TABLE"_forward 2> /dev/null
-    nft create chain "$CHAIN" table "$TABLE"_forward '{ type filter hook forward priority -5; }'
-    nft add rule inet "$TABLE"_forward "$CHAIN" ct state established accept
-    nft add rule inet "$TABLE"_forward "$CHAIN" ip saddr @"$SET"_v4 drop
-    nft add rule inet "$TABLE"_forward "$CHAIN" ip6 saddr @"$SET"_v6 drop
+    nft list table "$TABLE" 2> /dev/null || nft add table inet "$TABLE"
+    nft delete chain inet "$TABLE" "$SET"-"$TABLE"_input 2> /dev/null
+    nft add chain inet "$TABLE" "$SET"-"$TABLE"_input '{ type filter hook input priority -5; }'
+    nft add rule inet "$TABLE" "$SET"-"$TABLE"_input ct state established accept
+    nft add rule inet "$TABLE" "$SET"-"$TABLE"_input ip saddr @"$SET"_v4 drop
+    nft add rule inet "$TABLE" "$SET"-"$TABLE"_input ip6 saddr @"$SET"_v6 drop
+    nft delete chain inet "$TABLE" "$SET"-"$TABLE"_forward 2> /dev/null
+    nft add chain inet "$TABLE" "$SET"-"$TABLE"_forward '{ type filter hook forward priority -5; }'
+    nft add rule inet "$TABLE" "$SET"-"$TABLE"_forward ct state established accept
+    nft add rule inet "$TABLE" "$SET"-"$TABLE"_forward ip saddr @"$SET"_v4 drop
+    nft add rule inet "$TABLE" "$SET"-"$TABLE"_forward ip6 saddr @"$SET"_v6 drop
+
+
 }
 
 teardown_firewall() {
-    nft delete chain "$CHAIN" table "$TABLE"_input
-    nft delete chain "$CHAIN" table "$TABLE"_forward
+    nft delete chain inet "$TABLE" "$SET"-"$TABLE"_input
+    nft delete chain inet "$TABLE" "$SET"-"$TABLE"_forward
 }
 
 start_service() {
