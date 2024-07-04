@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2020 CZ.NIC, z.s.p.o.
+# Copyright (C) 2018-2024 CZ.NIC, z.s.p.o.
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -7,12 +7,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=libpaho-mqtt-c
-PKG_VERSION:=1.3.9
+PKG_VERSION:=1.3.13
 PKG_RELEASE=$(AUTORELEASE)
 
 PKG_SOURCE:=v$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://codeload.github.com/eclipse/paho.mqtt.c/tar.gz/v$(PKG_VERSION)?
-PKG_HASH:=386c9b5fa1cf6d0d516db12d57fd8f6a410dd0fdc5e9a2da870aae437a2535ed
+PKG_HASH:=47c77e95609812da82feee30db435c3b7c720d4fd3147d466ead126e657b6d9c
 PKG_BUILD_DIR:=$(BUILD_DIR)/paho.mqtt.c-$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
