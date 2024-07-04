@@ -6,8 +6,6 @@ uci -q batch <<EOT
 	set firewall.sentinel_firewall=include
 	set firewall.sentinel_firewall.type='script'
 	set firewall.sentinel_firewall.path='/usr/libexec/sentinel/firewall.sh'
-	set firewall.sentinel_firewall.family='any'
-	set firewall.sentinel_firewall.reload='1'
 	commit firewall.sentinel_firewall
 EOT
 # We order include to last position in firewall config. The reason is that

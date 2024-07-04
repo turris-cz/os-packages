@@ -36,14 +36,18 @@ define Package/sentinel-dynfw-c-client-iptables
 $(call Package/sentinel-dynfw-c-client/Default)
   TITLE+= - iptables
   DEPENDS+=+firewall +libdynfw +ipset +iptables +sentinel-firewall-iptables
-  CONFLICTS:=sentinel-dynfw-client
+  PROVIDES:=sentinel-dynfw-client
+  CONFLICTS:=sentinel-firewall-nftables \
+             sentinel-dynfw-c-client-nftables
 endef
 
 define Package/sentinel-dynfw-c-client-nftables
 $(call Package/sentinel-dynfw-c-client/Default)
   TITLE+= - nftables
   DEPENDS+=+libdynfw +firewall4 +sentinel-firewall-nftables
-  CONFLICTS:=sentinel-dynfw-client
+  PROVIDES:=sentinel-dynfw-client
+  CONFLICTS:=sentinel-firewall-iptables \
+             sentinel-dynfw-c-client-iptables
 endef
 
 define Package/libdynfw
