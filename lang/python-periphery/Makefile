@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2017-2020 CZ.NIC, z. s. p. o. (https://www.nic.cz/)
+# Copyright (C) 2017-2024 CZ.NIC, z. s. p. o. (https://www.nic.cz/)
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -8,14 +8,14 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=python-periphery
-PKG_VERSION:=2.3.0
+PKG_VERSION:=2.4.1
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_LICENSE:=MIT
 PKG_LICENSE_FILES:=LICENSE
 
 PYPI_NAME:=python-periphery
-PKG_HASH:=8a8ec019d9b330a6a6f69a7de61d14b4c98b102d76359047c5ce0263e12246a6
+PKG_HASH:=61d461d736982a6f766e878720ab10a68151e2e8c1086600d9389ac47e40e88a
 
 include $(TOPDIR)/feeds/packages/lang/python/pypi.mk
 include $(INCLUDE_DIR)/package.mk
