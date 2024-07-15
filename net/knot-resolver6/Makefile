@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2015-2023 CZ.NIC, z. s. p. o. (https://www.nic.cz/)
+# Copyright (C) 2015-2024 CZ.NIC, z. s. p. o. (https://www.nic.cz/)
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -22,7 +22,7 @@ PKG_MAINTAINER:=Knot Resolver <knot-resolver@labs.nic.cz>
 PKG_LICENSE:=GPL-3.0-later
 PKG_LICENSE_FILES:=COPYING
 
-PKG_BUILD_DEPENDS:=meson/host protobuf-c/host python-poetry-core/host
+PKG_BUILD_DEPENDS:=protobuf-c/host python-poetry-core/host
 
 PKG_INSTALL:=1
 
