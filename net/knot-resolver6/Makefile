@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2015-2023 CZ.NIC, z. s. p. o. (https://www.nic.cz/)
+# Copyright (C) 2015-2024 CZ.NIC, z. s. p. o. (https://www.nic.cz/)
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -10,12 +10,12 @@ PKG_RELRO_FULL:=0
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=knot-resolver6
-PKG_VERSION:=6.0.6
+PKG_VERSION:=6.0.8
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/knot/knot-resolver.git
-PKG_MIRROR_HASH:=7f68c99d6717c6c931a3533f320b9cf5d1d9648823eade2e7d08e8990e2c4d3d
+PKG_MIRROR_HASH:=d646faacc27b730de969b1335d2ef0e89248e08ac638888595e2430d7e50e720
 PKG_SOURCE_VERSION:=v${PKG_VERSION}
 
 PKG_MAINTAINER:=Knot Resolver <knot-resolver@labs.nic.cz>
@@ -95,7 +95,6 @@ endef
 MESON_ARGS+= \
 	$(if $(CONFIG_PACKAGE_knot-resolver_dnstap), -Ddnstap=enabled,-Ddnstap=disabled) \
 	-Dcapng=disabled \
-	-Dmanager=disabled \
 	-Dconfig_tests=disabled \
 	-Ddoc=disabled \
 	-Dinstall_kresd_conf=disabled \
