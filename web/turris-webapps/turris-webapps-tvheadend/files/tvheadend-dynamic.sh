@@ -10,7 +10,8 @@ cat << EOF
 \$HTTP["url"] =~ "^/tvheadend" {
     proxy.header = (
      "map-host-request" => ( "-" => "$IPADDR" ),
-     "https-remap" => "enable"
+     "https-remap" => "enable",
+     "upgrade" => "enable"
    )
    proxy.server = ( "" => ( ( "host" => "$IPADDR", "port" => "9981") ) )
 }
