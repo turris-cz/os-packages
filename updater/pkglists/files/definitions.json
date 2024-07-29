@@ -23,7 +23,7 @@
 			},
 			"dynfw_new": {
 				"title": "Experimental client for Dynamic Firewall",
-				"description": "New client that adds firewall rules to block attackers detected by Turris Sentinel network (replaces the old one).",
+				"description": "New client that adds firewall rules to block attackers detected by Turris Sentinel network (replaces the old one). Note that only one (Dynamic Firewall or Experimental Client) should be installed at a time. If both are enabled, then the order of enabling determines which is actually used. We recommend to firstly uninstall (uncheck) the old one and then check the new one.",
 				"default": false,
 				"labels": ["experimental"],
 				"url": "https://docs.turris.cz/basics/collect/dynfw/collect-dynfw/"
