@@ -65,6 +65,7 @@ MESON_ARGS+= \
 	$(if $(CONFIG_PACKAGE_knot-resolver_dnstap), -Ddnstap=enabled,-Ddnstap=disabled) \
 	-Dcapng=disabled \
 	-Dconfig_tests=disabled \
+	-Dinstall_rpath=disabled \
 	-Ddoc=disabled \
 	-Dinstall_kresd_conf=disabled \
 	-Dinstall_root_keys=disabled \
