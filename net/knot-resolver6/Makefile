@@ -29,7 +29,6 @@ PKG_INSTALL:=1
 PYTHON3_PKG_SETUP_DIR:=$(PKG_BUILD_DIR)/manager
 PYTHON3_PKG_BUILD:=0
 PYTHON3_PKG_WHEEL_NAME:=knot_resolver_manager
-PYTHON3_PKG_WHEEL_VERSION:=0.1.0
 Hooks/Configure/Post+=Py3Build/FindStdlibDepends
 
 include $(INCLUDE_DIR)/package.mk
@@ -131,7 +130,7 @@ define Package/knot-resolver6-manager/install
 			--destdir "$(1)" \
 			--no-compile-bytecode \
 			--prefix /usr \
-			"$(PYTHON3_PKG_BUILD_DIR)"/openwrt-build/$(PYTHON3_PKG_WHEEL_NAME)-$(PYTHON3_PKG_WHEEL_VERSION)-*.whl \
+			"$(PYTHON3_PKG_BUILD_DIR)"/openwrt-build/$(PYTHON3_PKG_WHEEL_NAME)-$(PKG_VERSION)-*.whl \
 		, \
 		$(PYTHON3_PKG_INSTALL_VARS) \
 	)
