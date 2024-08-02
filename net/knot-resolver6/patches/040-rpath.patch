@@ -1,0 +1,15 @@
+--- a/meson.build	2024-08-01 13:57:52.099175921 +0200
++++ b/meson.build	2024-08-01 13:58:55.832382793 +0200
+@@ -239,7 +239,11 @@
+     p_len = run_command('sh', '-c', 'echo "' + p + '" | wc -c', check: true).stdout().to_int()
+     l = ep / l.substring(p_len)
+   endif
+-  conf_data.set_quoted(libname + '_SONAME', l / lib.get_pkgconfig_variable('soname'))
++  if rpath_opt == 'disabled'
++    conf_data.set_quoted(libname + '_SONAME', lib.get_pkgconfig_variable('soname'))
++  else
++    conf_data.set_quoted(libname + '_SONAME', l / lib.get_pkgconfig_variable('soname'))
++  endif
+ endforeach
+ 
+ kresconfig = configure_file(
