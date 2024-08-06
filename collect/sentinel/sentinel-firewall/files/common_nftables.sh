@@ -26,10 +26,6 @@ firewall_cleanup() {
     local new_table="$(echo "$line" | sed -n 's|table inet \(.*\) {.*|\1|p')"
         if [ -n "$new_table" ]; then
             table="$new_table"
-            if [ "$table" = turris-sentinel ]; then
-                handle="$(echo "$line" | sed -n 's|.* # handle \([0-9]*\)|\1|p')"
-                nft delete table inet handle "$handle"
-            fi
             continue
         fi
         [ "$table" = fw4 ] || continue
