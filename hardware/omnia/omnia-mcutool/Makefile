@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2016-2023 CZ.NIC z.s.p.o. (http://www.nic.cz/)
+# Copyright (C) 2016-2024 CZ.NIC z.s.p.o. (http://www.nic.cz/)
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=omnia-mcutool
-PKG_VERSION:=0.3-rc2
+PKG_VERSION:=0.3-rc3
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.bz2
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/omnia-mcutool/-/archive/$(PKG_VERSION)/
-PKG_HASH:=68e407fca16ccaf4bd87401f710d6a4061029b4d474ac10c4c3253af73c242ac
+PKG_HASH:=80bc6a01ab86d51ebfdbddf77d74eead999a9bf7dbd08ca1fd4e8e1910eaf192
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 PKG_LICENSE:=GPL-2.0-or-later
