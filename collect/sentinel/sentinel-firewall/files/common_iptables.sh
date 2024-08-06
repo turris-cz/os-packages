@@ -34,6 +34,25 @@ ip6tables_nat_chain_exists() {
 	ip6tables-legacy -t nat -S "$1" >/dev/null 2>&1
 }
 
+# Remove any existing rule
+# (firewall3 removes only rules in chains it knows so we have to do this to
+# potentially clean after ourselves)
+firewall_cleanup() {
+for IPTABLES in iptables-legacy ip6tables-legacy; do
+	for table in filter nat mangle raw; do
+		$IPTABLES -t "$table" -S \
+			| grep -F ' --comment "!sentinel:' \
+			| while read -r operation rule; do
+				# Argument -A is dropped (variable 'operation' is intentionally left out)
+				# Note: xargs is used here because it handles quotes properly
+over
+				# just plain expansion
+				echo "$rule" | xargs -x $IPTABLES -t "$table" -D
+			done
+	done
+done
+}
+
 # Add drop rule
 # zone: name of firewall zone incoming packets are coming from
 # chain: chain to be affected (input/forward)
