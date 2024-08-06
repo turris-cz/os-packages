@@ -21,7 +21,7 @@ fwlogs_logging() {
 	[ "$enabled" = "1" ] || return 0
 
 	report_operation "Logging of zone '$zone'"
-	nft insert rule inet fw4 "drop_from_${zone}" log group "$nflog_group" queue-threshold "$nflog_threshold"
+	nft insert rule inet fw4 "drop_from_${zone}" log group "$nflog_group" queue-threshold "$nflog_threshold" comment "!sentinel: fwlogs"
 }
 
 config_load "firewall"
