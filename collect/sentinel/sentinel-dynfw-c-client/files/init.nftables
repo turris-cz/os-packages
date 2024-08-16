@@ -10,24 +10,26 @@ SET="dynfw"
 CHAIN="dynfw"
 
 setup_firewall() {
-    nft list tables 2> /dev/null | grep -q " $TABLE" || nft create table inet "$TABLE"
-    nft delete chain inet "$TABLE" "$SET"-"$TABLE"_input 2> /dev/null
-    nft add chain inet "$TABLE" "$SET"-"$TABLE"_input '{ type filter hook input priority -5; }'
-    nft add rule inet "$TABLE" "$SET"-"$TABLE"_input ct state established accept
-    nft add set inet "$TABLE" "${SET}_4" '{ type ipv4_addr; comment "IPv4 addresses blocked by Turris Sentinel"; }'
-    nft add rule inet "$TABLE" "$SET"-"$TABLE"_input ip saddr @"$SET"_4 drop
-    nft add set inet "$TABLE" "${SET}_6" '{ type ipv6_addr; flags interval; comment "IPv6 addresses blocked by Turris Sentinel"; }'
-    nft add rule inet "$TABLE" "$SET"-"$TABLE"_input ip6 saddr @"$SET"_6 drop
-    nft delete chain inet "$TABLE" "$SET"-"$TABLE"_forward 2> /dev/null
-    nft add chain inet "$TABLE" "$SET"-"$TABLE"_forward '{ type filter hook forward priority -5; }'
-    nft add rule inet "$TABLE" "$SET"-"$TABLE"_forward ct state established accept
-    nft add rule inet "$TABLE" "$SET"-"$TABLE"_forward ip saddr @"$SET"_4 drop
-    nft add rule inet "$TABLE" "$SET"-"$TABLE"_forward ip6 saddr @"$SET"_6 drop
+    nft list table "$TABLE" 2> /dev/null | grep -q " $TABLE" || nft create table inet "$TABLE"
+    nft delete set inet "$TABLE" "$SET"_4 2> /dev/null
+    nft delete set inet "$TABLE" "$SET"_6 2> /dev/null
+    nft add set inet "$TABLE" "$SET"_4 '{ type ipv4_addr; comment "IPv4 addresses blocked by Turris Sentinel" ; }'
+    nft add set inet "$TABLE" "$SET"_6 '{ type ipv6_addr; flags interval; comment "IPv6 addresses blocked by Turris Sentinel" ; }'
+    nft delete chain "$TABLE" "$CHAIN"-"$TABLE"_input 2> /dev/null
+    nft create chain inet "$TABLE" "$CHAIN"-"$TABLE"_input '{ type filter hook input priority -5; }'
+    nft add rule inet "$TABLE" "$CHAIN"-"$TABLE"_input ct state established accept
+    nft add rule inet "$TABLE" "$CHAIN"-"$TABLE"_input ip saddr @dynfw_4 drop
+    nft add rule inet "$TABLE" "$CHAIN"-"$TABLE"_input ip6 saddr @dynfw_6 drop
+    nft delete chain "$TABLE" "$CHAIN"-"$TABLE"_forward 2> /dev/null
+    nft create chain inet "$TABLE" "$CHAIN"-"$TABLE"_forward '{ type filter hook input priority -5; }'
+    nft add rule inet "$TABLE" "$CHAIN"-"$TABLE"_forward ct state established accept
+    nft add rule inet "$TABLE" "$CHAIN"-"$TABLE"_forward ip saddr @dynfw_4 drop
+    nft add rule inet "$TABLE" "$CHAIN"-"$TABLE"_forward ip6 saddr @dynfw_6 drop
 }
 
 teardown_firewall() {
-    nft delete chain inet "$TABLE" "$SET"-"$TABLE"_input 2> /dev/null
-    nft delete chain inet "$TABLE" "$SET"-"$TABLE"_forward 2> /dev/null
+    nft delete chain inet "$TABLE" "$CHAIN"-"$TABLE"_input 2> /dev/null
+    nft delete chain inet "$TABLE" "$CHAIN"-"$TABLE"_forward 2> /dev/null
 }
 
 start_service() {
