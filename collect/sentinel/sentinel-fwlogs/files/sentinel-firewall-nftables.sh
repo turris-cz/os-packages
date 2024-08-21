@@ -21,7 +21,12 @@ fwlogs_logging() {
 	[ "$enabled" = "1" ] || return 0
 
 	report_operation "Logging of zone '$zone'"
-	nft insert rule inet fw4 "reject_from_${zone}" log group "$nflog_group" queue-threshold "$nflog_threshold" comment "\"!sentinel: fwlogs\""
+	if nft list chains | grep -q "reject_from_${zone}"; then
+		nft insert rule inet fw4 "reject_from_${zone}" log group "$nflog_group" queue-threshold "$nflog_threshold" comment "\"!sentinel: fwlogs\""
+	fi
+	if nft list chains | grep -q "drop_from_${zone}"; then
+		nft insert rule inet fw4 "drop_from_${zone}" log group "$nflog_group" queue-threshold "$nflog_threshold" comment "\"!sentinel: fwlogs\""
+	fi
 }
 
 config_load "firewall"
