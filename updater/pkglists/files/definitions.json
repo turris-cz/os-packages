@@ -1,10 +1,17 @@
 {
 	"3g": {
-		"title": "Extensions of network protocols for 3G/4G/5G",
+		"title": "Extensions of network protocols for 3G/4G",
 		"description": "Support for Turris Omnia and Turris MOX LTE pack. Nowadays installed automatically whenever needed.",
 		"url": "https://wiki.turris.cz/doc/en/howto/lte_modem_install",
 		"labels": ["deprecated"]
 	},
+ifdef(`OMNIA',`
+	"5g-kit": {
+		"title": "Support for Turris Omnia 5G kit",
+		"description": "Support for Turris Omnia 5G kit. Reroutes front USB 3.0 to the internal slot to support it.",
+		"url": "https://docs.turris.cz/hw/omnia/5g",
+		"labels": ["experimental"]
+	},')
 	"datacollect": {
 		"title": "Advanced security & analytics - Turris Sentinel",
 		"description": "Software for participation in threat detection program which provides distributed adaptive firewall and statistics.",
