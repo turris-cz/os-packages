@@ -22,17 +22,16 @@ port_redirect_zone() {
 	config_get zone "$config_section" "name"
 	config_get_bool enabled "$config_section" "sentinel_minipot" "0"
 	[ "$enabled" = "1" ] || return 0
-
 	[ "$ftp_port" = "0" ] || \
-		iptables_redirect "$zone" 21 "$ftp_port" "Minipot FTP"
+		port_redirect "$zone" 21 "$ftp_port" "Minipot FTP"
 	[ "$http_port" = "0" ] || \
-		iptables_redirect "$zone" 80 "$http_port" "Minipot HTTP"
+		port_redirect "$zone" 80 "$http_port" "Minipot HTTP"
 	[ "$smtp_port" = "0" ] || {
-		iptables_redirect "$zone" 25 "$smtp_port" "Minipot SMTP"
-		iptables_redirect "$zone" 587 "$smtp_port" "Minipot SMTP submission"
+		port_redirect "$zone" 25 "$smtp_port" "Minipot SMTP"
+		port_redirect "$zone" 587 "$smtp_port" "Minipot SMTP submission"
 	}
 	[ "$telnet_port" = "0" ] || \
-		iptables_redirect "$zone" 23 "$telnet_port" "Minipot Telnet"
+		port_redirect "$zone" 23 "$telnet_port" "Minipot Telnet"
 }
 
 config_load "firewall"
