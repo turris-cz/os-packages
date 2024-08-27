@@ -34,6 +34,25 @@ ip6tables_nat_chain_exists() {
 	ip6tables-legacy -t nat -S "$1" >/dev/null 2>&1
 }
 
+# Remove any existing rule
+# (firewall3 removes only rules in chains it knows so we have to do this to
+# potentially clean after ourselves)
+firewall_cleanup() {
+for IPTABLES in iptables-legacy ip6tables-legacy; do
+	for table in filter nat mangle raw; do
+		$IPTABLES -t "$table" -S \
+			| grep -F ' --comment "!sentinel:' \
+			| while read -r operation rule; do
+				# Argument -A is dropped (variable 'operation' is intentionally left out)
+				# Note: xargs is used here because it handles quotes properly
+over
+				# just plain expansion
+				echo "$rule" | xargs -x $IPTABLES -t "$table" -D
+			done
+	done
+done
+}
+
 # Add drop rule
 # zone: name of firewall zone incoming packets are coming from
 # chain: chain to be affected (input/forward)
@@ -74,6 +93,34 @@ iptables_set_drop() {
 # local_port: local port to redirect packet to
 # description: description for this redirect printed and recorded in comment
 iptables_redirect() {
+	local zone="$1"
+	local port="$2"
+	local local_port="$3"
+	local description="$4"
+
+	report_operation "$description on zone '$zone' ($port -> $local_port)"
+	if iptables_nat_chain_exists "zone_${zone}_prerouting"; then
+		iptables-legacy -t nat -A "zone_${zone}_prerouting" \
+			-p tcp \
+			-m tcp --dport "$port" \
+			-m comment --comment "!sentinel: $description port redirect" \
+			-j REDIRECT --to-ports "$local_port"
+	fi
+	if ip6tables_nat_chain_exists "zone_${zone}_prerouting"; then
+		ip6tables-legacy -t nat -A "zone_${zone}_prerouting" \
+			-p tcp \
+			-m tcp --dport "$port" \
+			-m comment --comment "!sentinel: $description port redirect" \
+			-j REDIRECT --to-ports "$local_port"
+	fi
+}
+
+# Add port redirect rule - this function is doubled due to part moving to nftables
+# zone: name of firewall zone incoming packets are coming from
+# port: target port of packet
+# local_port: local port to redirect packet to
+# description: description for this redirect printed and recorded in comment
+port_redirect() {
 	local zone="$1"
 	local port="$2"
 	local local_port="$3"
