@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=foris-controller-haas-module
-PKG_VERSION:=1.0.0
+PKG_VERSION:=1.1.0
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/foris-controller/foris-controller-haas-module.git
-PKG_MIRROR_HASH:=c2a42a015869206d8808144ee166f2eea210c48547e84a359e8ed443e3a4b07e
+PKG_MIRROR_HASH:=5aba715f5677cb1b746b348192763d25215a8dfdd547156aab9514ff9e08a6d8
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
