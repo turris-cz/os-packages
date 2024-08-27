@@ -8,7 +8,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=sentinel-firewall
-PKG_VERSION:=0.1.3
+PKG_VERSION:=0.1.4
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
@@ -22,6 +22,19 @@ define Package/sentinel-firewall-iptables
   PROVIDES:=sentinel-firewall
   TITLE:=Turris Sentinel Firewall iptables integration
   DEPENDS:=+firewall +iptables-zz-legacy +ip6tables-zz-legacy
+  CONFLICTS:=sentinel-firewall-nftables \
+             firewall4
+endef
+
+define Package/sentinel-firewall-nftables
+  SECTION:=collect
+  CATEGORY:=Collect
+  SUBMENU:=Sentinel
+  PROVIDES:=sentinel-firewall
+  TITLE:=Turris Sentinel Firewall nftables integration
+  DEPENDS:=+firewall4 +iptables-zz-legacy +ip6tables-zz-legacy
+  CONFLICTS:=sentinel-firewall-iptables \
+             firewall
 endef
 
 Build/Compile:=:
@@ -42,7 +55,17 @@ endef
 define Package/sentinel-firewall-iptables/install
 	$(INSTALL_DIR) $(1)/usr/libexec/sentinel/firewall.d
 	$(INSTALL_BIN) ./files/firewall.sh $(1)/usr/libexec/sentinel/
-	$(INSTALL_DATA) ./files/common.sh $(1)/usr/libexec/sentinel/firewall.d/
+	$(INSTALL_DATA) ./files/common_iptables.sh $(1)/usr/libexec/sentinel/firewall.d/common.sh
+	$(INSTALL_DIR) $(1)/etc/uci-defaults
+	$(INSTALL_BIN) ./files/uci-defaults $(1)/etc/uci-defaults/99-sentinel-firewall
+	$(INSTALL_DIR) $(1)/lib/functions
+	$(INSTALL_DATA) ./files/functions.sh $(1)/lib/functions/sentinel-firewall.sh
+endef
+
+define Package/sentinel-firewall-nftables/install
+	$(INSTALL_DIR) $(1)/usr/libexec/sentinel/firewall.d
+	$(INSTALL_BIN) ./files/firewall.sh $(1)/usr/libexec/sentinel/
+	$(INSTALL_DATA) ./files/common_nftables.sh $(1)/usr/libexec/sentinel/firewall.d/common.sh
 	$(INSTALL_DIR) $(1)/etc/uci-defaults
 	$(INSTALL_BIN) ./files/uci-defaults $(1)/etc/uci-defaults/99-sentinel-firewall
 	$(INSTALL_DIR) $(1)/lib/functions
@@ -54,5 +77,11 @@ define Package/sentinel-firewall-iptables/postinst
 [ -n "$$IPKG_INSTROOT" ] || /etc/init.d/firewall restart
 endef
 
+define Package/sentinel-firewall-nftables/postinst
+#!/bin/sh
+[ -n "$$IPKG_INSTROOT" ] || /etc/init.d/firewall restart
+endef
+
 $(eval $(call BuildPackage,sentinel-firewall-iptables))
+$(eval $(call BuildPackage,sentinel-firewall-nftables))
 $(eval $(call BuildPackage,sentinel-dynfw-cert))
