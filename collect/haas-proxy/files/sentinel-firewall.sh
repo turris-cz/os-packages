@@ -4,9 +4,14 @@ SF_DIR="${0%/*}"
 . "$SF_DIR/common.sh"
 . /lib/functions.sh
 
-
 config_load "haas"
 config_get local_port "settings" "local_port" "2525"
+
+# This is simple helper to check for existence of given rule
+service_haas_status() {
+    ubus -S call service list | grep -Eo haas_proxy >/dev/null 2>&1
+}
+
 
 
 port_redirect_zone() {
@@ -14,9 +19,12 @@ port_redirect_zone() {
 	local zone enabled
 	config_get zone "$config_section" "name"
 	config_get_bool enabled "$config_section" "haas_proxy" "0"
-	[ "$enabled" = "1" ] || return 0
+	[ "$enabled" = "1" ] && service_haas_status || return 0
+        if [ -x /sbin/fw4 ]; then
+            nftables_set_portfw
+        fi
 
-	iptables_redirect "$zone" 22 "$local_port" "HaaS proxy"
+	port_redirect "$zone" 22 "$local_port" "HaaS proxy"
 }
 
 config_load "firewall"
