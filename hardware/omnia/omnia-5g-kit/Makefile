@@ -18,7 +18,7 @@ include $(INCLUDE_DIR)/package.mk
 
 define Package/omnia-5g-kit
   TITLE:=Support for Turris Omnia 5G kit
-  DEPENDS:=@TARGET_mvebu_cortexa9_DEVICE_cznic_turris-omnia +turris-nor-update +mwan3
+  DEPENDS:=@TARGET_mvebu_cortexa9_DEVICE_cznic_turris-omnia +turris-nor-update +mwan3 +watchcat
   CONFLICTS:=modem-manager-autosetup modem-manager
 endef
 
@@ -51,7 +51,12 @@ set network.gsm.ip6ifaceid='eui64'
 set network.gsm.ip6assign='64
 set network.gsm6=interface
 set network.gsm6.device='@gsm'
-set network.gsm6.proto='dhcpv6''
+set network.gsm6.proto='dhcpv6'
+set watchcat.5gkit='watchcat'
+set watchcat.5gkit.period='30s'
+set watchcat.5gkit.mode='restart_iface
+set watchcat.5gkit.pinghosts='1.1.1.1 8.8.8.8 9.9.9.9'
+set watchcat.5gkit.interface='usb0'
 EOF
 }
 endef
@@ -63,6 +68,7 @@ define Package/omnia-5g-kit/prerm
 	fw_setenv omnia_wwan_slot pcie
 	uci -q delete network.gsm
 	uci -q delete network.gsm6
+	uci -q delete watchcat.5gkit
 }
 endef
 
