@@ -6,8 +6,8 @@ set -e
 IPSET="turris-sn-dynfw-block"
 
 # Always create IP set to prevent iptables error about missing ipset.
-ipset create "$IPSET"_v4 hash:ip family inet -exist
-ipset create "$IPSET"_v6 hash:net family inet6 -exist
+ipset create "$IPSET"_v4 hash:ip family inet maxelem 262144 -exist
+ipset create "$IPSET"_v6 hash:net family inet6 maxelem 262144 -exist
 
 dynfw_block() {
 	local config_section="$1"

@@ -50,10 +50,6 @@ setup_zone() {
 firewall_cleanup() {
     local chain=""
     local handle=""
-    local zone="$1"
-    [ -n "$zone" ] || zone=wan
-    local wan_if="$(nft list chain inet fw4 input | sed -n 's|.*iifname "\([^"]*\)\" jump input_'"$zone"'|\1|p')"
-
     report_operation "Cleaning up the remnants of the old firewall"
     # Delete all rules marked as !sentinel
     nft -a list table inet fw4 | while read line; do
@@ -71,17 +67,23 @@ firewall_cleanup() {
     # Recreate a clean turris-sentinel table
     nft delete table turris-sentinel 2> /dev/null || :
     nft add table inet turris-sentinel
-
-    # Add firewall by-pass rules into fw4
-    nft insert rule inet fw4 input_"$zone" meta mark "$MAGIC_NUMBER" accept \
-        comment "\"!sentinel: packet by-pass for Turris Sentinel minipots\""
+    nft flush table inet turris-sentinel
 
     # Setup port-forwarding infrastructure for minipots in turris-sentinel table
-    nft add chain inet turris-sentinel minipots_dstnat '{ type nat hook prerouting priority dstnat; policy accept; }'
-    nft add chain inet turris-sentinel minipots_dstnat_"$zone"
-    nft add rule inet turris-sentinel minipots_dstnat iifname \{ $wan_if \} counter jump minipots_dstnat_"$zone" \
-        comment "\"!sentinel: port redirection for minipots\""
+    nft delete chain inet turris-sentinel minipots_dstnat 2> /dev/null || :
+    nft add chain inet turris-sentinel minipots_dstnat '{ type nat hook prerouting priority -105; policy accept; }'
+    nft flush chain inet turris-sentinel minipots_dstnat
 
+    # Setup blocking infrastructure
+    for hook in input forward; do
+        nft delete chain inet turris-sentinel dynfw_block_hook_"${hook}" 2> /dev/null || :
+        nft add chain inet turris-sentinel dynfw_block_hook_"${hook}" '{ type filter hook '"$hook"' priority -5; }'
+        nft flush chain inet turris-sentinel dynfw_block_hook_"${hook}"
+        nft add rule inet turris-sentinel dynfw_block_hook_"${hook}" ct state established accept
+    done
+
+    # Add zone specific rules for wan
+    setup_zone wan
 }
 
 # Add port redirect rule.
