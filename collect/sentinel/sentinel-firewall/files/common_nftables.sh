@@ -27,19 +27,12 @@ nftables_portfw_rule_exists() {
 # (firewall4 removes only rules in chains it knows so we have to do this to
 # potentially clean after ourselves)
 firewall_cleanup() {
-    local table=""
     local chain=""
     local handle=""
     local zone="$1"
 
     report_operation "Cleaning up the remnants of the old firewall"
     nft -a list table inet fw4 | while read line; do
-        local new_table="$(echo "$line" | sed -n 's|table inet \(.*\) {.*|\1|p')"
-        if [ -n "$new_table" ]; then
-            table="$new_table"
-            continue
-        fi
-        [ "$table" = fw4 ] || continue
         local new_chain="$(echo "$line" | sed -n 's|[[:blank:]]*chain \(.*\) {.*|\1|p')"
         if [ -n "$new_chain" ]; then
             chain="$new_chain"
