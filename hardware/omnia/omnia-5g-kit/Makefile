@@ -18,7 +18,11 @@ include $(INCLUDE_DIR)/package.mk
 
 define Package/omnia-5g-kit
   TITLE:=Support for Turris Omnia 5G kit
-  DEPENDS:=@TARGET_mvebu_cortexa9_DEVICE_cznic_turris-omnia +turris-nor-update +mwan3 +watchcat
+  DEPENDS:=@TARGET_mvebu_cortexa9_DEVICE_cznic_turris-omnia \
+          +turris-nor-update \
+          +mwan3 +watchcat \
+          +luci-app-mwan3 +luci-app-watchcat \
+          +kmod-usb-net-cdc-ncm +kmod-usb-serial-option
   CONFLICTS:=modem-manager-autosetup modem-manager
 endef
 
