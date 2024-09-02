@@ -20,7 +20,7 @@ nftables_portfw_table_exists() {
 
 # This is simple helper to check for existence of given rule
 nftables_portfw_rule_exists() {
-    nft list chain inet fw4 input_wan | grep "meta mark 0x00000072" >/dev/null 2>&1
+    nft list chain inet fw4 input_"$1" | grep "meta mark 0x00000072" >/dev/null 2>&1
 }
 
 # Remove any existing rule
@@ -44,17 +44,17 @@ firewall_cleanup() {
         nft delete rule inet fw4 "$chain" handle "$handle"
     done
 
-    if ! nftables_portfw_rule_exists; then
-        nft delete chain inet fw4 accept_from_wan_minipots 2> /dev/null
+    if ! nftables_portfw_rule_exists "$zone"; then
+        nft delete chain inet fw4 accept_from_"$zone"_minipots 2> /dev/null
         nft delete chain inet turris-sentinel minipots_dstnat 2> /dev/null
-        nft delete chain inet turris-sentinel minipots_dstnat_wan 2> /dev/null
+        nft delete chain inet turris-sentinel minipots_dstnat_"$zone" 2> /dev/null
     fi
 }
 
 # Makes sure we have wan forwarding rule
 nftables_set_portfw() {
-    local wan_if="$(nft list chain inet fw4 input | grep -Eo "iifname .* jump input_wan" | grep -Eo "\".*\"")"
     local zone="$1"
+    local wan_if="$(nft list chain inet fw4 input | grep -Eo "iifname .* jump input_$zone" | grep -Eo "\".*\"")"
 
     # recreates it if it is missing.
     if ! nftables_portfw_table_exists; then
@@ -63,18 +63,18 @@ nftables_set_portfw() {
 
     # recreates it if it is missing.
     if ! nftables_portfw_rule_exists; then
-        nft add chain inet fw4 accept_from_wan_minipots '{ comment "required for sentinel minipots" ; }'
+        nft add chain inet fw4 accept_from_"$zone"_minipots '{ comment "required for sentinel minipots" ; }'
 
-        nft add rule inet fw4 accept_from_wan_minipots iifname { $wan_if } counter \
+        nft add rule inet fw4 accept_from_"$zone"_minipots iifname \{ $wan_if \} counter \
             comment "\"!sentinel: minipots packet counter\""
 
-        nft insert rule inet fw4 input_wan meta mark 114 counter goto accept_from_wan_minipots \
+        nft insert rule inet fw4 input_"$zone" meta mark 114 counter goto accept_from_"$zone"_minipots \
             comment "\"!sentinel: packet redirection for minipots\""
 
         nft add chain inet turris-sentinel minipots_dstnat '{ type nat hook prerouting priority dstnat; policy accept; }'
-        nft add chain inet turris-sentinel minipots_dstnat_wan
+        nft add chain inet turris-sentinel minipots_dstnat_"$zone"
 
-        nft add rule inet turris-sentinel minipots_dstnat iifname { $wan_if } counter jump minipots_dstnat_wan \
+        nft add rule inet turris-sentinel minipots_dstnat iifname \{ $wan_if \} counter jump minipots_dstnat_"$zone" \
             comment "\"!sentinel: port redirection for minipots\""
 
     fi
@@ -91,9 +91,9 @@ port_redirect() {
     local local_port="$3"
     local description="$4"
 
-    nftables_set_portfw
+    nftables_set_portfw "$zone"
     report_operation "$description on zone '$zone' ($port -> $local_port)"
-    nft insert rule inet turris-sentinel minipots_dstnat_wan meta nfproto { ipv4, ipv6 } counter \
-    tcp dport $port meta mark set 114 redirect to $local_port comment "\"!sentinel: $description port redirect\""
+    nft insert rule inet turris-sentinel minipots_dstnat_"$zone" meta nfproto { ipv4, ipv6 } counter \
+        tcp dport $port meta mark set 114 redirect to $local_port comment "\"!sentinel: $description port redirect\""
 }
 
