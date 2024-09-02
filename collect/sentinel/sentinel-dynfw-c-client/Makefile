@@ -112,6 +112,8 @@ define Package/sentinel-dynfw-c-client-nftables/install
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/install/usr/bin/dynfw-nfset-client $(1)/usr/sbin
 	$(INSTALL_DIR) $(1)/etc/init.d
 	$(INSTALL_BIN) ./files/init.nftables $(1)/etc/init.d/sentinel-dynfw-client
+	$(INSTALL_DIR) $(1)/usr/libexec/sentinel/firewall.d
+	$(INSTALL_BIN) ./files/sentinel-firewall.nftables.sh $(1)/usr/libexec/sentinel/firewall.d/50-dynfw.sh
 endef
 
 define Package/sentinel-dynfw-c-client-iptables/install
@@ -122,7 +124,7 @@ define Package/sentinel-dynfw-c-client-iptables/install
 	$(INSTALL_DIR) $(1)/etc/uci-defaults
 	$(INSTALL_BIN) ./files/uci-defaults $(1)/etc/uci-defaults/99-sentinel-dynfw-client
 	$(INSTALL_DIR) $(1)/usr/libexec/sentinel/firewall.d
-	$(INSTALL_BIN) ./files/sentinel-firewall.sh $(1)/usr/libexec/sentinel/firewall.d/50-dynfw.sh
+	$(INSTALL_BIN) ./files/sentinel-firewall.iptables.sh $(1)/usr/libexec/sentinel/firewall.d/50-dynfw.sh
 	$(INSTALL_DATA) ./files/sentinel-firewall-utils.sh $(1)/usr/libexec/sentinel/firewall.d/dynfw-utils.sh
 endef
 
