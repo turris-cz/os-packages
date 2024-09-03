@@ -45,23 +45,35 @@ define Package/omnia-5g-kit/postinst
 #!/bin/sh
 [ -n "$$IPKG_INSTROOT" ] || {
 	/etc/init.d/5g-kit start
+	uci -q delete network.gsm || :
 	uci batch << EOF
-delete network.gsm
 set network.gsm=interface
 set network.gsm.proto='dhcp'
 set network.gsm.device='usb0'
 set network.gsm.metric=2048
-set network.gsm.ip6ifaceid='eui64'
-set network.gsm.ip6assign='64
 set network.gsm6=interface
 set network.gsm6.device='@gsm'
 set network.gsm6.proto='dhcpv6'
+set network.gsm6.ip6ifaceid='eui64'
+set network.gsm6.ip6assign='64'
 set watchcat.5gkit='watchcat'
 set watchcat.5gkit.period='30s'
-set watchcat.5gkit.mode='restart_iface
+set watchcat.5gkit.mode='restart_iface'
 set watchcat.5gkit.pinghosts='1.1.1.1 8.8.8.8 9.9.9.9'
 set watchcat.5gkit.interface='usb0'
 EOF
+    uci commit network
+    uci commit watchcat
+    zone="$$(uci show firewall | sed -n 's|^\(firewall\.@zone.*\)\.name=.wan.$$|\1|p')"
+    if [ -n "$$zone" ]; then
+        if uci show "$$zone.network" | grep "='[^[:blank:]']\\+[[:blank:]][^[:blank:]']\\+.*'"; then
+            uci set "$$zone.network='$$(uci get "$$zone.network") gsm gsm6'"
+        else
+            uci add_list "$$zone.network=gsm"
+            uci add_list "$$zone.network=gsm6"
+        fi
+        uci commit firewall
+    fi
 }
 endef
 
@@ -69,10 +81,22 @@ endef
 define Package/omnia-5g-kit/prerm
 #!/bin/sh
 [ -n "$$IPKG_INSTROOT" ] || {
-	fw_setenv omnia_wwan_slot pcie
-	uci -q delete network.gsm
-	uci -q delete network.gsm6
-	uci -q delete watchcat.5gkit
+    fw_setenv omnia_wwan_slot pcie
+    uci -q delete network.gsm || :
+    uci -q delete network.gsm6 || :
+    uci -q delete watchcat.5gkit || :
+    uci commit network
+    uci commit watchcat
+    zone="$$(uci show firewall | sed -n 's|^\(firewall\.@zone.*\)\.name=.wan.$$|\1|p')"
+    if [ -n "$$zone" ]; then
+        if uci show "$$zone.network" | grep "='[^[:blank:]']\\+[[:blank:]][^[:blank:]']\\+.*'"; then
+            uci set "$$zone.network='$$(uci get "$$zone.network" | sed 's| gsm gsm6||')'"
+        else
+            uci del_list "$$zone.network=gsm"
+            uci del_list "$$zone.network=gsm6"
+        fi
+        uci commit firewall
+    fi
 }
 endef
 
