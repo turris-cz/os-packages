@@ -1,5 +1,5 @@
 #
-## Copyright (C) 2021-2022 CZ.NIC z.s.p.o. (https://www.nic.cz/)
+## Copyright (C) 2021-2024 CZ.NIC z.s.p.o. (https://www.nic.cz/)
 #
 ## This is free software, licensed under the GNU General Public License v3.
 # See /LICENSE for more information.
@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=turris-bootstrap-theme
-PKG_VERSION:=0.3.2
+PKG_VERSION:=1.0.0
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/bootstrap-theme.git
-PKG_MIRROR_HASH:=8efd99ba9fd7010b4c915d929816dee885a9c7041e15eb81d73a417387609633
+PKG_MIRROR_HASH:=0ff76ca04dbe177ce1fd88a7ae144782620f3f9b301458229f194063ac92a1c3
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
