@@ -1,5 +1,5 @@
 #
-## Copyright (C) 2018-2023 CZ.NIC z.s.p.o. (https://www.nic.cz/)
+## Copyright (C) 2018-2024 CZ.NIC z.s.p.o. (https://www.nic.cz/)
 #
 ## This is free software, licensed under the GNU General Public License v3.
 # See /LICENSE for more information.
@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=turris-diagnostics
-PKG_VERSION:=18.0.0
+PKG_VERSION:=18.1.0
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/diagnostics.git
-PKG_MIRROR_HASH:=ef49fdd787951be27029d3e7f5fa287e8cccc8c628ed0e91634c5191fdc20570
+PKG_MIRROR_HASH:=fe11bb80535968c51bf191abed2ad98e73ece21c41ff81cd237e33cd8deab81a
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
