@@ -1,0 +1,28 @@
+#!/bin/sh /etc/rc.common
+
+START=95
+STOP=05
+
+start() {
+    local limit=0
+    if [ "$(fw_printenv omnia_wwan_slot)" != "omnia_wwan_slot=usb3" ]; then
+        nor-update
+        fw_setenv omnia_wwan_slot usb3
+        create_notification -s restart "Please reboot your router to complete 5G kit installation"
+        return 0
+    fi
+    while [ ! -e /dev/ttyUSB2 ] && [ "$limit" -lt 20 ]; do
+        sleep 1
+        limit="$((limit + 1))"
+    done
+    if [ -e /dev/ttyUSB2 ]; then
+        echo -ne 'ATZ\r\n' > /dev/ttyUSB2
+        echo -ne 'AT+CGDATA="M-ETHER",1\r\n' > /dev/ttyUSB2
+    fi
+}
+
+stop() {
+    if [ -e /dev/ttyUSB2 ]; then
+        echo -ne 'ATZ\r\n' > /dev/ttyUSB2
+    fi
+}

@@ -8,7 +8,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=turris-omnia-firmware
-PKG_VERSION:=1.2.1
+PKG_VERSION:=1.4
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
@@ -17,7 +17,7 @@ include $(INCLUDE_DIR)/package.mk
 
 define Package/turris-omnia-firmware
   TITLE:=Firmware for Turris Omnia
-  DEPENDS:=@TARGET_mvebu_cortexa9_DEVICE_cznic_turris-omnia
+  DEPENDS:=@TARGET_mvebu_cortexa9_DEVICE_cznic_turris-omnia +omnia-eeprom
   PROVIDES:=turris-nor-update-firmware
 endef
 
@@ -27,10 +27,10 @@ endef
 
 define Package/turris-omnia-devel-firmware
   TITLE:=Data files for nor-update (development version)
-  DEPENDS:=+turris-nor-update +rescue-image +u-boot-omnia @TARGET_mvebu_cortexa9_DEVICE_cznic_turris-omnia
+  DEPENDS:=+turris-nor-update +rescue-image +u-boot-omnia @TARGET_mvebu_cortexa9_DEVICE_cznic_turris-omnia +turris-omnia-firmware
   PROVIDES:=turris-nor-update-devel-firmware
   VERSION:=0.0
-  RELEASE:=1
+  RELEASE:=2
 endef
 
 define Package/turris-omnia-devel-firmware/description

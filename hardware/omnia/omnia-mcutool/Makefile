@@ -22,8 +22,7 @@ include $(INCLUDE_DIR)/package.mk
 
 define Package/omnia-mcutool
   TITLE:=Tool to manage MCU on Turris Omnia
-  DEPENDS:=+omnia-mcu-firmware @TARGET_mvebu_cortexa9_DEVICE_cznic_turris-omnia
-  DEPENDS+=+libopenssl
+  DEPENDS:=+omnia-mcu-firmware +libopenssl @TARGET_mvebu_cortexa9_DEVICE_cznic_turris-omnia
 endef
 
 define Package/omnia-mcutool/description
@@ -40,7 +39,7 @@ define Build/Compile
 	$(MAKE) -C $(PKG_BUILD_DIR) \
 		CC="$(TARGET_CC)" \
 		CFLAGS="$(TARGET_CFLAGS) -Wall" \
-		LDFLAGS="$(TARGET_LDFLAGS)" \
+		LDFLAGS="$(TARGET_LDFLAGS) -lssl -lcrypto" \
 		MCUTOOL_VERSION="$(PKG_VERSION)"
 endef
 

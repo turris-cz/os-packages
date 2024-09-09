@@ -19,6 +19,8 @@ board_init() {
     idx="$(find_mtd_index u-boot-env)"
     if [ -n "$idx" ]; then
         echo "/dev/mtd${idx} 0x0 0x10000 0x10000" > /etc/fw_env.config
+    elif grep -q 'U-Boot 2015.10-rc2' /dev/mtd0; then
+        echo "/dev/mtd0 0xc0000 0x10000 0x40000" > /etc/fw_env.config
     else
         echo '/dev/mtd0 0xF0000 0x10000 0x10000' > /etc/fw_env.config
     fi
