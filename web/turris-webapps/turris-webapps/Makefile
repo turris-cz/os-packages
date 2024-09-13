@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=turris-webapps
-PKG_VERSION:=5.0.1
+PKG_VERSION:=6.0.1
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://gitlab.nic.cz/api/v4/projects/962/packages/generic/turris-webapps/$(PKG_VERSION)/
-PKG_HASH:=d3992ae28389b9b9fafa61a3a54be4c30bb67b96ec221530dba9c1072e4075f2
+PKG_HASH:=6404e470c9832c26fa79af0e62723daa6feaefbe128244bf8f4daf3c071c7edf
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 PKG_LICENSE:=GPL-3.0-or-later
