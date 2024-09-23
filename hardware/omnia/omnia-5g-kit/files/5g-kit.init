@@ -5,6 +5,7 @@ STOP=05
 
 start() {
     local limit=0
+    fw_env-config-init.sh > /dev/null
     if [ "$(fw_printenv omnia_wwan_slot)" != "omnia_wwan_slot=usb3" ]; then
         nor-update
         fw_setenv omnia_wwan_slot usb3
