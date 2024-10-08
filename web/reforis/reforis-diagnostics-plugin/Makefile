@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=reforis-diagnostics-plugin
-PKG_VERSION:=3.1.0
+PKG_VERSION:=3.2.0
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/reforis/reforis-diagnostics
-PKG_MIRROR_HASH:=4bb755dccb80ccfea02479feb00b4a536773f50bdef96cb36bf278fcfd45f3de
+PKG_MIRROR_HASH:=a27cbec4d8454131c2647a0bc96dad056e5fb1d11929630162e255fa8892f500
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
