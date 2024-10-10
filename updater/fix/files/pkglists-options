@@ -46,9 +46,6 @@ pkglist_handle() {
 			set_option nas raid
 			set_option nas encrypt
 			;;
-		netmetr)
-			set_option net_monitoring netmetr
-			;;
 		pakon)
 			set_option net_monitoring pakon
 			;;

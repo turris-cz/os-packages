@@ -1,0 +1,28 @@
+#!/bin/sh /etc/rc.common
+
+USE_PROCD=1
+START=25
+STOP=80
+
+CERT_KEY="/etc/sentinel_dynfw_server.pub"
+
+teardown_firewall() {
+    nft flush set inet "turris-sentinel" dynfw_4 2>/dev/null
+    nft flush set inet "turris-sentinel" dynfw_6 2>/dev/null
+}
+
+start_service() {
+    /etc/init.d/firewall restart
+    procd_open_instance
+    procd_set_param command dynfw-nfset-client
+    procd_append_param command --table turris-sentinel
+    procd_append_param command --set dynfw
+    procd_append_param command --cert "$CERT_KEY"
+    # If not started, try ten times while waiting for 5 secs between tries
+    procd_set_param respawn 600 5 10
+    procd_close_instance
+}
+
+stop_service() {
+    teardown_firewall
+}

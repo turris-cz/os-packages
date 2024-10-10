@@ -9,9 +9,19 @@ import uuid
 
 import typing
 
+from paho import mqtt as mqtt_module
 from paho.mqtt import client as mqtt
 
 u = uci.Uci()
+
+
+def mqtt_client_extra():
+    if mqtt_module.__version__.split(".")[0] not in ["1", "0"]:
+        return {
+            "callback_api_version": mqtt.CallbackAPIVersion.VERSION1,
+        }
+    else:
+        return {}
 
 
 def uci_get(config: str, section: str, option: str, default):
@@ -127,7 +137,7 @@ def listener(
         print(content)
         print("=" * len(title))
 
-    client = mqtt.Client()
+    client = mqtt.Client(**mqtt_client_extra())
     client.on_connect = on_connect
     client.on_message = on_message
     client.on_subscribe = on_subscribe
@@ -150,7 +160,7 @@ def detect_ids(host: str, port: int, timeout: int, credentials: typing.Tuple[str
     def on_connect(client, userdata, flags, rc):
         client.subscribe(f"foris-controller/+/notification/remote/action/advertize")
 
-    client = mqtt.Client()
+    client = mqtt.Client(**mqtt_client_extra())
     client.on_connect = on_connect
     client.on_message = on_message
 
@@ -182,10 +192,10 @@ def query_bus(host: str, port: int, topic: str, device_id: str, credentials: typ
         except Exception:
             return
         result["data"] = parsed
-        client.loop_stop(True)
+        client.loop_stop()
         client.disconnect()
 
-    client = mqtt.Client()
+    client = mqtt.Client(**mqtt_client_extra())
     client.on_subscribe = on_subscribe
     client.on_message = on_message
     client.on_connect = on_connect

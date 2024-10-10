@@ -28,7 +28,8 @@ define Package/sentinel-dynfw-client
   TITLE:=Dynamic firewall client
   DEPENDS:=+python3-light +python3-zmq +python3-msgpack +python3-urllib \
     +ipset \
-    +sentinel-dynfw-cert +sentinel-firewall
+    +sentinel-firewall-iptables \
+    +sentinel-dynfw-cert
 endef
 
 define Package/sentinel-dynfw-client/description

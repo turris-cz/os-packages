@@ -8,19 +8,19 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=reforis
-PKG_VERSION:=1.5.0
+PKG_VERSION:=3.1.0
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/reforis/reforis
-PKG_MIRROR_HASH:=54a903928f6647f11c65340207f4905f73da6116de1316bc4f7d716492424853
+PKG_MIRROR_HASH:=11d50007944343fa4971c151fcd4dcdb5ef4b10e3c0fe985ccc5aa95f0a19e96
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 PKG_LICENSE:=GPL-3.0-or-later
 PKG_LICENSE_FILES:=LICENSE
 
-PKG_BUILD_DEPENDS:=node/host reforis-distutils/host python-babel/host
+PKG_BUILD_DEPENDS:=node/host hatch-reforis/host python-babel/host
 
 include $(INCLUDE_DIR)/package.mk
 include $(TOPDIR)/feeds/packages/lang/python/python3-package.mk

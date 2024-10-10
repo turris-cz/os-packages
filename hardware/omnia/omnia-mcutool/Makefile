@@ -29,7 +29,11 @@ define Package/omnia-mcutool/description
   This package contains omnia-mcutool, the utility for accessing the MCU on the
   Turris Omnia router. Its main purpose is to upgrade new MCU firmware. It can
   also be used to print MCU firmware version and access other MCU settings.
+  On boards where board information and cryptography is provided by the MCU it
+  also supports accessing this functionality.
 endef
+
+TARGET_LDFLAGS += -lcrypto
 
 define Build/Compile
 	$(MAKE) -C $(PKG_BUILD_DIR) \

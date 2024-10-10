@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2021-2022 CZ.NIC, z. s. p. o. (https://www.nic.cz/)
+# Copyright (C) 2021-2024 CZ.NIC, z. s. p. o. (https://www.nic.cz/)
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -8,21 +8,21 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=turris-auth
-PKG_VERSION:=0.4.3
+PKG_VERSION:=1.2.0
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/turris-auth.git
-PKG_MIRROR_HASH:=9ea99e60f2abf3ec7c928db3529246948f54206621dddaaf7737678455303413
+PKG_MIRROR_HASH:=8353e2196dbb452ecc709c197af58dafc67504ee0defbfbbac95d57018ad7ff5
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 PKG_LICENSE:=GPL-3.0-or-later
 PKG_LICENSE_FILES:=COPYING
 
-PKG_BUILD_DEPENDS:=python-markupsafe/host
-
-PYTHON3_PKG_FORCE_DISTUTILS_SETUP:=1
+PKG_BUILD_DEPENDS:= \
+	python-markupsafe/host \
+	python-hatchling/host
 
 include $(INCLUDE_DIR)/package.mk
 include $(TOPDIR)/feeds/packages/lang/python/python3-package.mk

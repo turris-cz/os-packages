@@ -19,26 +19,14 @@ if [ -n "$(uci changes firewall.sentinel_firewall)" ]; then
 	echo "Warning: Sentinel-firewall include reordered: another firewall reload suggested!"
 fi
 
+. /usr/libexec/sentinel/firewall.d/common.sh
 
 # Remove any existing rule
-# (firewall3 removes only rules in chains it knows so we have to do this to
-# potentially clean after ourselves)
-for IPTABLES in iptables-legacy ip6tables-legacy; do
-	for table in filter nat mangle raw; do
-		$IPTABLES -t "$table" -S \
-			| grep -F ' --comment "!sentinel:' \
-			| while read -r operation rule; do
-				# Argument -A is dropped (variable 'operation' is intentionally left out)
-				# Note: xargs is used here because it handles quotes properly over
-				# just plain expansion
-				echo "$rule" | xargs -x $IPTABLES -t "$table" -D
-			done
-	done
-done
+firewall_cleanup
 
 # Run all sentinel firewall scripts
 cd /usr/libexec/sentinel/firewall.d
-for module in ./*; do
+for module in ./[0-9]*; do
 	[ -x "$module" ] || continue
 	"$module"
 done

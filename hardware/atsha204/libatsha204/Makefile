@@ -1,5 +1,5 @@
 #
-## Copyright (C) 2017-2020 CZ.NIC z.s.p.o. (http://www.nic.cz/)
+## Copyright (C) 2017-2024 CZ.NIC z.s.p.o. (http://www.nic.cz/)
 #
 ## This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -25,7 +25,6 @@ include $(INCLUDE_DIR)/package.mk
 define Package/libatsha204
   TITLE:=libatsha204
   URL:=https://gitlab.nic.cz/turris/libatsha204
-  PROVIDES:=turris-otp
   DEPENDS:=+libopenssl +libunbound
   DEPENDS+=@(TARGET_mvebu_cortexa9_DEVICE_cznic_turris-omnia||TARGET_mpc85xx_p2020_DEVICE_cznic_turris1x)
   VARIANT:=real
@@ -33,7 +32,7 @@ endef
 
 define Package/libatsha204-emul
   TITLE:=libatsha204-emul
-  PROVIDES:=libatsha204 turris-otp
+  PROVIDES:=libatsha204
   DEPENDS:=+libopenssl +libunbound
   CONFLICTS:=libatsha204
   VARIANT:=emul

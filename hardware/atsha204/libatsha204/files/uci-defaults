@@ -3,6 +3,24 @@ set -e
 
 CONF=/etc/atsha.sw
 
+MCU_FW_FEATURES=/sys/bus/i2c/devices/1-002a/fw_features
+
+use_atsha() {
+	# if turris-omnia-mcu driver is not loaded (turris1x), use atsha
+	[ ! -f "$MCU_FW_FEATURES" ] && return 0
+
+	# if FEAT_TRNG bit is not set in MCU features, use atsha
+	local fw_features="$(cat "$MCU_FW_FEATURES")"
+	[ "$((fw_features & 0x2000))" -eq 0 ] && return 0
+
+	# otherwise do not use atsha
+	return 1
+}
+
+if ! use_atsha; then
+	exit
+fi
+
 if [ -f "$CONF" ]; then
 	if head -n1 "$CONF" | grep -q '00 00 00 00' ; then
 		# Delete version 1 config, it is no longer supported, and generate new one.

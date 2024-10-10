@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2018-2022 CZ.NIC z.s.p.o. (https://www.nic.cz/)
+# Copyright (C) 2018-2024 CZ.NIC z.s.p.o. (https://www.nic.cz/)
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=turris-webapps
-PKG_VERSION:=35e83ff3
+PKG_VERSION:=6.0.1
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
-PKG_SOURCE_URL:=https://gitlab.nic.cz/api/v4/projects/962/packages/generic/turris-webapps/4.1.0/
-PKG_HASH:=332842ccf058136d322358ec098c853045e990db7d7d3394c8a26e3e1d35cf29
+PKG_SOURCE_URL:=https://gitlab.nic.cz/api/v4/projects/962/packages/generic/turris-webapps/$(PKG_VERSION)/
+PKG_HASH:=6404e470c9832c26fa79af0e62723daa6feaefbe128244bf8f4daf3c071c7edf
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 PKG_LICENSE:=GPL-3.0-or-later
@@ -47,16 +47,8 @@ define Package/turris-webapps/install
 	$(INSTALL_DATA) $(PKG_BUILD_DIR)/index.html $(1)/www/turris-webapps
 	$(INSTALL_DATA) $(PKG_BUILD_DIR)/manifest.json $(1)/www/turris-webapps
 
-	$(INSTALL_DIR) $(1)/www/turris-webapps/static
-
-	$(INSTALL_DIR) $(1)/www/turris-webapps/static/css
-	$(INSTALL_DATA) $(PKG_BUILD_DIR)/static/css/* $(1)/www/turris-webapps/static/css
-
-	$(INSTALL_DIR) $(1)/www/turris-webapps/static/js
-	$(INSTALL_DATA) $(PKG_BUILD_DIR)/static/js/* $(1)/www/turris-webapps/static/js
-
-	$(INSTALL_DIR) $(1)/www/turris-webapps/static/media/
-	$(INSTALL_DATA) $(PKG_BUILD_DIR)/static/media/turris-dark.*.svg $(1)/www/turris-webapps/static/media
+	$(INSTALL_DIR) $(1)/www/turris-webapps/assets
+	$(INSTALL_DATA) $(PKG_BUILD_DIR)/assets/* $(1)/www/turris-webapps/assets
 endef
 
 define Package/turris-webapps/postinst

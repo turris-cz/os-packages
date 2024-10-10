@@ -365,6 +365,7 @@ class DHCPv4:
 
 
 if __name__ == "__main__":
+    leases = uci_get("dhcp.@dnsmasq[0].leasefile")
     if len(sys.argv) == 2 and sys.argv[1] == "ipv6":
         log("DHCPv6 leases not supported now", LOG_WARNING)
     elif len(sys.argv) > 4:
@@ -373,7 +374,7 @@ if __name__ == "__main__":
         mac = sys.argv[2]
         ipv4 = sys.argv[3]
         hostname = sys.argv[4]
-        dd = DHCPv4()
+        dd = DHCPv4(leases)
         dd.update_dhcp(sys_op, hostname, ipv4)
         dd.save_leases()
         dd.refresh_resolver()
@@ -384,7 +385,7 @@ if __name__ == "__main__":
         mac = os.environ.get('MACADDR')
         ipv4 = os.environ.get('IPADDR')
         hostname = os.environ.get('HOSTNAME')
-        dd = DHCPv4()
+        dd = DHCPv4(leases)
         if sys_op and hostname and ipv4:
             dd.update_dhcp(sys_op, hostname, ipv4)
         dd.save_leases()

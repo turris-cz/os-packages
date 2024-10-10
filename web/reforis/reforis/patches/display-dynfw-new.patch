@@ -1,13 +1,13 @@
 diff --git a/js/src/overview/Overview.js b/js/src/overview/Overview.js
-index bcea4296..90315ee8 100644
+index 6acefff7..6ef0655a 100644
 --- a/js/src/overview/Overview.js
 +++ b/js/src/overview/Overview.js
-@@ -62,7 +62,7 @@ function OverviewCards({ packages, ws }) {
+@@ -61,7 +61,7 @@ function OverviewCards({ packages, ws }) {
+             <div className="row row-cols-1 row-cols-lg-3">
                  <AutomaticUpdatesCard />
-                 <DataCollectionCard />
-                 <DynamicFirewallCard
--                    activated={displayCard(packages, "dynfw")}
-+                    activated={displayCard(packages, "dynfw") || displayCard(packages, "dynfw_new")}
-                 />
-                 {displayCard(packages, "netmetr") &&
-                     isPluginInstalled("NetMetr") && <NetmetrCard />}
+                 <ThreatDetectionCard />
+-                <DynamicFirewallCard enabled={displayCard(packages, "dynfw")} />
++                <DynamicFirewallCard enabled={displayCard(packages, "dynfw") || displayCard(packages, "dynfw_new")} />
+             </div>
+             <div className="row row-cols-1 row-cols-lg-3">
+                 {displayCard(packages, "librespeed") &&

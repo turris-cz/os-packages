@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2022 CZ.NIC z.s.p.o. (https://www.nic.cz/)
+# Copyright (C) 2022-2024 CZ.NIC z.s.p.o. (https://www.nic.cz/)
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=reforis-nextcloud-plugin
-PKG_VERSION:=0.1.0
+PKG_VERSION:=1.2.0
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/reforis/reforis-nextcloud
-PKG_MIRROR_HASH:=4e35c86c4b3d0a179f921d19721d6be130f2ab222c984c2fdb2e617daedffe7e
+PKG_MIRROR_HASH:=07e6bc211d8151a9ac3b27461b482cef99fce74ae6220f0eab67df1d4477ebf5
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
@@ -22,9 +22,9 @@ PKG_LICENSE_FILES:=LICENSE
 
 PKG_BUILD_DEPENDS:=\
       node/host \
-      reforis-distutils/host \
+      hatch-reforis/host
 
-PYTHON3_PKG_FORCE_DISTUTILS_SETUP:=1
+PYTHON3_PKG_WHEEL_NAME:=reforis_nextcloud
 
 include $(INCLUDE_DIR)/package.mk
 include $(TOPDIR)/feeds/packages/lang/python/python3-package.mk

@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2020 CZ.NIC z.s.p.o. (http://www.nic.cz/)
+# Copyright (C) 2019-2024 CZ.NIC z.s.p.o. (http://www.nic.cz/)
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=libhtp
-PKG_VERSION:=0.5.37
+PKG_VERSION:=0.5.48
 PKG_RELEASE=$(AUTORELEASE)
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://codeload.github.com/OISF/libhtp/tar.gz/$(PKG_VERSION)?
-PKG_HASH:=0f8296ce9db815bbedc1c8a0b738dd25146fdaf910995a8c5f8e147799902b7e
+PKG_HASH:=7f0719732fd0c82f9915e3df27e31548798590ad624fbad24f58b50885248ab8
 
 PKG_INSTALL:=1
 PKG_FIXUP:=autoreconf

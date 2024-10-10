@@ -1,9 +1,25 @@
 #!/bin/sh /etc/rc.common
 
-START=01
+START=11
+
+MCU_FW_FEATURES=/sys/bus/i2c/devices/1-002a/fw_features
+
+use_atsha() {
+	# if turris-omnia-mcu driver is not loaded (turris1x), use atsha
+	[ ! -f "$MCU_FW_FEATURES" ] && return 0
+
+	# if FEAT_TRNG bit is not set in MCU features, use atsha
+	local fw_features="$(cat "$MCU_FW_FEATURES")"
+	[ "$((fw_features & 0x2000))" -eq 0 ] && return 0
+
+	# otherwise do not use atsha
+	return 1
+}
 
 start() {
-	for i in $(seq 1 16); do
-		/usr/bin/atsha204cmd feed-entropy
-	done
+	if use_atsha; then
+		for i in $(seq 1 16); do
+			/usr/bin/atsha204cmd feed-entropy
+		done
+	fi
 }
