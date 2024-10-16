@@ -1,0 +1,28 @@
+From 801eb3d654d882cdbf8852316ae0784bfa401a22 Mon Sep 17 00:00:00 2001
+From: Michal Hrusecky <michal.hrusecky@turris.com>
+Date: Wed, 16 Oct 2024 12:02:51 +0200
+Subject: [PATCH] config: Keep authenticator always on
+
+For some reason, if it authenticator gets killed, it has problems to
+start again. Let's disable killing it for now, once we figure out where
+the problem is, we will re-enable stopping it.
+---
+ turris_auth/server/config.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/turris_auth/server/config.py b/turris_auth/server/config.py
+index 562acf7..18bfde3 100644
+--- a/turris_auth/server/config.py
++++ b/turris_auth/server/config.py
+@@ -13,7 +13,7 @@ def _server(authorizer: bool, luci_login: bool) -> str:
+     "bin-path" => "{shutil.which('turris-auth-server')}",
+     "bin-environment" => ( "TURRIS_AUTH_LUCI" => "{luci_login}" ),
+     "check-local" => "disable",
+-    "min-procs" => 0,
++    "min-procs" => 1,
+     "max-procs" => 1,
+     "idle-timeout" => 180,
+     "mode" => "{'authorizer' if authorizer else 'responder'}",
+-- 
+2.47.0
+
