@@ -6,9 +6,13 @@ STOP=05
 start() {
     local limit=0
     fw_env-config-init.sh > /dev/null
-    if [ "$(fw_printenv omnia_wwan_slot)" != "omnia_wwan_slot=usb3" ]; then
+    if [ "$(fw_printenv omnia_wwan_slot 2>&1 < /dev/null)" != "omnia_wwan_slot=usb3" ]; then
         nor-update
-        fw_setenv omnia_wwan_slot usb3
+        if fw_printenv omnia_wwan_slot 2>&1 < /dev/null | grep -q 'Bad CRC'; then
+            fw_setenv bootcmd 'env default -a; setenv omnia_wwan_slot usb3; saveenv; reset;'
+        else
+            fw_setenv omnia_wwan_slot usb3
+        fi
         create_notification -s restart "Please reboot your router to complete 5G kit installation"
         return 0
     fi
