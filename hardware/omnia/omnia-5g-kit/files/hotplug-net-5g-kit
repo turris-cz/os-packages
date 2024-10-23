@@ -1,0 +1,5 @@
+[ "$ACTION" = "add" ] || exit 0
+[[ "$INTERFACE" = "usb"* ]] || exit 0
+[[ "$DEVPATH" = "/devices/platform/soc/soc:internal-regs/f10f0000.usb3/usb3/3-1/3-1:1.0/net/"* ]] || exit 0
+
+/sbin/ip link set "$INTERFACE" name "usb_5g"

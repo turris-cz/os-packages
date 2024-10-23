@@ -39,6 +39,8 @@ endef
 define Package/omnia-5g-kit/install
 	$(INSTALL_DIR) $(1)/etc/init.d
 	$(INSTALL_BIN) ./files/5g-kit.init $(1)/etc/init.d/5g-kit
+	$(INSTALL_BIN) ./files/hotplug-net-5g-kit $(1)/etc/hotplug.d/net/50-5g-kit
+	$(INSTALL_BIN) ./files/hotplug-tty-5g-kit $(1)/etc/hotplug.d/tty/50-5g-kit
 endef
 
 define Package/omnia-5g-kit/postinst
@@ -49,7 +51,7 @@ define Package/omnia-5g-kit/postinst
 	uci batch << EOF
 set network.gsm=interface
 set network.gsm.proto='dhcp'
-set network.gsm.device='usb0'
+set network.gsm.device='usb_5g'
 set network.gsm.metric=2048
 set network.gsm6=interface
 set network.gsm6.device='@gsm'
@@ -60,7 +62,7 @@ set watchcat.5gkit='watchcat'
 set watchcat.5gkit.period='30s'
 set watchcat.5gkit.mode='restart_iface'
 set watchcat.5gkit.pinghosts='1.1.1.1 8.8.8.8 9.9.9.9'
-set watchcat.5gkit.interface='usb0'
+set watchcat.5gkit.interface='usb_5g'
 EOF
     uci commit network
     uci commit watchcat

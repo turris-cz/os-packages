@@ -2,6 +2,8 @@
 
 START=95
 STOP=05
+# The tty device is named in /etc/hotplug.d/tty/50-5g-kit .
+TTY_DEVICE=/dev/tty5G2
 
 start() {
     local limit=0
@@ -16,18 +18,18 @@ start() {
         create_notification -s restart "Please reboot your router to complete 5G kit installation"
         return 0
     fi
-    while [ ! -e /dev/ttyUSB2 ] && [ "$limit" -lt 20 ]; do
+    while [ ! -e "${TTY_DEVICE}" ] && [ "$limit" -lt 20 ]; do
         sleep 1
         limit="$((limit + 1))"
     done
-    if [ -e /dev/ttyUSB2 ]; then
-        echo -ne 'ATZ\r\n' > /dev/ttyUSB2
-        echo -ne 'AT+CGDATA="M-ETHER",1\r\n' > /dev/ttyUSB2
+    if [ -e "${TTY_DEVICE}" ]; then
+        echo -ne 'ATZ\r\n' > "${TTY_DEVICE}"
+        echo -ne 'AT+CGDATA="M-ETHER",1\r\n' > "${TTY_DEVICE}"
     fi
 }
 
 stop() {
-    if [ -e /dev/ttyUSB2 ]; then
-        echo -ne 'ATZ\r\n' > /dev/ttyUSB2
+    if [ -e "${TTY_DEVICE}" ]; then
+        echo -ne 'ATZ\r\n' > "${TTY_DEVICE}"
     fi
 }
