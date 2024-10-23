@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=reforis-netboot-plugin
-PKG_VERSION:=1.1.0
+PKG_VERSION:=1.2.0
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/reforis/reforis-netboot
-PKG_MIRROR_HASH:=3d8b6803e9b321ebb54700bfc26b01a3fdeb5b84af3573ec5d22a562af99bde5
+PKG_MIRROR_HASH:=acc392fc3fbb91915102498f47246fd4e342931c36a6613c4459111e48639762
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
