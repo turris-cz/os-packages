@@ -30,7 +30,7 @@ setup_zone() {
     # Setup port-forwarding infrastructure for minipots in turris-sentinel table
     nft delete chain inet turris-sentinel minipots_dstnat_"$zone" 2> /dev/null || :
     nft add chain inet turris-sentinel minipots_dstnat_"$zone"
-    nft add rule inet turris-sentinel minipots_dstnat iifname $wan_if counter jump minipots_dstnat_"$zone" \
+    nft add rule inet turris-sentinel minipots_dstnat iifname $wan_if jump minipots_dstnat_"$zone" \
         comment "\"!sentinel: port redirection for minipots\""
 
     # Setup blocking infrastructure
@@ -98,7 +98,7 @@ port_redirect() {
     local description="$4"
 
     report_operation "$description on zone '$zone' ($port -> $local_port)"
-    nft insert rule inet turris-sentinel minipots_dstnat_"$zone" meta nfproto \{ ipv4, ipv6 \} counter \
+    nft insert rule inet turris-sentinel minipots_dstnat_"$zone" meta nfproto \{ ipv4, ipv6 \} \
         tcp dport "$port" meta mark set "$MAGIC_NUMBER" redirect to "$local_port" comment "\"!sentinel: $description port redirect\""
 }
 
