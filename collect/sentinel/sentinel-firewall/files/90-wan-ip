@@ -1,0 +1,17 @@
+if [ "$INTERFACE" = "wan" ]; then
+    zone="wan"
+    nft add set inet turris-sentinel "${zone}_ips_6" "{ type ipv6_addr; comment \"IPv4 addresses in zone $zone\"  ; }"
+    nft flush set inet turris-sentinel "${zone}_ips_6"
+    for dev in $(ifstatus wan | jsonfilter -e '@.device'); do
+        for ip in $(ip a s dev "$dev" | sed -n 's|.*inet6 \([0-9a-f:]*\)/.*|\1|p'); do
+            nft add element inet turris-sentinel "${zone}_ips_6" "{ $ip }"
+        done
+    done
+    nft add set inet turris-sentinel "${zone}_ips_4" "{ type ipv4_addr; comment \"IPv4 addresses in zone $zone\"  ; }"
+    nft flush set inet turris-sentinel "${zone}_ips_4"
+    for dev in $(ifstatus wan | jsonfilter -e '@.device'); do
+        for ip in $(ip a s dev "$dev" | sed -n 's|.*inet \([0-9.]*\)/.*|\1|p'); do
+            nft add element inet turris-sentinel "${zone}_ips_4" "{ $ip }"
+        done
+    done
+fi

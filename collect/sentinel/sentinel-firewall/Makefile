@@ -68,6 +68,8 @@ define Package/sentinel-firewall-nftables/install
 	$(INSTALL_DATA) ./files/common_nftables.sh $(1)/usr/libexec/sentinel/firewall.d/common.sh
 	$(INSTALL_DIR) $(1)/etc/uci-defaults
 	$(INSTALL_BIN) ./files/uci-defaults $(1)/etc/uci-defaults/99-sentinel-firewall
+	$(INSTALL_DIR) $(1)/etc/hotplug.d/iface
+	$(INSTALL_BIN) ./files/90-wan-ip $(1)/etc/hotplug.d/iface/90-wan-ip
 	$(INSTALL_DIR) $(1)/lib/functions
 	$(INSTALL_DATA) ./files/functions.sh $(1)/lib/functions/sentinel-firewall.sh
 endef
