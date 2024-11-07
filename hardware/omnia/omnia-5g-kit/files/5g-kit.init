@@ -1,35 +1,13 @@
-#!/bin/sh /etc/rc.common
-
-START=95
-STOP=05
-# The tty device is named in /etc/hotplug.d/tty/50-5g-kit .
-TTY_DEVICE=/dev/tty5G2
-
-start() {
-    local limit=0
-    fw_env-config-init.sh > /dev/null
-    if [ "$(fw_printenv omnia_wwan_slot 2>&1 < /dev/null)" != "omnia_wwan_slot=usb3" ]; then
-        nor-update
-        if fw_printenv omnia_wwan_slot 2>&1 < /dev/null | grep -q 'Bad CRC'; then
-            fw_setenv bootcmd 'env default -a; setenv omnia_wwan_slot usb3; saveenv; reset;'
-        else
-            fw_setenv omnia_wwan_slot usb3
-        fi
-        create_notification -s restart "Please reboot your router to complete 5G kit installation"
-        return 0
+#!/bin/sh
+exec > /dev/null 2>&1 < /dev/null
+fw_env-config-init.sh > /dev/null
+if [ "$(fw_printenv omnia_wwan_slot 2>&1 < /dev/null)" != "omnia_wwan_slot=usb3" ]; then
+    nor-update
+    if fw_printenv omnia_wwan_slot 2>&1 < /dev/null | grep -q 'Bad CRC'; then
+        fw_setenv bootcmd 'env default -a; setenv omnia_wwan_slot usb3; saveenv; reset;'
+    else
+        fw_setenv omnia_wwan_slot usb3
     fi
-    while [ ! -e "${TTY_DEVICE}" ] && [ "$limit" -lt 20 ]; do
-        sleep 1
-        limit="$((limit + 1))"
-    done
-    if [ -e "${TTY_DEVICE}" ]; then
-        echo -ne 'ATZ\r\n' > "${TTY_DEVICE}"
-        echo -ne 'AT+CGDATA="M-ETHER",1\r\n' > "${TTY_DEVICE}"
-    fi
-}
-
-stop() {
-    if [ -e "${TTY_DEVICE}" ]; then
-        echo -ne 'ATZ\r\n' > "${TTY_DEVICE}"
-    fi
-}
+    create_notification -s restart "Please reboot your router to complete 5G kit installation"
+    return 0
+fi
