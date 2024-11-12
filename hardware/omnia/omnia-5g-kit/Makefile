@@ -39,7 +39,9 @@ endef
 define Package/omnia-5g-kit/install
 	$(INSTALL_DIR) $(1)/etc/init.d
 	$(INSTALL_BIN) ./files/5g-kit.init $(1)/etc/init.d/5g-kit
+	$(INSTALL_DIR) $(1)/etc/hotplug.d/net
 	$(INSTALL_BIN) ./files/hotplug-net-5g-kit $(1)/etc/hotplug.d/net/50-5g-kit
+	$(INSTALL_DIR) $(1)/etc/hotplug.d/tty
 	$(INSTALL_BIN) ./files/hotplug-tty-5g-kit $(1)/etc/hotplug.d/tty/50-5g-kit
 endef
 
