@@ -102,11 +102,8 @@ uboot_preupdate() {
     BACKUP_UBOOT_ENV="/usr/share/nor-update/uboot-env.backup"
     v_echo "Storing old U-boot environment to be preserved"
 
-    if ! fw_printenv >/dev/null 2>&1; then
-        echo "Updating configuration for U-Boot environment access."
-        rm -f /etc/config/ubootenv
-        fw_env-config-init.sh
-    fi
+    echo "Making sure we have U-Boot environment access."
+    fw_env-config-init.sh
 
     fw_printenv >"$BACKUP_UBOOT_ENV" || {
         # Let's assume that there is a default environment if we can't read it.
@@ -118,11 +115,8 @@ uboot_preupdate() {
 
 uboot_postupdate() {
     [ -f "$BACKUP_UBOOT_ENV" ] || return 0
-    if ! fw_printenv >/dev/null 2>&1; then
-        echo "Updating configuration for U-Boot environment access."
-        rm -f /etc/config/ubootenv
-        fw_env-config-init.sh
-    fi
+    echo "Updating configuration for U-Boot environment access."
+    fw_env-config-init.sh
 
     if [ "$(fw_printenv 2>/dev/null)" = "$(cat "$BACKUP_UBOOT_ENV")" ]; then
         # The environment is the same so no migration is needed

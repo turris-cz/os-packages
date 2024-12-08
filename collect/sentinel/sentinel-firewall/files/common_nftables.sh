@@ -54,7 +54,7 @@ setup_zone() {
 firewall_cleanup() {
     local chain=""
     local handle=""
-    report_operation "Cleaning up the remnants of the old firewall"
+    report_operation "Checking for currently setup Sentinel rules"
     # Delete all rules marked as !sentinel
     nft -a list table inet fw4 | while read line; do
         local new_chain="$(echo "$line" | sed -n 's|[[:blank:]]*chain \(.*\) {.*|\1|p')"
