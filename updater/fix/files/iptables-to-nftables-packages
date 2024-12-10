@@ -1,0 +1,21 @@
+#!/bin/sh
+
+die() {
+  echo "Error: $1" >&2
+  exit 1
+}
+
+FILE_PATH="/etc/updater/conf.d/opkg-auto.lua"
+
+PACKAGES="
+miniupnpd-iptables
+sentinel-dynfw-c-client-iptables
+sentinel-firewall-iptables
+sentinel-fwlogs-iptables-integration
+"
+
+[ -f "$FILE_PATH" ] || exit 0
+
+for PACKAGE in $PACKAGES; do
+  sed -i "/$PACKAGE/s/iptables/nftables/g" "$FILE_PATH" || die "Failed to substitute 'iptables' with 'nftables' in $PACKAGE."
+done
