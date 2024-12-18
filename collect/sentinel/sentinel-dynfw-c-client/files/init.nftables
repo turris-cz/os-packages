@@ -9,6 +9,8 @@ CERT_KEY="/etc/sentinel_dynfw_server.pub"
 teardown_firewall() {
     nft flush set inet "turris-sentinel" dynfw_4 2>/dev/null
     nft flush set inet "turris-sentinel" dynfw_6 2>/dev/null
+    nft flush set inet "turris-sentinel" dynfw_4_wl 2>/dev/null
+    nft flush set inet "turris-sentinel" dynfw_6_wl 2>/dev/null
 }
 
 start_service() {

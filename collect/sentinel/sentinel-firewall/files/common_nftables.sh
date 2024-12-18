@@ -29,19 +29,21 @@ setup_zone() {
 
     # Setup port-forwarding infrastructure for minipots in turris-sentinel table
     nft delete chain inet turris-sentinel minipots_dstnat_"$zone" 2> /dev/null || :
-    nft add chain inet turris-sentinel minipots_dstnat_"$zone"
+    nft add chain inet turris-sentinel minipots_dstnat_"$zone" '{ comment "Minipots port forwarding"; }'
     nft add set inet turris-sentinel "${zone}_ips_6" "{ type ipv6_addr; comment \"IPv4 addresses in zone $zone\"  ; }"
     nft add rule inet turris-sentinel minipots_dstnat iifname $wan_if ip6 daddr @${zone}_ips_6 jump minipots_dstnat_"$zone" \
         comment "\"!sentinel: port redirection for minipots\""
     nft add set inet turris-sentinel "${zone}_ips_4" "{ type ipv4_addr; comment \"IPv4 addresses in zone $zone\"  ; }"
     nft add rule inet turris-sentinel minipots_dstnat iifname $wan_if ip daddr @${zone}_ips_4 jump minipots_dstnat_"$zone" \
         comment "\"!sentinel: port redirection for minipots\""
+    INTERFACE="$zone" /etc/hotplug.d/iface/90-wan-ip wan
 
     # Setup blocking infrastructure
     nft delete chain inet turris-sentinel dynfw_block_zone_"$zone" 2> /dev/null || :
-    nft add chain inet turris-sentinel dynfw_block_zone_"$zone"
+    nft delete chain inet turris-sentinel dynfw_block 2> /dev/null || :
+    nft add chain inet turris-sentinel dynfw_block '{ comment "DynFW blocking chain"; }'
     for hook in input forward; do
-        nft add rule inet turris-sentinel dynfw_block_hook_"${hook}" iifname $wan_if jump dynfw_block_zone_"$zone" \
+        nft add rule inet turris-sentinel dynfw_block_hook_"${hook}" iifname $wan_if jump dynfw_block \
             comment "\"!sentinel: blocking malicious traffic\""
     done
 }
@@ -69,7 +71,7 @@ firewall_cleanup() {
     done
 
     # Recreate a clean turris-sentinel table
-    nft delete table turris-sentinel 2> /dev/null || :
+    nft delete table inet turris-sentinel 2> /dev/null || :
     nft add table inet turris-sentinel
     nft flush table inet turris-sentinel
 
@@ -105,4 +107,3 @@ port_redirect() {
     nft insert rule inet turris-sentinel minipots_dstnat_"$zone" meta nfproto \{ ipv4, ipv6 \} \
         tcp dport "$port" meta mark set "$MAGIC_NUMBER" redirect to "$local_port" comment "\"!sentinel: $description port redirect\""
 }
-

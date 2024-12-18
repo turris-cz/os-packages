@@ -1,24 +1,45 @@
 #!/bin/sh
-set -e
 . "${0%/*}/common.sh"
 . /lib/functions.sh
 
-dynfw_block() {
-    local config_section="$1"
-    local zone enabled
-    config_get zone "$config_section" "name"
-    config_get_bool enabled "$config_section" "sentinel_dynfw" "0"
-    [ "$enabled" = "1" ] || return 0
+report_operation "Dynamic blocking setup"
 
-    report_operation "Dynamic blocking on zone '$zone'"
+config_load "sentinel"
 
-    # Recreate the sets
-    nft add set inet turris-sentinel dynfw_4 '{ type ipv4_addr; comment "IPv4 addresses blocked by Turris Sentinel"  ; }'
-    nft add set inet turris-sentinel dynfw_6 '{ type ipv6_addr; flags interval; comment "IPv6 addresses blocked by Turris Sentinel" ; }'
+config_get_bool enabled "dynfw" enabled 1
+[ "$enabled" -eq 1 ] || return
 
-    nft add rule inet turris-sentinel dynfw_block_zone_"${zone}" ip saddr @dynfw_4 drop
-    nft add rule inet turris-sentinel dynfw_block_zone_"${zone}" ip6 saddr @dynfw_6 drop
+wl_list_cb() {
+    local val="$1"
+    if echo "$val" | grep -q "^[0-9.]*$"; then
+        nft add element inet turris-sentinel dynfw_4_wl "{ $val }"
+    elif echo "$val" | grep -q "^[0-9a-fA-F:]*/*[0-9]*$"; then
+        nft add element inet turris-sentinel dynfw_6_wl "{ $val }"
+    else
+        echo "Invalid ip address $val" >&2
+    fi
 }
 
-config_load "firewall"
-config_foreach dynfw_block "zone"
+# Recreate the sets
+nft add set inet turris-sentinel dynfw_4_wl '{ type ipv4_addr; comment "IPv4 addresses ignored by Turris Sentinel" ; }'
+nft add set inet turris-sentinel dynfw_6_wl '{ type ipv6_addr; flags interval; comment "IPv6 addresses ignored by Turris Sentinel" ; }'
+nft add set inet turris-sentinel dynfw_4 '{ type ipv4_addr; comment "IPv4 addresses blocked by Turris Sentinel" ; }'
+nft add set inet turris-sentinel dynfw_6 '{ type ipv6_addr; flags interval; comment "IPv6 addresses blocked by Turris Sentinel" ; }'
+
+# Fill the whitelist
+nft flush set inet "turris-sentinel" dynfw_4_wl 2>/dev/null
+nft flush set inet "turris-sentinel" dynfw_6_wl 2>/dev/null
+config_list_foreach "dynfw" whitelist wl_list_cb
+
+# Setup the blocking chain
+nft flush chain inet turris-sentinel dynfw_block
+nft -f - << EOF
+table inet turris-sentinel {
+        chain dynfw_block {
+                ip saddr @dynfw_4_wl accept
+                ip6 saddr @dynfw_6_wl accept
+                ip saddr @dynfw_4 drop
+                ip6 saddr @dynfw_6 drop
+        }
+}
+EOF
