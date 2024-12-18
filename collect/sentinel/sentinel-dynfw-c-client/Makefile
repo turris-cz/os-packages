@@ -8,7 +8,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=sentinel-dynfw-c-client
-PKG_VERSION:=1.4.0
+PKG_VERSION:=1.3.0
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
