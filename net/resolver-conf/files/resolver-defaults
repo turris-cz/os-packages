@@ -10,9 +10,9 @@ uci show system.ntp.server | grep -q '217\.31\.202\.100' || uci add_list system.
 # Also, when we have turned the dnsmasq DNS off, ask dnsmasq to advertise us as DNS server
 uci show dhcp | sed -ne 's/^dhcp\.//;s/=dhcp$//p' | while read INTERFACE ; do
 	# If the interface has an IP address. Otherwise, just ignore it.
-	IP=$(uci -q get network."$INTERFACE".ipaddr)
+	IP=$(uci -q get network."$INTERFACE".ipaddr | sed 's|/.*||')
 	if [ -n "$IP" ] ; then
-		OPTIONS=$(uci get dhcp."$INTERFACE".dhcp_option | grep "^6,")
+		OPTIONS=$(uci -d = show dhcp."$INTERFACE".dhcp_option | grep "='6,")
 		if [ -z "$OPTIONS" ] ; then
 			uci -q add_list dhcp."$INTERFACE".dhcp_option="6,$IP"
 		fi
