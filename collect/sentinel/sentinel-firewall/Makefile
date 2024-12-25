@@ -32,7 +32,7 @@ define Package/sentinel-firewall-nftables
   SUBMENU:=Sentinel
   PROVIDES:=sentinel-firewall
   TITLE:=Turris Sentinel Firewall nftables integration
-  DEPENDS:=+firewall4 +iptables-zz-legacy +ip6tables-zz-legacy
+  DEPENDS:=+firewall4 +nftables
   CONFLICTS:=sentinel-firewall-iptables \
              firewall
 endef
