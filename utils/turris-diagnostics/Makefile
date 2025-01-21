@@ -81,7 +81,7 @@ define Package/turris-diagnostics-web/install
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/web/diagnostics.sh $(1)/usr/libexec/web-diagnostics.sh
 
 	$(INSTALL_DIR) $(1)/etc/lighttpd/conf.d/
-	$(INSTALL_DATA) ./files/lighttpd-diagnostics.conf $(1)/etc/lighttpd/conf.d/80-diagnostics.conf
+	$(INSTALL_DATA) ./files/lighttpd-diagnostics.conf $(1)/etc/lighttpd/conf.d/85-diagnostics.conf
 endef
 
 define Package/turris-snapshots-web/install
@@ -89,7 +89,7 @@ define Package/turris-snapshots-web/install
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/web/snapshots.sh $(1)/usr/libexec/web-snapshots.sh
 
 	$(INSTALL_DIR) $(1)/etc/lighttpd/conf.d/
-	$(INSTALL_DATA) ./files/lighttpd-snapshots.conf $(1)/etc/lighttpd/conf.d/80-snapshots.conf
+	$(INSTALL_DATA) ./files/lighttpd-snapshots.conf $(1)/etc/lighttpd/conf.d/85-snapshots.conf
 endef
 
 define Package/turris-diagnostics-web/postinst

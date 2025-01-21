@@ -3,10 +3,11 @@
 . /lib/functions.sh
 
 config_load reforis
-config_get SCRIPTNAME server scriptname "/reforis"
+config_get TURRIS_BASE_URL server turris_base_url "/"
+config_get SCRIPTNAME server scriptname "reforis"
 # config_get_bool DEBUG server debug "0"
 # config_get_bool NOAUTH auth noauth "0"
-config_get SESSION_TIMEOUT auth session_timeout ""
+# config_get SESSION_TIMEOUT auth session_timeout ""
 config_get SENTRY_DSN sentry dsn ""
 
 # scriptname must not contain escape codes (avoid CRLF injection in sed later)
@@ -21,12 +22,13 @@ config_get BUS_PORT mqtt port "11883"
 config_get CREDENTIALS_FILE mqtt credentials_file "/etc/fosquitto/credentials.plain"
 CONTROLLER_ID=$(crypto-wrapper serial-number)
 
+echo "var.turris_base_url = \"$TURRIS_BASE_URL\""
 echo "var.reforis.bin = \"/usr/bin/reforis\""
-echo "var.reforis.scriptname = \"$SCRIPTNAME\""
+echo "var.reforis.scriptname = \"$TURRIS_BASE_URL$SCRIPTNAME\""
 
 echo
-echo "\$HTTP[\"url\"] =~ \"^\" + var.reforis.scriptname + \"/\" {"
-echo " \$HTTP[\"url\"] =~ \"^\" + var.reforis.scriptname + \"/static/\" {"
+echo "\$HTTP[\"url\"] =^ var.reforis.scriptname + \"/\" {"
+echo " \$HTTP[\"url\"] =^ var.reforis.scriptname + \"/static/\" {"
 echo "  alias.url += ( var.reforis.scriptname + \"/static/\" => \"/usr/lib/pythonX.X/site-packages/reforis_static/\" )"
 echo " } else {"
 echo "  server.max-read-idle = 90"
