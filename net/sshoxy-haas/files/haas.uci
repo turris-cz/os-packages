@@ -1,0 +1,18 @@
+
+config haas 'settings'
+
+	# Token that you can get from here: https://haas.nic.cz/devices
+	# This is required as otherwise HaaS won't start.
+	option token ''
+
+	# Local port to use. In default: 2525
+	#option local_port '2525'
+
+	# This options specifies where to log, if anywhere. Valid values are
+	# absolute path to the file or 'none'. Default is 'none'.
+	#option log 'none'
+
+	# Verbosity of the log, valid options are
+	# 'error', 'warning' (default), 'info' and 'debug'
+	#option log_level 'warning'
+
