@@ -20,6 +20,7 @@ PKG_LICENSE:=GPL-3.0-or-later
 PKG_LICENSE_FILES:=LICENSE
 
 PKG_BUILD_DEPENDS:=rust/host
+PKG_BUILD_DIR:=$(BUILD_DIR)/sshoxy-v$(PKG_VERSION)
 PKG_BUILD_PARALLEL:=1
 
 include $(INCLUDE_DIR)/package.mk
@@ -36,7 +37,7 @@ define Package/sshoxy-haas
   URL:=https://github.com/turris-cz/sshoxy/
 endef
 
-define Package/ripgrep/description
+define Package/sshoxy-haas/description
 	HaaS proxy is tool for redirectiong SSH session from local computer to server of HaaS with additional information.
 
 	More information on https://haas.nic.cz
