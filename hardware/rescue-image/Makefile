@@ -38,7 +38,7 @@ DEVICE := omnia
 else
 DEVICE := unknown
 endif
-kernel_files=$(TOPDIR)/target/linux/$(BOARD)/files/. $(TOPDIR)/target/linux/generic/files/.
+kernel_files=$(TOPDIR)/target/linux/$(BOARD)/files-$(KERNEL_PATCHVER)/. $(TOPDIR)/target/linux/generic/files/.
 
 define Package/rescue-image
 	TITLE:=rescue-image
