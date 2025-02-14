@@ -30,6 +30,12 @@ include $(INCLUDE_DIR)/kernel-defaults.mk
 include $(INCLUDE_DIR)/quilt.mk
 include $(INCLUDE_DIR)/package.mk
 
+split-dot = $(word $2,$(subst ., ,$1))
+version:=$(LINUX_VERSION)
+version_a:=$(call split-dot,$(version:v%=%),1)
+version_b:=$(call split-dot,$(version),2)
+version_fin:=$(version_a).$(version_b)
+
 PATCH_DIR := $(PLATFORM_DIR)/patches$(if $(wildcard $(PLATFORM_DIR)/patches-$(KERNEL_PATCHVER)),-$(KERNEL_PATCHVER))
 ifeq ($(CONFIG_TARGET_mvebu_cortexa53_DEVICE_cznic_turris-mox),y)
 DEVICE := mox
@@ -38,7 +44,7 @@ DEVICE := omnia
 else
 DEVICE := unknown
 endif
-kernel_files=$(TOPDIR)/target/linux/$(BOARD)/files/. $(TOPDIR)/target/linux/generic/files/.
+kernel_files=$(TOPDIR)/target/linux/$(BOARD)/files-$(version_fin)/. $(TOPDIR)/target/linux/generic/files/.
 
 define Package/rescue-image
 	TITLE:=rescue-image
