@@ -37,7 +37,7 @@
 		};
 		phy-dtb {
 			description = "Flattened Device Tree blob (metalic WAN)";
-			data = /incbin/("./dts/armada-385-turris-omnia-phy.dtb");
+			data = /incbin/("./dts/marvell/armada-385-turris-omnia-phy.dtb");
 			type = "flat_dt";
 			arch = "arm";
 			compression = "none";
@@ -50,7 +50,7 @@
 		};
 		sfp-dtb {
 			description = "Flattened Device Tree blob (SFP WAN)";
-			data = /incbin/("./dts/armada-385-turris-omnia-sfp.dtb");
+			data = /incbin/("./dts/marvell/armada-385-turris-omnia-sfp.dtb");
 			type = "flat_dt";
 			arch = "arm";
 			compression = "none";
