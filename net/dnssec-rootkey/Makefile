@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2016 CZ.NIC, z. s. p. o. (https://www.nic.cz/)
+# Copyright (C) 2016-2025 CZ.NIC, z. s. p. o. (https://www.nic.cz/)
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -8,11 +8,10 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=dnssec-rootkey
-PKG_VERSION:=0.0.2
+PKG_VERSION:=0.0.3
 PKG_RELEASE:=$(AUTORELEASE)
 
-PKG_MAINTAINER:=Jan Pavlinec <jan.pavlinec@nic.cz>
-PKG_LICENSE:=GPL-3.0
+PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 
 include $(INCLUDE_DIR)/package.mk
 
