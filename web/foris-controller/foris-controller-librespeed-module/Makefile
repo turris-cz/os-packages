@@ -40,6 +40,10 @@ define Package/foris-controller-librespeed-module/description
   This is a librespeed module for foris-controller.
 endef
 
+define Package/foris-controller-librespeed-module/conffiles
+/etc/config/librespeed
+endef
+
 define Package/foris-controller-librespeed-module/postinst
 #!/bin/sh
 if [ -z "$${IPKG_INSTROOT}" ]; then
