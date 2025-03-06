@@ -247,6 +247,11 @@ define Package/fix-iptables-to-nftables-packages/description
   Change iptables version of packages to nftables if installed.
 endef
 
+define Package/fix-preserve-librespeed-config/description
+  Keep LibreSpeed config unchanged during the update.
+endef
+
+
 $(eval $(call FIX,sentinel-remove-invalid-firewall-rules,+firewall +uci))
 $(eval $(call FIX,samba-migrate-to-samba4,+samba4-server +uci))
 $(eval $(call FIX,updater-v65.0-alternatives-update,+updater-ng +uci,prerm))
@@ -279,3 +284,4 @@ $(eval $(call FIX,turris1x-kernel-install))
 $(eval $(call FIX,guest-network-device-name))
 $(eval $(call FIX,rainbow-button-sync-enable,+rainbow +rainbow-button-sync))
 $(eval $(call FIX,iptables-to-nftables-packages,+firewall4))
+$(eval $(call FIX,preserve-librespeed-config))
