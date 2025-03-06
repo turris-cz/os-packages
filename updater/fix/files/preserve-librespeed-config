@@ -1,0 +1,4 @@
+#!/bin/sh
+if [ -e /usr/share/updater/collided/etc/config/librespeed ]; then
+    cp /usr/share/updater/collided/etc/config/librespeed /etc/config/librespeed
+fi
