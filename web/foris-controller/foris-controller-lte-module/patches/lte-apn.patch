@@ -1,0 +1,11 @@
+--- a/foris_controller_modules/lte/schema/lte.json	2025-03-07 09:02:14.645815290 +0100
++++ b/foris_controller_modules/lte/schema/lte.json	2025-03-07 08:57:00.846114755 +0100
+@@ -3,7 +3,7 @@
+         "interface_id": {"type": "string", "minLength": 1, "pattern": "^[0-9a-z_-]*"},
+         "path": {"type": "string", "pattern": "^\/.+$"},
+         "pin_type": {"type": "string", "pattern": "^[0-9]{4}"},
+-        "apn_type": {"type":"string", "minLength": 1, "pattern": "^[a-z]*$"},
++        "apn_type": {"type":"string", "minLength": 1, "pattern": "^[a-z0-9._-]*$"},
+         "auth_config": {
+             "type":"object",
+             "OneOf" : [
