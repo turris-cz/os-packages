@@ -39,7 +39,7 @@ define Package/reforis-haas-plugin
   URL:=https://gitlab.nic.cz/turris/reforis/reforis-haas
   DEPENDS:=\
     +reforis \
-    +reforis-data-collection-plugin \
+    +reforis-sentinel-plugin \
     +foris-controller-haas-module
 endef
 
