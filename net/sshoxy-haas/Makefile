@@ -8,7 +8,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=sshoxy-haas
-PKG_VERSION:=0.1.0
+PKG_VERSION:=0.2.0
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
@@ -47,3 +47,15 @@ Build/Compile = $(call Build/Compile/Cargo,sshoxy-haas)
 
 $(eval $(call RustBinPackage,sshoxy-haas))
 $(eval $(call BuildPackage,sshoxy-haas))
+
+define Package/sshoxy-haas/install
+	$(INSTALL_DIR) $(1)/usr/bin/
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/target/release/haas-proxy $(1)/usr/bin/sshoxy-haas
+
+	$(INSTALL_DIR) $(1)/usr/libexec/
+	$(INSTALL_BIN) ./files/sshoxy-haas-login-handler.sh $(1)/usr/libexec/sshoxy-haas-login-handler.sh
+
+	$(INSTALL_DIR) $(1)/etc/init.d/
+	$(INSTALL_BIN) ./files/sshoxy-haas.init $(1)/etc/init.d/sshoxy-haas
+
+endef
