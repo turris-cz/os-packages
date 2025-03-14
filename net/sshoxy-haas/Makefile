@@ -24,7 +24,7 @@ PKG_BUILD_DIR:=$(BUILD_DIR)/sshoxy-v$(PKG_VERSION)
 PKG_BUILD_PARALLEL:=1
 
 include $(INCLUDE_DIR)/package.mk
-include ../../lang/rust/rust-package.mk
+include $(TOPDIR)/feeds/packages/lang/rust/rust-package.mk
 
 ## Most optimized profile
 CARGO_PKG_PROFILE:=release-lto
