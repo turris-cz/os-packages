@@ -1,0 +1,97 @@
+From 252e9683b0c9b89aed5ebf383fd153a4d1ac1ff1 Mon Sep 17 00:00:00 2001
+From: Glenn Strauss <gstrauss@gluelogic.com>
+Date: Tue, 21 Jan 2025 04:47:00 -0500
+Subject: [PATCH] turris_auth_url abstraction
+
+---
+ turris_auth/server/config.py | 12 ++++++++----
+ turris_auth/server/wsgi.py   | 10 ++++++++--
+ 2 files changed, 16 insertions(+), 6 deletions(-)
+
+diff --git a/turris_auth/server/config.py b/turris_auth/server/config.py
+index 562acf7..c0f480f 100644
+--- a/turris_auth/server/config.py
++++ b/turris_auth/server/config.py
+@@ -5,6 +5,7 @@ We need dynamic configuration to be independent on resources installation locati
+ """
+ 
+ import shutil
++import euci
+ 
+ 
+ def _server(authorizer: bool, luci_login: bool) -> str:
+@@ -21,15 +22,18 @@ def _server(authorizer: bool, luci_login: bool) -> str:
+ 
+ 
+ def config(luci_login: bool) -> str:
++    uci = euci.EUci()
++    turris_auth_url = uci.get("turris-auth", "web", "auth_url", default="/")
+     """Returns string with desired Lighttpd configuration."""
+     return f"""# Automatically generated configuration for turris-auth.
++var.turris_auth_url = {turris_auth_url}
+ var.turris_auth_scriptname = "turris-auth"
+ var.turris_auth = {_server(True, luci_login)}
+ var.turris_auth_responder = ( turris_auth_scriptname => {_server(False, luci_login)})
+ 
+ fastcgi.server += (
+-    "/login" => turris_auth_responder,
+-    "/logout" => turris_auth_responder,
+-    "/login.json" => turris_auth_responder,
+-    "/extend-session" => turris_auth_responder,
++    turris_auth_url + "login" => turris_auth_responder,
++    turris_auth_url + "logout" => turris_auth_responder,
++    turris_auth_url + "login.json" => turris_auth_responder,
++    turris_auth_url + "extend-session" => turris_auth_responder,
+ )"""
+diff --git a/turris_auth/server/wsgi.py b/turris_auth/server/wsgi.py
+index e55d294..643c206 100644
+--- a/turris_auth/server/wsgi.py
++++ b/turris_auth/server/wsgi.py
+@@ -4,6 +4,7 @@
+ 
+ import cgi
+ import cgitb
++import euci
+ import http
+ import json
+ import logging
+@@ -37,6 +38,8 @@ class Server:
+     """The turris-auth fast CGI server implementation."""
+ 
+     def __init__(self, report_invalid_password: bool = False, luci_login: bool = False):
++        uci = euci.EUci()
++        self.turris_auth_url = uci.get("turris-auth", "web", "auth_url", default="/")
+         self.report_invalid_password = report_invalid_password
+         self.luci_login = luci_login
+         self.wsgi = flup.server.fcgi.WSGIServer(
+@@ -56,6 +59,9 @@ class Server:
+         # The CONTENT_LENGTH is not available for FCGI_AUTHORIZER
+         if "CONTENT_LENGTH" in environ:
+             # Responder
++            script_basename = ""
++            if environ['SCRIPT_NAME'].startswith(self.turris_auth_url):
++                script_basename = environ['SCRIPT_NAME'][len(self.turris_auth_url):]
+             try:
+                 return {
+                     "GET/login": self._login,
+@@ -63,7 +69,7 @@ class Server:
+                     "GET/logout": self._logout,
+                     "GET/login.json": self._status,
+                     "POST/extend-session": self._extend_session,
+-                }[f"{environ['REQUEST_METHOD']}{environ['SCRIPT_NAME']}"](
++                }[f"{environ['REQUEST_METHOD']}/{script_basename}"](
+                     environ, start_response
+                 )
+             except KeyError:
+@@ -88,7 +94,7 @@ class Server:
+                 start_response(
+                     STATUS_SEE_OTHER,
+                     [
+-                        ("Location", f"/login?{environ['REQUEST_URI']}"),
++                        ("Location", f"{self.turris_auth_url}login?{environ['REQUEST_URI']}"),
+                         # We allow here any origin as we are attempting redirect to different router's URL which is cross-site
+                         ("Access-Control-Allow-Origin", "*"),
+                     ],
+-- 
+2.49.0
+
