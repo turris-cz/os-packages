@@ -1,5 +1,5 @@
 #
-## Copyright (C) 2019-2022 CZ.NIC z.s.p.o. (https://www.nic.cz/)
+## Copyright (C) 2019-2025 CZ.NIC z.s.p.o. (https://www.nic.cz/)
 #
 ## This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -8,18 +8,20 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=updater-supervisor
-PKG_VERSION:=1.5.6
+PKG_VERSION:=1.6.0
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/updater/supervisor.git
-PKG_MIRROR_HASH:=7582017fded9702bc71a2b4c8cd721c6b63d9052d30cc7108a9f4563d9dc135b
+PKG_MIRROR_HASH:=7595b84c3298d2bc4912f239176754b1a8637c11d45656e4a1927c29ec5e02a1
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 PKG_LICENSE:=MIT
 
-PYTHON3_PKG_FORCE_DISTUTILS_SETUP:=1
+PKG_BUILD_DEPENDS:=python-hatchling/host
+
+PYTHON3_PKG_WHEEL_NAME:=svupdater
 
 include $(INCLUDE_DIR)/package.mk
 include $(TOPDIR)/feeds/packages/lang/python/python3-package.mk
