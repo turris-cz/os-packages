@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2020-2024 CZ.NIC z.s.p.o. (https://www.nic.cz/)
+# Copyright (C) 2020-2025 CZ.NIC z.s.p.o. (https://www.nic.cz/)
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -7,13 +7,13 @@
 
 include $(TOPDIR)/rules.mk
 
-PKG_NAME:=reforis-data-collection-plugin
-PKG_VERSION:=1.2.1
+PKG_NAME:=reforis-sentinel-plugin
+PKG_VERSION:=2.0.0
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/reforis/reforis-data-collection
-PKG_MIRROR_HASH:=27a47acacd00e3d2f3a407a4d1f4025fa608f7b03076c061f240dfa55255ce97
+PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/reforis/reforis-sentinel
+PKG_MIRROR_HASH:=9c7cee23b99e56bdc2a536c652f5dad84408710cdc4d583a4adf63b249415c37
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
@@ -24,29 +24,29 @@ PKG_BUILD_DEPENDS:=\
 	node/host \
 	hatch-reforis/host
 
-PYTHON3_PKG_WHEEL_NAME:=reforis_data_collection
+PYTHON3_PKG_WHEEL_NAME:=reforis_sentinel
 
 include $(INCLUDE_DIR)/package.mk
 include $(TOPDIR)/feeds/packages/lang/python/python3-package.mk
 include ../reforis/files/reforis-plugin.mk
 include ../reforis/files/reforis-translations.mk
 
-define Package/reforis-data-collection-plugin
+define Package/reforis-sentinel-plugin
   SECTION:=web
   CATEGORY:=Web
   SUBMENU:=reForis
-  TITLE:=reForis Data Collection plugin
-  URL:=https://gitlab.nic.cz/turris/reforis/reforis-data-collection
+  TITLE:=reForis Sentinel plugin
+  URL:=https://gitlab.nic.cz/turris/reforis/reforis-sentinel
   DEPENDS:=\
     +reforis \
     +foris-controller-sentinel-module
 endef
 
-define Package/reforis-data-collection-plugin/description
-  reForis Data Collection plugin
+define Package/reforis-sentinel-plugin/description
+  reForis Sentinel plugin
 endef
 
 REFORIS_TRANSLATIONS:=cs
 
-$(eval $(call ReForisPlugin,reforis-data-collection-plugin,reforis_data_collection))
+$(eval $(call ReForisPlugin,reforis-sentinel-plugin,reforis_sentinel))
 # call BuildPackage <= assures OWR build system that this is package
