@@ -36,8 +36,9 @@ define Package/haas-proxy
 	+python3-crypto \
 	+python3-service-identity \
 	+sshpass \
+	+reforis-haas-plugin \
 	+@KERNEL_CFS_BANDWIDTH
-  CONFLICTS:=mitmproxy
+  CONFLICTS:=mitmproxy sshoxy-haas
 endef
 
 define Package/haas-proxy/description
