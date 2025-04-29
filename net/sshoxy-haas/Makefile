@@ -33,6 +33,7 @@ define Package/sshoxy-haas
   CATEGORY:=Network
   TITLE:=sshoxy SSH proxy for HAAS project
   DEPENDS:=$(RUST_ARCH_DEPENDS) +libopenssl
+  CONFLICTS:=haas-proxy
   URL:=https://github.com/turris-cz/sshoxy/
 endef
 
@@ -52,6 +53,15 @@ define Package/sshoxy-haas/install
 
 	$(INSTALL_DIR) $(1)/etc/init.d/
 	$(INSTALL_BIN) ./files/sshoxy-haas.init $(1)/etc/init.d/sshoxy-haas
+
+	$(INSTALL_DIR) $(1)/etc/config
+	$(INSTALL_DATA) ./files/haas.uci $(1)/etc/config/haas
+	
+	$(INSTALL_DIR) $(1)/etc/uci-defaults
+	$(INSTALL_BIN) ./files/uci-defaults $(1)/etc/uci-defaults/99-haas-proxy
+
+	$(INSTALL_DIR) $(1)/usr/libexec/sentinel/firewall.d
+	$(INSTALL_BIN) ./files/sentinel-firewall.sh $(1)/usr/libexec/sentinel/firewall.d/80-haas-proxy.sh
 
 endef
 
