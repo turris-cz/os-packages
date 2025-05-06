@@ -42,6 +42,12 @@ ifdef(`OMNIA',`
 				"title": "SSH Honeypot",
 				"description": "Threat detection tool. SSH honeypot using Honeypot as a Service (haas.nic.cz).",
 				"url": "https://docs.turris.cz/basics/collect/haas/"
+			},
+			"haas_new": {
+				"title": "SSH Honeypot - New",
+				"description": "Threat detection tool. SSH honeypot using Honeypot as a Service (haas.nic.cz). Build on rust language. UNINSTALL OLD HAAS FIRST, PLEASE!",
+				"url": "https://docs.turris.cz/basics/collect/haas/",
+				"labels": ["experimental"]
 			}
 		}
 	},
