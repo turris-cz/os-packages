@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2020-2024 CZ.NIC z.s.p.o. (https://www.nic.cz/)
+# Copyright (C) 2020-2025 CZ.NIC z.s.p.o. (https://www.nic.cz/)
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=reforis-remote-wifi-settings-plugin
-PKG_VERSION:=2.1.0
+PKG_VERSION:=2.2.0
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/reforis/reforis-remote-wifi-settings
-PKG_MIRROR_HASH:=53d2717e80a9baaf46c812b1a6fe4c2990046ed6c7ddccd5e122e8b0dc9d079c
+PKG_MIRROR_HASH:=bfe0f8a7afe2470c979e62e2d59d4bd3fe88e9f95617f27d7ddf3822fb5ad405
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>

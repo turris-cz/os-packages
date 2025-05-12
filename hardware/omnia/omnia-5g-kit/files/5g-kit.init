@@ -2,8 +2,9 @@
 
 START=95
 STOP=05
-# The tty device is named in /etc/hotplug.d/tty/50-5g-kit .
-TTY_DEVICE=/dev/tty5G2
+
+TTY_DEVICE="/dev/$(basename /sys/devices/platform/soc/soc:internal-regs/f10f0000.usb3/usb3/3-1/3-1:1.5/tty*)"
+NET_DEVICE="$(ls /sys/devices/platform/soc/soc:internal-regs/f10f0000.usb3/usb3/3-1/3-1*/net/)"
 
 start() {
     local limit=0
@@ -18,18 +19,18 @@ start() {
         create_notification -s restart "Please reboot your router to complete 5G kit installation"
         return 0
     fi
-    while [ ! -e "${TTY_DEVICE}" ] && [ "$limit" -lt 20 ]; do
-        sleep 1
-        limit="$((limit + 1))"
-    done
-    if [ -e "${TTY_DEVICE}" ]; then
-        echo -ne 'ATZ\r\n' > "${TTY_DEVICE}"
-        echo -ne 'AT+CGDATA="M-ETHER",1\r\n' > "${TTY_DEVICE}"
+    if [ "$(uci get network.gsm.device)" != "$TTY_DEVICE" ]; then
+        ifdown gsm
+        uci set network.gsm.device="$TTY_DEVICE"
+        uci commit network.gsm
+        ifup gsm
+    fi
+    if [ "$(uci get watchcat.5gkit.interface)" != "$NET_DEVICE" ]; then
+        uci set watchcat.5gkit.interface="$NET_DEVICE"
+        uci set watchcat.5gkit.logical_interface=gsm
+        uci commit watchcat.5gkit
+        /etc/init.d/watchcat restart
     fi
 }
 
-stop() {
-    if [ -e "${TTY_DEVICE}" ]; then
-        echo -ne 'ATZ\r\n' > "${TTY_DEVICE}"
-    fi
-}
+stop() { :; }

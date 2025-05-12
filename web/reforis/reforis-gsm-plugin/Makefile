@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2024 CZ.NIC z. s. p. o. (https://www.nic.cz/)
+# Copyright (C) 2024-2025 CZ.NIC z. s. p. o. (https://www.nic.cz/)
 #
 # This is free software, licensed under the GNU General Public License v3.
 # See /LICENSE for more information.
@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=reforis-gsm-plugin
-PKG_VERSION:=1.0.0
+PKG_VERSION:=1.1.0
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/reforis/reforis-gsm
-PKG_MIRROR_HASH:=fb563d865758e7a1c9a80e134ce3f79aa7e767c1187e90c24442b27fdc751761
+PKG_MIRROR_HASH:=ec935a9d52f8c4d795c5bc28de215b193707c1e1a66073c8f59590ed93916261
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>

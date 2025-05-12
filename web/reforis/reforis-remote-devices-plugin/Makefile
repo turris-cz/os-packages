@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2020-2024 CZ.NIC z.s.p.o. (https://www.nic.cz/)
+# Copyright (C) 2020-2025 CZ.NIC z.s.p.o. (https://www.nic.cz/)
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=reforis-remote-devices-plugin
-PKG_VERSION:=2.2.0
+PKG_VERSION:=2.3.0
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/reforis/reforis-remote-devices
-PKG_MIRROR_HASH:=88830c3bab2741a42b87901fbcc626244ee879ebceecd60a7d3482a4f34c2de0
+PKG_MIRROR_HASH:=1bdab9241cf9ba8fa91317b41cb92353c1e65350b14d081920c97b4cbbd342df
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>

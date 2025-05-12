@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2020-2024 CZ.NIC z.s.p.o. (https://www.nic.cz/)
+# Copyright (C) 2020-2025 CZ.NIC z.s.p.o. (https://www.nic.cz/)
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=reforis-netboot-plugin
-PKG_VERSION:=1.2.0
+PKG_VERSION:=1.3.0
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/reforis/reforis-netboot
-PKG_MIRROR_HASH:=acc392fc3fbb91915102498f47246fd4e342931c36a6613c4459111e48639762
+PKG_MIRROR_HASH:=f390eb613cb13d1204e8f2ea853870decd43926982d333f8911b8ab95d2d49de
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>

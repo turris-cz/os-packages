@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2024 CZ.NIC z.s.p.o. (https://www.nic.cz/)
+# Copyright (C) 2019-2025 CZ.NIC z.s.p.o. (https://www.nic.cz/)
 #
 # This is free software, licensed under the GNU General Public License v3.
 # See /LICENSE for more information.
@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=reforis-openvpn-plugin
-PKG_VERSION:=2.2.0
+PKG_VERSION:=2.3.0
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/reforis/reforis-openvpn
-PKG_MIRROR_HASH:=5de548dec875aeda3c3e3961e21d63d773cdc8c895031abf62823385e5a2df1d
+PKG_MIRROR_HASH:=3fe66017743192b420fb93814d2e73da9e5962548e0e0279fd515c7c1569b5e9
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>

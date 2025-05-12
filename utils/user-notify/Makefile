@@ -1,5 +1,5 @@
 #
-## Copyright (C) 2018-2020, 2022 CZ.NIC z.s.p.o. (https://www.nic.cz/)
+## Copyright (C) 2018-2025, 2022 CZ.NIC z.s.p.o. (https://www.nic.cz/)
 #
 ## This is free software, licensed under the GNU General Public License v3.
 # See /LICENSE for more information.
@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=user-notify
-PKG_VERSION:=61.7.0
+PKG_VERSION:=62.0.0
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/user-notify.git
-PKG_MIRROR_HASH:=528140a69ec9d06aa2a00f55fb24340ff578c19b8774aa38c973b46eaa7db28c
+PKG_MIRROR_HASH:=2f6fd96306801f0d3345bb1b828a4ea10dfa78c5bd62a38d12831e5f704941df
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
