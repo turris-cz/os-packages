@@ -30,8 +30,7 @@ define Package/foris-controller-haas-module
   SUBMENU:=Foris Controller
   TITLE:=Foris controller HaaS module
   DEPENDS:=\
-    +foris-controller \
-    +haas-proxy
+    +foris-controller
 endef
 
 define Package/foris-controller-haas-module/description
