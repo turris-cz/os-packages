@@ -32,7 +32,7 @@ define Package/sshoxy-haas
   SECTION:=net
   CATEGORY:=Network
   TITLE:=sshoxy SSH proxy for HAAS project
-  DEPENDS:=$(RUST_ARCH_DEPENDS) +libopenssl
+  DEPENDS:=$(RUST_ARCH_DEPENDS) +libopenssl +reforis-haas-plugin
   CONFLICTS:=haas-proxy
   URL:=https://github.com/turris-cz/sshoxy/
 endef
