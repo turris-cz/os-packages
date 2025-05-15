@@ -1,0 +1,73 @@
+From 7563175349c7395392a8fe4a710c9e3e8877441f Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Marek=20Moj=C3=ADk?= <marek.mojik@nic.cz>
+Date: Thu, 15 May 2025 17:12:08 +0200
+Subject: [PATCH] Proxy debug
+
+---
+ proxy/proxy_zmq.c | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
+
+diff --git a/proxy/proxy_zmq.c b/proxy/proxy_zmq.c
+index 0dc84f5..f79cb28 100644
+--- a/proxy/proxy_zmq.c
++++ b/proxy/proxy_zmq.c
+@@ -20,13 +20,24 @@
+ #include "proxy_zmq.h"
+ #include "common.h"
+ #include "log.h"
++#include <stdio.h>
+ 
+ int check_msg(size_t frames, unsigned char *topic, size_t topic_len) {
+ 	TRACE_FUNC;
++	notice("CHECK MSG");
++	notice("[check_msg] frames=%u, topic=%p, topic_len=%u", frames, (void*)topic, topic_len);
+ 	if (topic == NULL) {
+ 		error("topic is NULL");
+ 		return -1;
+ 	}
++
++	size_t to_print = topic_len < 32 ? topic_len : 32;
++	fputs("[check_msg] topic (hex, first bytes): ", stderr);
++	for (size_t i = 0; i < to_print; i++) {
++		fprintf(stderr, "%02X ", topic[i]);
++	}
++	fputs("\n", stderr);
++
+ 	if (frames < 1 || frames > 2) {
+ 		error("Received and ignoring %ld parts malformed message", frames);
+ 		return -1;
+@@ -51,6 +62,7 @@ int recv_data_cb(zloop_t *loop, zsock_t *reader, void *arg) {
+ 	// A message is supposed to have exactly one or two frames.
+ 	// The first frame MUST be always a message topic.
+ 	size_t msg_size = zmsg_size(msg);
++	notice("msg size: %u", msg_size);
+ 	zframe_t *topic_frame = zmsg_first(msg);
+ 	size_t topic_len = zframe_size(topic_frame);
+ 	unsigned char *topic = zframe_data(topic_frame);
+@@ -58,19 +70,23 @@ int recv_data_cb(zloop_t *loop, zsock_t *reader, void *arg) {
+ 		goto ret;
+ 	struct zmq *zmq = (struct zmq *)arg;
+ 	if (msg_size == 1) {
++		notice("welcome message");
+ 		// First welcome message
+ 		// WARNING: __fd is NOT official nor documented use of czmq API !!!
+ 		// It can potentionally change at any time.  
+ 		add_peer(zmq->con_peer_list, atoi(zframe_meta(topic_frame, "__fd")),
+ 			(char *)topic);
++		notice("welcome message END");
+ 	}
+ 	if (msg_size == 2) {
++		notice("normal message");
+ 		// Normal message with data
+ 		zframe_t *payload_frame = zmsg_last(msg);
+ 		mqtt_send_data(zmq->mqtt, (char *)topic, topic_len,
+ 			(char *)zframe_data(payload_frame), zframe_size(payload_frame));
+ 		update_last_msg(zmq->last_msg_list, (char *)topic, topic_len,
+ 			(unsigned long long)time(NULL));
++		notice("normal message END");
+ 	}
+ ret:
+ 	zmsg_destroy(&msg);
+-- 
+2.49.0
+
