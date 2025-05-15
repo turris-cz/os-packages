@@ -1,0 +1,41 @@
+From 18eb19e0bbbae81d2a331cd21c86a3b289c63426 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Marek=20Moj=C3=ADk?= <marek.mojik@nic.cz>
+Date: Thu, 15 May 2025 17:12:08 +0200
+Subject: [PATCH] Proxy debug
+
+---
+ proxy/proxy_zmq.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+diff --git a/proxy/proxy_zmq.c b/proxy/proxy_zmq.c
+index 0dc84f5..e9e4d19 100644
+--- a/proxy/proxy_zmq.c
++++ b/proxy/proxy_zmq.c
+@@ -20,13 +20,24 @@
+ #include "proxy_zmq.h"
+ #include "common.h"
+ #include "log.h"
++#include <stdio.h>
+ 
+ int check_msg(size_t frames, unsigned char *topic, size_t topic_len) {
+ 	TRACE_FUNC;
++	notice("CHECK MSG");
++	notice("[check_msg] frames=%u, topic=%p, topic_len=%u", frames, (void*)topic, topic_len);
+ 	if (topic == NULL) {
+ 		error("topic is NULL");
+ 		return -1;
+ 	}
++
++	size_t to_print = topic_len < 32 ? topic_len : 32;
++	fputs("[check_msg] topic (hex, first bytes): ", stderr);
++	for (size_t i = 0; i < to_print; i++) {
++		fprintf(stderr, "%02X ", topic[i]);
++	}
++	fputs("\n", stderr);
++
+ 	if (frames < 1 || frames > 2) {
+ 		error("Received and ignoring %ld parts malformed message", frames);
+ 		return -1;
+-- 
+2.49.0
+
