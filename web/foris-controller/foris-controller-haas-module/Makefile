@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2020-2024 CZ.NIC z. s. p. o. (https://www.nic.cz/)
+# Copyright (C) 2020-2025 CZ.NIC z. s. p. o. (https://www.nic.cz/)
 #
 # This is free software, licensed under the GNU General Public License v3.
 # See /LICENSE for more information.
@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=foris-controller-haas-module
-PKG_VERSION:=1.1.0
+PKG_VERSION:=1.3.0
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/foris-controller/foris-controller-haas-module.git
-PKG_MIRROR_HASH:=5aba715f5677cb1b746b348192763d25215a8dfdd547156aab9514ff9e08a6d8
+PKG_MIRROR_HASH:=1727d38b15f471253c6da69b1bd669737dfb7e1f10f04d6dce7cc9bc11cef1c8
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
@@ -30,8 +30,7 @@ define Package/foris-controller-haas-module
   SUBMENU:=Foris Controller
   TITLE:=Foris controller HaaS module
   DEPENDS:=\
-    +foris-controller \
-    +haas-proxy
+    +foris-controller 
 endef
 
 define Package/foris-controller-haas-module/description
