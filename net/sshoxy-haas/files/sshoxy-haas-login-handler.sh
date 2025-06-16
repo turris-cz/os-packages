@@ -13,7 +13,6 @@ echo "Ower #$peer# #$user# #$password#"
 
 # notify foris-controller
 json_init
-echo afdsdsafsaf
 echo "Ower #$peer# #$user# #$password#"
 json_add_string peer "$peer"
 echo "Ower #$peer# #$user# #$password#"
