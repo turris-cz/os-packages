@@ -10,10 +10,10 @@ start() {
 
 	[ -e /sys/class/leds/red/trigger ] \
 		&& echo heartbeat > /sys/class/leds/red/trigger
-	[ -x /etc/init.d/rainbow ] \
-		&& /etc/init.d/rainbow restart
 	[ -x /etc/init.d/led ] \
 		&& /etc/init.d/led restart
+	[ -x /etc/init.d/rainbow ] \
+		&& /etc/init.d/rainbow restart
 }
 
 stop() {
