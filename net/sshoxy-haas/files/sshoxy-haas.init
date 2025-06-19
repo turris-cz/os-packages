@@ -6,10 +6,17 @@ STOP=10
 
 DEFAULT_LOCAL_PORT=2525
 WAN_IP=$(ifstatus wan |  jsonfilter -e '@["ipv4-address"][0].address')
+SSH_KEY_PATH=/usr/share/sshoxy-haas/ssh.key
 
 
-# TODO generate ssh server key
 # TODO PID file
+
+prepare_ssh_key() {
+	if [ ! -f "${SSH_KEY_PATH}" ]; then
+		mkdir -p $(dirname "${SSH_KEY_PATH}")
+		/usr/bin/ssh-keygen -q -N "" -t rsa -f "${SSH_KEY_PATH}"
+	fi
+}
 
 start_service() {
 	config_load haas
@@ -21,8 +28,10 @@ start_service() {
 		exit 1
 	}
 
+	prepare_ssh_key
+
 	procd_open_instance
-	procd_set_param env HAAS_TOKEN="$token" HAAS_LISTEN="$WAN_IP:$port" HAAS_COMMAND="/usr/libexec/sshoxy-haas-login-handler.sh"
+	procd_set_param env HAAS_TOKEN="$token" HAAS_LISTEN="$WAN_IP:$port" HAAS_COMMAND="/usr/libexec/sshoxy-haas-login-handler.sh" HAAS_SECRET_KEY="${SSH_KEY_PATH}"
 	procd_set_param command /usr/bin/sshoxy-haas 
 	procd_set_param respawn 3600 5 5
 	procd_set_param file /etc/config/haas
