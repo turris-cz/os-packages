@@ -22,7 +22,7 @@ PKG_MAINTAINER:=Knot Resolver <knot-resolver@labs.nic.cz>
 PKG_LICENSE:=GPL-3.0-later
 PKG_LICENSE_FILES:=COPYING
 
-PKG_BUILD_DEPENDS:=meson/host protobuf-c/host python-poetry-core/host
+PKG_BUILD_DEPENDS:=protobuf-c/host python-poetry-core/host
 
 PKG_INSTALL:=1
 
@@ -133,6 +133,7 @@ define Package/knot-resolver6-manager/install
 		, \
 		$(PYTHON3_PKG_INSTALL_VARS) \
 	)
+	sed -i 's|#!/.*/python3.*|#!/usr/bin/python3|' $(1)/usr/bin/*
 endef
 
 define Build/Compile
