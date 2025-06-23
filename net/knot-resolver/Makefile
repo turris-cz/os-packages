@@ -40,7 +40,8 @@ define Package/knot-resolver
     +libstdcpp \
     +libuv \
     +lmdb \
-    +luajit \
+    +!TARGET_mpc85xx_p2020_DEVICE_cznic_turris1x:luajit \
+    +TARGET_mpc85xx_p2020_DEVICE_cznic_turris1x:luajit-legacy \
     +resolver-conf \
     PACKAGE_knot-resolver_dnstap:libfstrm \
     PACKAGE_knot-resolver_dnstap:libprotobuf-c
