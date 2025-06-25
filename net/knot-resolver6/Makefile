@@ -42,7 +42,7 @@ define Package/knot-resolver6
   TITLE:=Knot Resolver
   URL:=https://www.knot-resolver.cz
   CONFLICTS:=knot-resolver
-  DEPENDS=\
+  DEPENDS:=\
     +dnssec-rootkey \
     +knot-libs \
     +knot-libzscanner \
@@ -65,11 +65,11 @@ endef
 
 define Package/knot-resolver6-manager
   TITLE:=Knot DNS Resolver manager
-  DEPENDS=\
+  DEPENDS:=\
     +knot-resolver6 \
     +python3-aiohttp \
     +python3-light \
-    +python3-supervisord \
+    +python3-supervisor \
     +python3-typing-extensions \
     +python3-yaml
 endef
