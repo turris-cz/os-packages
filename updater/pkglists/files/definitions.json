@@ -168,7 +168,7 @@ ifdef(`OMNIA',`
 		"title": "Network monitoring and parental control",
 		"description": "Tools to monitor local network and users on it.",
 		"options": {
-ifdef(`GO',`
+ifdef(`NOTUR1X',`
 			"librespeed": {
 				"title": "Internet connection speed measurement",
 				"description": "Actively measures speed of Internet connection using a public network of LibreSpeed servers."
@@ -183,12 +183,13 @@ ifdef(`GO',`
 				"description": "Software for in depth monitoring of your traffic using Suricata.",
 				"url": "https://docs.turris.cz/basics/apps/pakon/",
 				"labels": ["experimental", "netload", "high_memory", "storage"]
-			},
+ifdef(`NOTUR1X',`		},
 			"morce": {
 				"title": "Morce",
 				"description": "Simple integration of Intrusion Detection System.",
 				"url": " https://docs.turris.cz/basics/apps/morce/",
 				"labels": ["experimental", "netload", "high_memory", "storage"]
+				')
 			}
 		}
 	},
@@ -210,7 +211,7 @@ ifdef(`GO',`
 		"url": "https://docs.turris.cz/geek/nextcloud/nextcloud/",
 		"labels": ["experimental", "storage"]
 	},
-ifdef(`GO',`
+ifdef(`NOTUR1X',`
 	"syncthing": {
 		"title": "Syncthing",
 		"description": "Application which synchronizes files between two or more computer",
