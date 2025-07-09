@@ -1,14 +1,16 @@
---- a/src/stream-tcp.c
-+++ b/src/stream-tcp.c
-@@ -350,6 +350,20 @@ void StreamTcpInitConfig(char quiet)
-             "TCP stream engine memcaps.");
+Index: suricata-8.0.0/src/stream-tcp.c
+===================================================================
+--- suricata-8.0.0.orig/src/stream-tcp.c
++++ suricata-8.0.0/src/stream-tcp.c
+@@ -503,6 +503,20 @@ void StreamTcpInitConfig(bool quiet)
+                      "TCP stream engine memcaps.");
      }
  
 +    const char *temp_stream_max_depth_str;
-+    if (ConfGet("stream.max-depth", &temp_stream_max_depth_str) == 1) {
++    if (SCConfGet("stream.max-depth", &temp_stream_max_depth_str) == 1) {
 +        if (ParseSizeStringU32(temp_stream_max_depth_str,
 +                               &stream_config.max_depth) < 0) {
-+            SCLogError(SC_ERR_SIZE_PARSE, "Error parsing "
++            SCLogError("Error parsing "
 +                       "stream.max_depth "
 +                       "from conf file - %s.  Killing engine",
 +                       temp_stream_max_depth_str);
@@ -18,10 +20,10 @@
 +        stream_config.max_depth = 0;
 +    }
 +
-     if ((ConfGetInt("stream.prealloc-sessions", &value)) == 1) {
+     if ((SCConfGetInt("stream.prealloc-sessions", &value)) == 1) {
          stream_config.prealloc_sessions = (uint32_t)value;
      } else {
-@@ -4829,6 +4843,14 @@ int StreamTcpPacket (ThreadVars *tv, Pac
+@@ -5690,6 +5704,14 @@ int StreamTcpPacket (ThreadVars *tv, Pac
          {
              /* we can call bypass callback, if enabled */
              if (StreamTcpBypassEnabled()) {
@@ -36,13 +38,15 @@
                  PacketBypassCallback(p);
              }
          }
---- a/src/stream-tcp.h
-+++ b/src/stream-tcp.h
-@@ -63,6 +63,7 @@ typedef struct TcpStreamCnf_ {
-     uint16_t reassembly_toclient_chunk_size;
- 
+Index: suricata-8.0.0/src/stream-tcp.h
+===================================================================
+--- suricata-8.0.0.orig/src/stream-tcp.h
++++ suricata-8.0.0/src/stream-tcp.h
+@@ -70,6 +70,7 @@ typedef struct TcpStreamCnf_ {
+     bool midstream;
+     bool async_oneside;
      bool streaming_log_api;
 +    uint32_t max_depth;
+     uint8_t max_syn_queued;
  
-     StreamingBufferConfig sbcnf;
- } TcpStreamCnf;
+     uint32_t reassembly_depth;  /**< Depth until when we reassemble the stream */
