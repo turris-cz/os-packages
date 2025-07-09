@@ -7,8 +7,10 @@ Subject: [PATCH] include_dir config option
  src/conf-yaml-loader.c | 68 ++++++++++++++++++++++++++++++++++++++++++++++++--
  1 file changed, 66 insertions(+), 2 deletions(-)
 
---- a/src/conf-yaml-loader.c
-+++ b/src/conf-yaml-loader.c
+Index: suricata-8.0.0/src/conf-yaml-loader.c
+===================================================================
+--- suricata-8.0.0.orig/src/conf-yaml-loader.c
++++ suricata-8.0.0/src/conf-yaml-loader.c
 @@ -31,6 +31,8 @@
  #include "util-debug.h"
  #include "util-unittest.h"
@@ -18,7 +20,14 @@ Subject: [PATCH] include_dir config option
  #define YAML_VERSION_MAJOR 1
  #define YAML_VERSION_MINOR 1
  
-@@ -51,6 +53,7 @@ enum conf_state {
+@@ -50,12 +52,14 @@ static char *conf_dirname = NULL;
+ 
+ static int ConfYamlParse(
+         yaml_parser_t *parser, SCConfNode *parent, int inseq, int rlevel, int state);
++static int ConfYamlHandleIncludeDir(SCConfNode *parent, const char *filename);
+ 
+ /* Configuration processing states. */
+ enum conf_state {
      CONF_KEY = 0,
      CONF_VAL,
      CONF_INCLUDE,
@@ -26,7 +35,7 @@ Subject: [PATCH] include_dir config option
  };
  
  /**
-@@ -103,7 +106,6 @@ ConfYamlSetConfDirname(const char *filen
+@@ -102,7 +106,6 @@ ConfYamlSetConfDirname(const char *filen
          conf_dirname[ep - filename] = '\0';
      }
  }
@@ -34,7 +43,7 @@ Subject: [PATCH] include_dir config option
  /**
   * \brief Include a file in the configuration.
   *
-@@ -161,6 +163,55 @@ done:
+@@ -157,6 +160,55 @@ done:
      return ret;
  }
  
@@ -43,7 +52,7 @@ Subject: [PATCH] include_dir config option
 + into single file and pass that file to normal include
 +*/
 +static int
-+ConfYamlHandleIncludeDir(ConfNode *parent, const char *filename)
++ConfYamlHandleIncludeDir(SCConfNode *parent, const char *filename)
 +{
 +    DIR           *d;
 +    struct dirent *dir;
@@ -76,7 +85,7 @@ Subject: [PATCH] include_dir config option
 +        }
 +        free(filename_buf);
 +        closedir(d);
-+        if (ConfYamlHandleInclude(parent, tmpname)==-1) {
++        if (SCConfYamlHandleInclude(parent, tmpname)==-1) {
 +            close(tmpfile);
 +            //unlink(tmpname);
 +            return -1;
@@ -90,7 +99,7 @@ Subject: [PATCH] include_dir config option
  /**
   * \brief Parse a YAML layer.
   *
-@@ -251,7 +302,14 @@ ConfYamlParse(yaml_parser_t *parser, Con
+@@ -288,7 +340,14 @@ static int ConfYamlParse(
                  TAILQ_INSERT_TAIL(&parent->head, seq_node, next);
              }
              else {
@@ -104,9 +113,9 @@ Subject: [PATCH] include_dir config option
 +                }
 +                else if (state == CONF_INCLUDE) {
                      SCLogInfo("Including configuration file %s.", value);
-                     if (ConfYamlHandleInclude(parent, value) != 0) {
+                     if (SCConfYamlHandleInclude(parent, value) != 0) {
                          goto fail;
-@@ -260,6 +318,10 @@ ConfYamlParse(yaml_parser_t *parser, Con
+@@ -297,6 +356,10 @@ static int ConfYamlParse(
                  }
                  else if (state == CONF_KEY) {
  
@@ -116,8 +125,8 @@ Subject: [PATCH] include_dir config option
 +                    }
                      if (strcmp(value, "include") == 0) {
                          state = CONF_INCLUDE;
-                         goto next;
-@@ -305,6 +367,12 @@ ConfYamlParse(yaml_parser_t *parser, Con
+                         if (++include_count > 1) {
+@@ -361,6 +424,12 @@ static int ConfYamlParse(
                      state = CONF_VAL;
                  }
                  else {
@@ -127,6 +136,18 @@ Subject: [PATCH] include_dir config option
 +                        if (ConfYamlHandleIncludeDir(node, value) != 0)
 +                            goto fail;
 +                    }
-                     if ((tag != NULL) && (strcmp(tag, "!include") == 0)) {
+                     if (value != NULL && (tag != NULL) && (strcmp(tag, "!include") == 0)) {
                          SCLogInfo("Including configuration file %s at "
                              "parent node %s.", value, node->name);
+Index: suricata-8.0.0/src/conf-yaml-loader.h
+===================================================================
+--- suricata-8.0.0.orig/src/conf-yaml-loader.h
++++ suricata-8.0.0/src/conf-yaml-loader.h
+@@ -30,6 +30,7 @@ int SCConfYamlLoadFile(const char *);
+ int SCConfYamlLoadString(const char *, size_t);
+ int SCConfYamlLoadFileWithPrefix(const char *filename, const char *prefix);
+ int SCConfYamlHandleInclude(SCConfNode *parent, const char *filename);
++int SCConfYamlHandleIncludeDir(SCConfNode *parent, const char *filename);
+ 
+ void SCConfYamlRegisterTests(void);
+ 

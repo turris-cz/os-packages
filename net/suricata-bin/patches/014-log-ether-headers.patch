@@ -1,8 +1,10 @@
---- a/src/flow.c
-+++ b/src/flow.c
-@@ -309,6 +309,13 @@ void FlowHandlePacketUpdate(Flow *f, Pac
-             f->flags &= ~FLOW_PROTO_DETECT_TS_DONE;
-             p->flags |= PKT_PROTO_DETECT_TS_DONE;
+Index: suricata-8.0.0/src/flow.c
+===================================================================
+--- suricata-8.0.0.orig/src/flow.c
++++ suricata-8.0.0/src/flow.c
+@@ -456,6 +456,13 @@ void FlowHandlePacketUpdate(Flow *f, Pac
+             const IPV6Hdr *ip6h = PacketGetIPv6(p);
+             FlowUpdateTtlTS(f, IPV6_GET_RAW_HLIM(ip6h));
          }
 +#ifdef NFQ
 +    if (!f->hw_address_src_known && p->nfq_v.hw_address_known){
@@ -14,9 +16,9 @@
      } else {
          f->tosrcpktcnt++;
          f->tosrcbytecnt += GET_PKT_LEN(p);
-@@ -324,6 +331,13 @@ void FlowHandlePacketUpdate(Flow *f, Pac
-             f->flags &= ~FLOW_PROTO_DETECT_TC_DONE;
-             p->flags |= PKT_PROTO_DETECT_TC_DONE;
+@@ -482,6 +489,13 @@ void FlowHandlePacketUpdate(Flow *f, Pac
+             const IPV6Hdr *ip6h = PacketGetIPv6(p);
+             FlowUpdateTtlTC(f, IPV6_GET_RAW_HLIM(ip6h));
          }
 +#ifdef NFQ
 +    if (!f->hw_address_dst_known && p->nfq_v.hw_address_known){
@@ -26,11 +28,13 @@
 +    }
 +#endif
      }
- 
-     if (SC_ATOMIC_GET(f->flow_state) == FLOW_STATE_ESTABLISHED) {
---- a/src/flow.h
-+++ b/src/flow.h
-@@ -435,6 +435,12 @@ typedef struct Flow_
+     if (f->thread_id[pkt_dir] == 0) {
+         f->thread_id[pkt_dir] = (FlowThreadId)tv->id;
+Index: suricata-8.0.0/src/flow.h
+===================================================================
+--- suricata-8.0.0.orig/src/flow.h
++++ suricata-8.0.0/src/flow.h
+@@ -496,6 +496,12 @@ typedef struct Flow_
      uint32_t tosrcpktcnt;
      uint64_t todstbytecnt;
      uint64_t tosrcbytecnt;
@@ -40,21 +44,23 @@
 +    uint8_t hw_address_dst[6];
 +    uint8_t hw_address_dst_known;
 +#endif
- } Flow;
  
- enum FlowState {
---- a/src/source-nfq.c
-+++ b/src/source-nfq.c
-@@ -426,6 +426,7 @@ static int NFQSetupPkt (Packet *p, struc
+     Storage storage[];
+ } Flow;
+Index: suricata-8.0.0/src/source-nfq.c
+===================================================================
+--- suricata-8.0.0.orig/src/source-nfq.c
++++ suricata-8.0.0/src/source-nfq.c
+@@ -408,6 +408,7 @@ static int NFQSetupPkt (Packet *p, struc
      int ret;
      char *pktdata;
      struct nfqnl_msg_packet_hdr *ph;
 +    struct nfqnl_msg_packet_hw *hwaddr;
  
-     ph = nfq_get_msg_packet_hdr(tb);
-     if (ph != NULL) {
-@@ -433,6 +434,13 @@ static int NFQSetupPkt (Packet *p, struc
-         //p->nfq_v.hw_protocol = ntohs(p->nfq_v.ph->hw_protocol);
+     // Early release function -- will be updated once repeat
+     // mode handling has been done
+@@ -418,6 +419,13 @@ static int NFQSetupPkt (Packet *p, struc
+         p->nfq_v.id = SCNtohl(ph->packet_id);
          p->nfq_v.hw_protocol = ph->hw_protocol;
      }
 +    hwaddr = nfq_get_packet_hw(tb);
@@ -67,9 +73,11 @@
      /* coverity[missing_lock] */
      p->nfq_v.mark = nfq_get_nfmark(tb);
      if (nfq_config.mode == NFQ_REPEAT_MODE) {
---- a/src/source-nfq.h
-+++ b/src/source-nfq.h
-@@ -45,6 +45,8 @@ typedef struct NFQPacketVars_
+Index: suricata-8.0.0/src/source-nfq.h
+===================================================================
+--- suricata-8.0.0.orig/src/source-nfq.h
++++ suricata-8.0.0/src/source-nfq.h
+@@ -47,6 +47,8 @@ typedef struct NFQPacketVars_
      uint32_t ifi;
      uint32_t ifo;
      uint16_t hw_protocol;
@@ -78,20 +86,23 @@
  } NFQPacketVars;
  
  typedef struct NFQQueueVars_
---- a/src/flow-util.h
-+++ b/src/flow-util.h
-@@ -29,12 +29,23 @@
- 
- #define COPY_TIMESTAMP(src,dst) ((dst)->tv_sec = (src)->tv_sec, (dst)->tv_usec = (src)->tv_usec)
+Index: suricata-8.0.0/src/flow-util.h
+===================================================================
+--- suricata-8.0.0.orig/src/flow-util.h
++++ suricata-8.0.0/src/flow-util.h
+@@ -27,13 +27,24 @@
+ #include "flow.h"
+ #include "stream-tcp-private.h"
  
 +#ifdef NFQ
- #define RESET_COUNTERS(f) do { \
-         (f)->todstpktcnt = 0; \
-         (f)->tosrcpktcnt = 0; \
-         (f)->todstbytecnt = 0; \
-         (f)->tosrcbytecnt = 0; \
-+       (f)->hw_address_src_known = 0; \
-+       (f)->hw_address_dst_known = 0; \
+ #define RESET_COUNTERS(f)                                                                          \
+     do {                                                                                           \
+         (f)->todstpktcnt = 0;                                                                      \
+         (f)->tosrcpktcnt = 0;                                                                      \
+         (f)->todstbytecnt = 0;                                                                     \
+         (f)->tosrcbytecnt = 0;                                                                     \
++	(f)->hw_address_src_known = 0;                                                             \
++	(f)->hw_address_dst_known = 0;                                                             \
      } while (0)
 +#else
 +#define RESET_COUNTERS(f) do { \
@@ -102,5 +113,5 @@
 +    } while (0)
 +#endif
  
- #define FLOW_INITIALIZE(f) do { \
-         (f)->sp = 0; \
+ #define FLOW_INITIALIZE(f)                                                                         \
+     do {                                                                                           \
