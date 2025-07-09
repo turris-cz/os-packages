@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=suricata-bin
-PKG_VERSION:=4.0.7
+PKG_VERSION:=7.0.10
 PKG_RELEASE=$(AUTORELEASE)
 
 PKG_SOURCE:=suricata-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://www.openinfosecfoundation.org/download/
-PKG_HASH:=8a0e6791cf1663b2b64bf16b83a9325125d533cf7784b49dd93593627cf23dec
+PKG_HASH:=197f925ea701bdcb4a15aca024b06546b002674cd958b58958f29a5bb214d759
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 PKG_LICENSE:=GPL-2.0
@@ -24,9 +24,14 @@ PKG_BUILD_DIR:=$(BUILD_DIR)/suricata-$(PKG_VERSION)
 
 PKG_INSTALL:=1
 PKG_FIXUP:=autoreconf
+PKG_BUILD_DEPENDS:=rust/host
 PKG_BUILD_PARALLEL:=1
 
 include $(INCLUDE_DIR)/package.mk
+include $(TOPDIR)/feeds/packages/lang/rust/rust-values.mk
+
+TARGET_CFLAGS += \
+        -fcommon
 
 CONFIGURE_ARGS+= \
 	--enable-nflog \
@@ -36,7 +41,9 @@ CONFIGURE_ARGS+= \
 	--enable-non-bundled-htp \
 	--disable-gccmarch-native \
 	--disable-python \
-	--disable-luajit
+	--disable-luajit \
+	--host=$(RUSTC_TARGET_ARCH) \
+	--enable-debug
 
 define Package/suricata-bin
   SECTION:=net
@@ -44,7 +51,7 @@ define Package/suricata-bin
   TITLE:=Network IDS, IPS and NSM engine
   URL:=https://suricata-ids.org/
   DEPENDS:= \
-	+libpcre \
+	+libpcre2 \
 	+libyaml \
 	+jansson \
 	+libmagic \
@@ -61,7 +68,9 @@ define Package/suricata-bin
 	+libhtp \
 	+libnet-1.2.x \
 	+nspr \
-	+libnss
+	+libnss \
+  	+liblz4 \
+	+libunwind
 endef
 
 define Package/suricata-rules
@@ -77,8 +86,8 @@ define Package/suricata-bin/install
 	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/suricata* $(1)/usr/bin
 	$(INSTALL_DIR) $(1)/etc/suricata
 	$(CP) $(PKG_BUILD_DIR)/suricata.yaml $(1)/etc/suricata
-	$(CP) $(PKG_BUILD_DIR)/classification.config $(1)/etc/suricata
-	$(CP) $(PKG_BUILD_DIR)/reference.config $(1)/etc/suricata
+	$(CP) $(PKG_BUILD_DIR)/etc/classification.config $(1)/etc/suricata
+	$(CP) $(PKG_BUILD_DIR)/etc/reference.config $(1)/etc/suricata
 	$(CP) $(PKG_BUILD_DIR)/threshold.config $(1)/etc/suricata
 endef
 

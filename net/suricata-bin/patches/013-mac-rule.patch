@@ -13,18 +13,30 @@ Subject: [PATCH] mac keyword rule
  create mode 100644 src/detect-mac.c
  create mode 100644 src/detect-mac.h
 
---- a/src/Makefile.am
-+++ b/src/Makefile.am
-@@ -245,6 +245,7 @@ detect-tls-cert-validity.c detect-tls-ce
- detect-tls-version.c detect-tls-version.h \
- detect-tos.c detect-tos.h \
- detect-ttl.c detect-ttl.h \
-+detect-mac.c detect-mac.h \
- detect-uricontent.c detect-uricontent.h \
- detect-urilen.c detect-urilen.h \
- detect-window.c detect-window.h \
+Index: suricata-7.0.10/src/Makefile.am
+===================================================================
+--- suricata-7.0.10.orig/src/Makefile.am
++++ suricata-7.0.10/src/Makefile.am
+@@ -352,6 +352,7 @@ noinst_HEADERS = \
+ 	detect-transform-urldecode.h \
+ 	detect-transform-xor.h \
+ 	detect-ttl.h \
++	detect-mac.h \
+ 	detect-udphdr.h \
+ 	detect-uricontent.h \
+ 	detect-urilen.h \
+@@ -971,6 +972,7 @@ libsuricata_c_a_SOURCES = \
+ 	detect-transform-urldecode.c \
+ 	detect-transform-xor.c \
+ 	detect-ttl.c \
++	detect-mac.c \
+ 	detect-udphdr.c \
+ 	detect-uricontent.c \
+ 	detect-urilen.c \
+Index: suricata-7.0.10/src/detect-mac.c
+===================================================================
 --- /dev/null
-+++ b/src/detect-mac.c
++++ suricata-7.0.10/src/detect-mac.c
 @@ -0,0 +1,241 @@
 +/* Copyright (C) 2007-2017 Open Information Security Foundation
 + *
@@ -66,10 +78,10 @@ Subject: [PATCH] mac keyword rule
 +static int DetectMacMatch (ThreadVars *, DetectEngineThreadCtx *, Packet *,
 +        const Signature *, const SigMatchCtx *);
 +static int DetectMacSetup (DetectEngineCtx *, Signature *, const char *);
-+void DetectMacFree (void *);
++void DetectMacFree(DetectEngineCtx *de_ctx, void *ptr);
 +void DetectMacRegisterTests (void);
 +
-+static int PrefilterSetupMac(SigGroupHead *sgh);
++// static int PrefilterSetupMac(SigGroupHead *sgh);
 +static _Bool PrefilterMacIsPrefilterable(const Signature *s);
 +
 +/**
@@ -80,7 +92,7 @@ Subject: [PATCH] mac keyword rule
 +{
 +    sigmatch_table[DETECT_MAC].name = "mac";
 +    sigmatch_table[DETECT_MAC].desc = "check for a source mac address";
-+    sigmatch_table[DETECT_MAC].url = DOC_URL DOC_VERSION "/rules/header-keywords.html#mac";
++    sigmatch_table[DETECT_MAC].url = DOC_URL "/rules/header-keywords.html#mac";
 +    sigmatch_table[DETECT_MAC].Match = DetectMacMatch;
 +    sigmatch_table[DETECT_MAC].Setup = DetectMacSetup;
 +    sigmatch_table[DETECT_MAC].Free = DetectMacFree;
@@ -141,7 +153,7 @@ Subject: [PATCH] mac keyword rule
 +	ret = sscanf(macstr, "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx", &mac[0], &mac[1], &mac[2], &mac[3], &mac[4], &mac[5]);
 +	
 +	if(ret!=6) {
-+		SCLogError(SC_ERR_INVALID_VALUE, "cannot parse string '%s' as MAC address", macstr);
++		SCLogError("cannot parse string '%s' as MAC address", macstr);
 +	}
 +
 +    macd = SCMalloc(sizeof (DetectMacData));
@@ -189,7 +201,7 @@ Subject: [PATCH] mac keyword rule
 +    return 0;
 +
 +error:
-+    if (macd != NULL) DetectMacFree(macd);
++    if (macd != NULL) DetectMacFree(de_ctx, macd);
 +    if (sm != NULL) SCFree(sm);
 +    return -1;
 +}
@@ -199,7 +211,7 @@ Subject: [PATCH] mac keyword rule
 + *
 + * \param ptr pointer to DetectMacData
 + */
-+void DetectMacFree(void *ptr)
++void DetectMacFree(DetectEngineCtx *de_ctx, void *ptr)
 +{
 +    DetectMacData *macd = (DetectMacData *)ptr;
 +    SCFree(macd);
@@ -267,8 +279,10 @@ Subject: [PATCH] mac keyword rule
 +{
 +    return FALSE;
 +}
+Index: suricata-7.0.10/src/detect-mac.h
+===================================================================
 --- /dev/null
-+++ b/src/detect-mac.h
++++ suricata-7.0.10/src/detect-mac.h
 @@ -0,0 +1,34 @@
 +/* Copyright (C) 2007-2010 Open Information Security Foundation
 + *
@@ -304,9 +318,23 @@ Subject: [PATCH] mac keyword rule
 +
 +#endif	/* _DETECT_MAC_H */
 +
---- a/src/detect.c
-+++ b/src/detect.c
-@@ -129,6 +129,7 @@
+Index: suricata-7.0.10/src/detect-engine-register.h
+===================================================================
+--- suricata-7.0.10.orig/src/detect-engine-register.h
++++ suricata-7.0.10/src/detect-engine-register.h
+@@ -50,6 +50,7 @@ enum DetectKeywordId {
+     DETECT_ICMP_SEQ,
+     DETECT_ICMPV4HDR,
+     DETECT_DSIZE,
++    DETECT_MAC,
+ 
+     DETECT_FLOW,
+     /* end prefilter sort */
+Index: suricata-7.0.10/src/detect-engine-register.c
+===================================================================
+--- suricata-7.0.10.orig/src/detect-engine-register.c
++++ suricata-7.0.10/src/detect-engine-register.c
+@@ -142,6 +142,7 @@
  #include "detect-stream_size.h"
  #include "detect-engine-sigorder.h"
  #include "detect-ttl.h"
@@ -314,7 +342,7 @@ Subject: [PATCH] mac keyword rule
  #include "detect-fast-pattern.h"
  #include "detect-itype.h"
  #include "detect-icode.h"
-@@ -3836,6 +3837,7 @@ void SigTableSetup(void)
+@@ -593,6 +594,7 @@ void SigTableSetup(void)
      DetectCsumRegister();
      DetectStreamSizeRegister();
      DetectTtlRegister();
@@ -322,14 +350,3 @@ Subject: [PATCH] mac keyword rule
      DetectTosRegister();
      DetectFastPatternRegister();
      DetectITypeRegister();
---- a/src/detect.h
-+++ b/src/detect.h
-@@ -1220,6 +1220,8 @@ enum {
-     DETECT_ICMP_SEQ,
-     DETECT_DSIZE,
- 
-+    DETECT_MAC,
-+
-     DETECT_FLOW,
-     /* end prefilter sort */
- 

@@ -127,6 +127,6 @@ Subject: [PATCH] include_dir config option
 +                        if (ConfYamlHandleIncludeDir(node, value) != 0)
 +                            goto fail;
 +                    }
-                     if ((tag != NULL) && (strcmp(tag, "!include") == 0)) {
+                     if (value != NULL && (tag != NULL) && (strcmp(tag, "!include") == 0)) {
                          SCLogInfo("Including configuration file %s at "
                              "parent node %s.", value, node->name);
