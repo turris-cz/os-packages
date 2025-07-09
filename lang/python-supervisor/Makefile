@@ -5,7 +5,7 @@
 
 include $(TOPDIR)/rules.mk
 
-PKG_NAME:=python3-supervisor
+PKG_NAME:=python-supervisor
 PKG_VERSION:=4.2.5
 PKG_RELEASE:=1
 
