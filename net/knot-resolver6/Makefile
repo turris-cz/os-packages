@@ -10,25 +10,24 @@ PKG_RELRO_FULL:=0
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=knot-resolver6
-PKG_VERSION:=6.0.8
+PKG_VERSION:=6.0.14
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/knot/knot-resolver.git
-PKG_MIRROR_HASH:=d646faacc27b730de969b1335d2ef0e89248e08ac638888595e2430d7e50e720
+PKG_MIRROR_HASH:=03d2346ecea4f685bad46157ca2a8c5ce1e37a9e6c654d22fce789475c4dedfd
 PKG_SOURCE_VERSION:=v${PKG_VERSION}
 
 PKG_MAINTAINER:=Knot Resolver <knot-resolver@labs.nic.cz>
 PKG_LICENSE:=GPL-3.0-later
 PKG_LICENSE_FILES:=COPYING
 
-PKG_BUILD_DEPENDS:=meson/host protobuf-c/host python-poetry-core/host
+PKG_BUILD_DEPENDS:=protobuf-c/host python-poetry-core/host
 
 PKG_INSTALL:=1
 
-PYTHON3_PKG_SETUP_DIR:=$(PKG_BUILD_DIR)/manager
 PYTHON3_PKG_BUILD:=0
-PYTHON3_PKG_WHEEL_NAME:=knot_resolver_manager
+PYTHON3_PKG_WHEEL_NAME:=knot_resolver
 Hooks/Configure/Post+=Py3Build/FindStdlibDepends
 
 include $(INCLUDE_DIR)/package.mk
@@ -42,7 +41,7 @@ define Package/knot-resolver6
   TITLE:=Knot Resolver
   URL:=https://www.knot-resolver.cz
   CONFLICTS:=knot-resolver
-  DEPENDS=\
+  DEPENDS:=\
     +dnssec-rootkey \
     +knot-libs \
     +knot-libzscanner \
@@ -65,11 +64,11 @@ endef
 
 define Package/knot-resolver6-manager
   TITLE:=Knot DNS Resolver manager
-  DEPENDS=\
+  DEPENDS:=\
     +knot-resolver6 \
     +python3-aiohttp \
     +python3-light \
-    +python3-supervisord \
+    +python3-supervisor \
     +python3-typing-extensions \
     +python3-yaml
 endef
@@ -134,6 +133,7 @@ define Package/knot-resolver6-manager/install
 		, \
 		$(PYTHON3_PKG_INSTALL_VARS) \
 	)
+	sed -i 's|#!/.*/python3.*|#!/usr/bin/python3|' $(1)/usr/bin/*
 endef
 
 define Build/Compile

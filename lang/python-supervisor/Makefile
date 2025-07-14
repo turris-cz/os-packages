@@ -1,11 +1,13 @@
 #
+# Copyright (C) 2024-2025 CZ.NIC z.s.p.o. (http://www.nic.cz/)
+#
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
 #
 
 include $(TOPDIR)/rules.mk
 
-PKG_NAME:=python3-supervisor
+PKG_NAME:=python-supervisor
 PKG_VERSION:=4.2.5
 PKG_RELEASE:=1
 

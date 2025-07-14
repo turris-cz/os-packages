@@ -1,7 +1,7 @@
 Index: knot-resolver6-6.0.6/manager/pyproject.toml
 ===================================================================
---- knot-resolver6-6.0.6.orig/manager/pyproject.toml
-+++ knot-resolver6-6.0.6/manager/pyproject.toml
+--- knot-resolver6-6.0.6.orig/pyproject.toml
++++ knot-resolver6-6.0.6/pyproject.toml
 @@ -183,6 +181,5 @@ no_implicit_optional = true
  [build-system]
  requires = [
