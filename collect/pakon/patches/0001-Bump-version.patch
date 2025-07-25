@@ -1,7 +1,7 @@
 From 88154719b6f365f20f4687d1a1cc0f59498e06f3 Mon Sep 17 00:00:00 2001
 From: Josef Schlehofer <pepe.schlehofer@gmail.com>
 Date: Fri, 12 Aug 2022 16:57:46 +0200
-Subject: [PATCH] Bump version to 2.0.0
+Subject: [PATCH] Bump version
 
 ---
  pakon/__init__.py | 2 +-
@@ -13,7 +13,7 @@ index 923b987..afced14 100644
 +++ b/pakon/__init__.py
 @@ -1 +1 @@
 -__version__ = '1.2.2'
-+__version__ = '2.0.0'
++__version__ = '2.1.0'
 -- 
 2.34.1
 
