@@ -22,7 +22,8 @@ PKG_LICENSE_FILES:=COPYING
 
 PKG_BUILD_DEPENDS:= \
 	python-markupsafe/host \
-	python-hatchling/host
+	python-hatchling/host \
+	python-babel/host
 
 include $(INCLUDE_DIR)/package.mk
 include $(TOPDIR)/feeds/packages/lang/python/python3-package.mk
