@@ -1,0 +1,68 @@
+#!/bin/sh
+
+. /lib/board_helpers.sh
+
+board_init() {
+    generic_pre_init
+    # Default mode on Omnia NG is serial
+    MODE=0
+    mkdir -p /etc
+    echo "/dev/mtd16 0x0 0x0 0x10000" > /etc/fw_env.config
+    TARGET_DRIVE="/dev/mmcblk0"
+    PART_NO="1"
+    TARGET_PART="${TARGET_DRIVE}p${PART_NO}"
+    BRIGHT="`cat /sys/class/leds/omnia-led\:all/device/global_brightness`"
+    WAN_IF="eth0"
+    MAX_MODE=6
+    MODE6_NEXT=1
+    DELAY=0
+    RESCUE_IF="`ip a s | sed -n 's|^[0-9]*:[[:blank:]]*\(eth3\)@.*|\1|p'`"
+    RESCUE_IF_UP="`ip a s | sed -n 's|^[0-9]*:[[:blank:]]*\(eth3\)@\([^:]*\):.*|\2|p'`"
+    echo '0 255 0' >  /sys/class/leds/rgb\:indicator/multi_intensity
+    echo default-on > /sys/class/leds/rgb\:indicator/trigger
+    enable_btrfs
+    generic_post_init
+}
+
+check_for_mode_change() {
+    if [ "`cat /sys/class/leds/omnia-led\:all/device/global_brightness`" -ne "$BRIGHT" ]; then
+        echo "$BRIGHT" > /sys/class/leds/omnia-led\:all/device/global_brightness
+        return 0
+    fi
+    return 1
+}
+
+display_mode() {
+    echo '255 64 0' > /sys/class/leds/rgb\:indicator/multi_intensity
+    key=""
+    while [ "$key" != 9387 ]; do
+        dd if=/usr/share/rescue/$MODE.rgb of=/dev/fb0
+        key="$(head -c 2 /dev/input/event0 | hexdump -e '"%02x"')"
+        if [ "$key" = 93ad ]; then
+            next_mode
+        elif [ "$key" = 93d6 ]; then
+            prev_mode
+        fi
+    done
+}
+
+busy() {
+    echo '255 0 0' >  /sys/class/leds/rgb\:indicator/multi_intensity
+    frame=0
+    while true; do
+        dd if=/usr/share/rescue/wip-$frame.rgb of=/dev/fb0
+        sleep 0.2
+        frame=$((frame + 1))
+        frame=$((frame % 6))
+    done &
+}
+
+die() {
+    predie "$1" "$2"
+    echo '0 0 255' >  /sys/class/leds/rgb\:indicator/multi_intensity
+    echo timer > /sys/class/leds/rgb\:indicator/trigger
+    while true; do
+        sleep 1
+    done
+}
+

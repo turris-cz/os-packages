@@ -301,7 +301,18 @@ next_mode() {
         # Default next mode is one number higher if not set
         MODE="$(expr "$MODE" + 1 )"
     fi
+    if [ "$MODE" -gt "$MAX_MODE" ]; then
+        MODE=1
+    fi
 }
+
+prev_mode() {
+    MODE="$(expr "$MODE" - 1 )"
+    if [ "$MODE" -lt 1 ]; then
+        MODE="$MAX_MODE"
+    fi
+}
+
 
 fetch_cmd_mode() {
     local cmd_mode=""

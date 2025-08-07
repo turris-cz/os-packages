@@ -35,14 +35,16 @@ ifeq ($(CONFIG_TARGET_mvebu_cortexa53_DEVICE_cznic_turris-mox),y)
 DEVICE := mox
 else ifeq ($(CONFIG_TARGET_mvebu_cortexa9_DEVICE_cznic_turris-omnia),y)
 DEVICE := omnia
+else ifeq ($(CONFIG_TARGET_ipq95xx_generic_DEVICE_cznic_turris-omnia-ng),y)
+DEVICE := omnia-ng
 else
 DEVICE := unknown
 endif
-kernel_files=$(TOPDIR)/target/linux/$(BOARD)/files-$(KERNEL_PATCHVER)/. $(TOPDIR)/target/linux/generic/files/.
+kernel_files=$(wildcard $(TOPDIR)/target/linux/$(BOARD)/files-$(KERNEL_PATCHVER)/.) $(wildcard $(TOPDIR)/target/linux/generic/files/.)
 
 define Package/rescue-image
 	TITLE:=rescue-image
-	DEPENDS:=@(TARGET_mvebu_cortexa53_DEVICE_cznic_turris-mox||TARGET_mvebu_cortexa9_DEVICE_cznic_turris-omnia)
+	DEPENDS:=@(TARGET_mvebu_cortexa53_DEVICE_cznic_turris-mox||TARGET_mvebu_cortexa9_DEVICE_cznic_turris-omnia||TARGET_ipq95xx_generic_DEVICE_cznic_turris-omnia-ng)
 endef
 
 define Build/Prepare
@@ -99,6 +101,10 @@ define Build/Compile
 		$(STAGING_DIR_HOST)/bin/opkg --offline-root "$(PKG_BUILD_DIR)/rootfs" --force-depends install \{\} \; ;\
 	done
 	rm -rf "$(PKG_BUILD_DIR)/rootfs"/usr/lib/opkg
+ifeq ($(CONFIG_TARGET_ipq95xx_generic_DEVICE_cznic_turris-omnia-ng),y)
+	mkdir -p "$(PKG_BUILD_DIR)/rootfs/usr/share/rescue"
+	$(CP) files/imgs/*.rgb "$(PKG_BUILD_DIR)/rootfs/usr/share/rescue"
+endif
 	$(KERNEL_MAKE) $(PKG_JOBS) oldconfig $(KERNELNAME)
 	cd $(LINUX_DIR); ./usr/gen_initramfs.sh \
 	-o "$(PKG_BUILD_DIR)"/kernel/linux-$(LINUX_VERSION)/arch/$(LINUX_KARCH)/boot/initrd.gz -u squash -g squash \
@@ -113,7 +119,11 @@ define Package/rescue-image/install
 	PATH="$(PKG_BUILD_DIR)/kernel/linux-$(LINUX_VERSION)/scripts/dtc:$$PATH" \
 	"$(STAGING_DIR_HOST)"/bin/mkimage -f rescue.its $(1)/usr/share/rescue-image/image.fit
 	xz -k9 -F lzma $(1)/usr/share/rescue-image/image.fit
+ifeq ($(CONFIG_TARGET_ipq95xx_generic_DEVICE_cznic_turris-omnia-ng),y)
+	[ "`stat -c '%s' $(1)/usr/share/rescue-image/image.fit.lzma`" -lt 11340032 ]
+else
 	[ "`stat -c '%s' $(1)/usr/share/rescue-image/image.fit.lzma`" -lt 7340032 ]
+endif
 	[ "`stat -c '%s' $(1)/usr/share/rescue-image/image.fit.lzma`" -gt 1000000 ]
 endef
 
