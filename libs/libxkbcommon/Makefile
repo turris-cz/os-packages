@@ -12,6 +12,7 @@ PKG_NAME       := libxkbcommon
 PKG_VERSION    := 1.10.0
 PKG_RELEASE    := $(AUTORELEASE)
 
+PKG_BUILD_DIR  := $(BUILD_DIR)/$(PKG_NAME)-xkbcommon-$(PKG_VERSION)
 PKG_SOURCE     := xkbcommon-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL := https://github.com/xkbcommon/libxkbcommon/archive
 PKG_HASH       := 0427585a4d6ca17c9fc1ac4b539bf303348e9080af70c5ea402503bc370a9631

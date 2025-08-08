@@ -1,0 +1,25 @@
+From ee9c16fe34ab38c90db82f1c15304a7680d960cf Mon Sep 17 00:00:00 2001
+From: Michal Hrusecky <michal.hrusecky@turris.com>
+Date: Fri, 22 Aug 2025 22:48:58 +0200
+Subject: [PATCH 1/2] Allow returning to dashboard from Wi-Fi details
+
+---
+ ui/pages/dashboard.slint | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/ui/pages/dashboard.slint b/ui/pages/dashboard.slint
+index cefd0b8..c114fc9 100644
+--- a/ui/pages/dashboard.slint
++++ b/ui/pages/dashboard.slint
+@@ -69,7 +69,7 @@ export component Dashboard inherits Page {
+         } else if (key == Key.UpArrow && State.current-page == Page.dashboard) {
+             debug("Getting QR");
+             State.current-page = Page.qr;
+-        } else if (key == Key.DownArrow && State.current-page == Page.qr) {
++        } else if (key == Key.DownArrow && (State.current-page == Page.qr || State.current-page == Page.qr-details)) {
+             debug("Getting Dashboard");
+             State.current-page = Page.dashboard;
+         } else if (key == Key.DownArrow && State.current-page == Page.dashboard) {
+-- 
+2.51.0
+
