@@ -17,40 +17,39 @@ PKG_SOURCE_URL:=https://www.busybox.net/downloads \
 PKG_HASH:=6843ba7977081e735fa0fdb05893e3c002c8c5ad7c9c80da206e603cc0ac47e7
 PKG_MAINTAINER:=Michal Hrusecky <michal.hrusecky@nic.cz>
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)
-ROOTFS_INSTALL:=+libgcc +libc +libubox +mtd +libpthread +librt +libattr +libuuid +zlib +libblkid +liblzo +btrfs-progs +schnapps +dropbear +uboot-envtools +usign +cznic-repo-keys +libopenssl +libpcre2 +wget-ssl +libhavege +haveged
-PKG_BUILD_DEPENDS:=opkg/host mtd btrfs-progs schnapps wget cznic-repo-keys usign uboot-tools dropbear haveged
-
-KERNEL_BUILD_DIR:=$(PKG_BUILD_DIR)/kernel
-PLATFORM_DIR:=$(TOPDIR)/target/linux/$(BOARD)
+ROOTFS_INSTALL:=+libgcc +libc +kernel \
+				+kmod-crypto-hash +kmod-crypto-crc32c +kmod-lib-crc32c +kmod-crypto-acompress +kmod-lib-lzo +kmod-lib-zlib-inflate +kmod-lib-zlib-deflate \
+				+kmod-lib-raid6 +kmod-lib-xor +kmod-lib-xxhash +kmod-lib-zstd +kmod-crypto-blake2b +kmod-crypto-xxhash +kmod-fs-btrfs \
+				+libubox +mtd +libpthread +librt +libattr +libuuid +zlib +libblkid +liblzo +libmount \
+				+btrfs-progs +libsmartcols +mount-utils +schnapps +dropbear +usign +cert-backup +cznic-repo-keys +libopenssl +libpcre2 +wget-ssl +libhavege +haveged \
+				+kmod-nls-base +kmod-usb-core +kmod-scsi-core +kmod-usb-storage +kmod-usb-storage-extras +kmod-usb-storage-uas \
+				+kmod-fs-exfat +kmod-lib-crc16 +kmod-fs-ext4 +kmod-nls-cp437 +kmod-nls-iso8859-1 +kmod-nls-utf8 +kmod-fs-vfat
+PKG_BUILD_DEPENDS:=opkg/host mtd btrfs-progs schnapps wget cznic-repo-keys usign dropbear haveged
 
 include $(INCLUDE_DIR)/target.mk
 include $(INCLUDE_DIR)/kernel.mk
-include $(INCLUDE_DIR)/kernel-build.mk
-include $(INCLUDE_DIR)/kernel-defaults.mk
-include $(INCLUDE_DIR)/quilt.mk
 include $(INCLUDE_DIR)/package.mk
 
-PATCH_DIR := $(PLATFORM_DIR)/patches$(if $(wildcard $(PLATFORM_DIR)/patches-$(KERNEL_PATCHVER)),-$(KERNEL_PATCHVER))
 ifeq ($(CONFIG_TARGET_mvebu_cortexa53_DEVICE_cznic_turris-mox),y)
 DEVICE := mox
 else ifeq ($(CONFIG_TARGET_mvebu_cortexa9_DEVICE_cznic_turris-omnia),y)
 DEVICE := omnia
 else ifeq ($(CONFIG_TARGET_ipq95xx_generic_DEVICE_cznic_turris-omnia-ng),y)
 DEVICE := omnia-ng
+ROOTFS_INSTALL+=+kmod-qca-nss-phy +kmod-qca-ssdk \
+				+kmod-lib-crc-ccitt +kmod-slhc +kmod-ppp +kmod-iptunnel +kmod-gre +kmod-pppox +kmod-pptp \
+				+kmod-nf-conntrack +kmod-nf-conntrack6 +kmod-nat46 +kmod-qca-nss-ppe +kmod-qca-nss-dp +kmod-qca-nss-drv-lite \
+				+kmod-input-core +kmod-nls-base +kmod-input-gpio-keys +kmod-input-evdev
 else
 DEVICE := unknown
 endif
-kernel_files=$(wildcard $(TOPDIR)/target/linux/$(BOARD)/files-$(KERNEL_PATCHVER)/.) $(wildcard $(TOPDIR)/target/linux/generic/files/.)
 
 define Package/rescue-image
 	TITLE:=rescue-image
-	DEPENDS:=@(TARGET_mvebu_cortexa53_DEVICE_cznic_turris-mox||TARGET_mvebu_cortexa9_DEVICE_cznic_turris-omnia||TARGET_ipq95xx_generic_DEVICE_cznic_turris-omnia-ng)
+	DEPENDS:=@(TARGET_mvebu_cortexa53_DEVICE_cznic_turris-mox||TARGET_mvebu_cortexa9_DEVICE_cznic_turris-omnia||TARGET_ipq95xx_generic_DEVICE_cznic_turris-omnia-ng) $(ROOTFS_INSTALL)
 endef
 
 define Build/Prepare
-	mkdir -p "$(LINUX_DIR)"
-	xzcat $(DL_DIR)/$(LINUX_SOURCE) | $(TAR) -C $(KERNEL_BUILD_DIR) $(TAR_OPTIONS)
-	$(call Kernel/Patch/Default)
 	mkdir -p "$(PKG_BUILD_DIR)/rootfs/sbin"
 	mkdir -p "$(PKG_BUILD_DIR)/rootfs/etc"
 	mkdir -p "$(PKG_BUILD_DIR)/rootfs/lib"
@@ -75,18 +74,14 @@ endef
 
 define Build/Configure
 	sed -i 's|^BOARD=.*|BOARD=$(DEVICE)|' "$(PKG_BUILD_DIR)/rootfs/init"
-	# Kernel
-	$(call Kernel/Configure)
-	sed -i \
-		-e 's|=m$$$$|=n|' \
-		-e 's|^\(CONFIG_RD_.*\)=y|\1=n|' \
-		-e 's|^\(CONFIG_KERNEL_.*\)=y|\1=n|' \
-		-e 's|^\(CONFIG_NET_VENDOR_.*\)=y|\1=n|' "$(LINUX_DIR)/.config"
-	cat ./files/kernel-config >> "$(LINUX_DIR)/.config"
-	[ \! -f ./files/kernel-config-$(DEVICE) ] || cat ./files/kernel-config-$(DEVICE) >> "$(LINUX_DIR)/.config"
 	# Busybox
 	cp files/busybox-config $(PKG_BUILD_DIR)/busybox/.config
 	$(MAKE) -C "$(PKG_BUILD_DIR)/busybox" $(PKG_JOBS) $(MAKE_FLAGS) oldconfig
+	sed -i \
+		-e 's|./Image|$(LINUX_DIR)/arch/$(LINUX_KARCH)/boot/Image|' \
+		-e 's|./dts|$(LINUX_DIR)/arch/$(LINUX_KARCH)/boot/dts|' \
+		-e 's|./initrd|$(PKG_BUILD_DIR)/initrd.gz|' \
+		"$(PKG_BUILD_DIR)/rescue.its"
 endef
 
 define Build/Compile
@@ -98,26 +93,23 @@ define Build/Compile
 	export TMPDIR="$(PKG_BUILD_DIR)/rootfs/tmp"; \
 	for pkg in $(ROOTFS_INSTALL); do\
 		find $(OUTPUT_DIR) -name `echo $$$$pkg | sed 's|^+||'`_*_$(PKGARCH).ipk -print -exec \
-		$(STAGING_DIR_HOST)/bin/opkg --offline-root "$(PKG_BUILD_DIR)/rootfs" --force-depends install \{\} \; ;\
+		$(STAGING_DIR_HOST)/bin/opkg --offline-root "$(PKG_BUILD_DIR)/rootfs" --force-depends install --force-depends \{\} \; ;\
 	done
 	rm -rf "$(PKG_BUILD_DIR)/rootfs"/usr/lib/opkg
+	rm -rf "$(PKG_BUILD_DIR)/rootfs"/boot
 ifeq ($(CONFIG_TARGET_ipq95xx_generic_DEVICE_cznic_turris-omnia-ng),y)
 	mkdir -p "$(PKG_BUILD_DIR)/rootfs/usr/share/rescue"
-	$(CP) files/imgs/*.rgb "$(PKG_BUILD_DIR)/rootfs/usr/share/rescue"
+	for i in files/imgs/*.png; do magick $$$$i -depth 8 "$(PKG_BUILD_DIR)/rootfs/usr/share/rescue"/`basename $$$$i .png`.rgb; done
 endif
-	$(KERNEL_MAKE) $(PKG_JOBS) oldconfig $(KERNELNAME)
 	cd $(LINUX_DIR); ./usr/gen_initramfs.sh \
-	-o "$(PKG_BUILD_DIR)"/kernel/linux-$(LINUX_VERSION)/arch/$(LINUX_KARCH)/boot/initrd.gz -u squash -g squash \
+	-o "$(PKG_BUILD_DIR)"/initrd.gz -u squash -g squash \
 	"$(PKG_BUILD_DIR)/rootfs" "$(PKG_BUILD_DIR)/rootfs.extra"
-	cp "$(PKG_BUILD_DIR)"/kernel/linux-$(LINUX_VERSION)/arch/$(LINUX_KARCH)/boot/initrd.gz "$(PKG_BUILD_DIR)"/kernel/linux-$(LINUX_VERSION)/arch/$(LINUX_KARCH)/boot/initrd
-	$(CP) "$(PKG_BUILD_DIR)"/rescue.its "$(PKG_BUILD_DIR)"/kernel/linux-$(LINUX_VERSION)/arch/$(LINUX_KARCH)/boot/rescue.its
 endef
 
 define Package/rescue-image/install
 	install -d $(1)/usr/share/rescue-image
-	cd "$(PKG_BUILD_DIR)"/kernel/linux-$(LINUX_VERSION)/arch/$(LINUX_KARCH)/boot/; ls; \
-	PATH="$(PKG_BUILD_DIR)/kernel/linux-$(LINUX_VERSION)/scripts/dtc:$$PATH" \
-	"$(STAGING_DIR_HOST)"/bin/mkimage -f rescue.its $(1)/usr/share/rescue-image/image.fit
+	PATH="$(LINUX_DIR)/scripts/dtc:$$PATH" \
+	"$(STAGING_DIR_HOST)"/bin/mkimage -f "$(PKG_BUILD_DIR)"/rescue.its $(1)/usr/share/rescue-image/image.fit
 	xz -k9 -F lzma $(1)/usr/share/rescue-image/image.fit
 ifeq ($(CONFIG_TARGET_ipq95xx_generic_DEVICE_cznic_turris-omnia-ng),y)
 	[ "`stat -c '%s' $(1)/usr/share/rescue-image/image.fit.lzma`" -lt 11340032 ]
