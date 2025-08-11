@@ -272,6 +272,9 @@ reboot() {
 # Simple udev
 simple_udev() {
     while true; do
+        [ -f /tmp/modules-stop ] || \
+            for i in /lib/modules/*/*.ko; do insmod $i; done 2>&1 | grep -q -v 'File exists' || \
+                echo yes > /tmp/modules-stop
         mdev -s
         if [ -e /dev/watchdog0 ] && ! pidof watchdog > /dev/null; then
             watchdog -t 10 -T 60 /dev/watchdog0

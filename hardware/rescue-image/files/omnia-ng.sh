@@ -5,7 +5,7 @@
 board_init() {
     generic_pre_init
     # Default mode on Omnia NG is serial
-    MODE=0
+    MODE=1
     mkdir -p /etc
     echo "/dev/mtd16 0x0 0x0 0x10000" > /etc/fw_env.config
     TARGET_DRIVE="/dev/mmcblk0"
@@ -24,24 +24,34 @@ board_init() {
     generic_post_init
 }
 
-check_for_mode_change() {
-    if [ "`cat /sys/class/leds/omnia-led\:all/device/global_brightness`" -ne "$BRIGHT" ]; then
-        echo "$BRIGHT" > /sys/class/leds/omnia-led\:all/device/global_brightness
-        return 0
-    fi
-    return 1
-}
-
 display_mode() {
     echo '255 64 0' > /sys/class/leds/rgb\:indicator/multi_intensity
     key=""
-    while [ "$key" != 9387 ]; do
+    setsid cttyhack sh &
+    local key_pressed=""
+    while [ "$key" != "1c" ]; do
+        [ -e /dev/input/event0 ] || {
+            sleep 1
+            continue
+        }
         dd if=/usr/share/rescue/$MODE.rgb of=/dev/fb0
-        key="$(head -c 2 /dev/input/event0 | hexdump -e '"%02x"')"
-        if [ "$key" = 93ad ]; then
-            next_mode
-        elif [ "$key" = 93d6 ]; then
-            prev_mode
+        echo "Current mode is $MODE"
+        key="$(head -c 20 /dev/input/event0 | tail -c 2 | hexdump -e '"%02x"')"
+        echo "Key $key pressed"
+        if [ "$key" = "6c" ]; then
+            if [ -z "$key_press" ]; then
+                next_mode
+                key_pressed="yes"
+            else
+                key_pressed=""
+            fi
+        elif [ "$key" = "6a" ]; then
+            if [ -z "$key_press" ]; then
+                prev_mode
+                key_pressed="yes"
+            else
+                key_pressed=""
+            fi
         fi
     done
 }
