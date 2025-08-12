@@ -99,7 +99,7 @@ define Build/Compile
 	rm -rf "$(PKG_BUILD_DIR)/rootfs"/boot
 ifeq ($(CONFIG_TARGET_ipq95xx_generic_DEVICE_cznic_turris-omnia-ng),y)
 	mkdir -p "$(PKG_BUILD_DIR)/rootfs/usr/share/rescue"
-	for i in files/imgs/*.png; do magick $$$$i -depth 8 "$(PKG_BUILD_DIR)/rootfs/usr/share/rescue"/`basename $$$$i .png`.rgb; done
+	for i in files/imgs/*.png; do magick $$$$i -depth 8 bgra:"$(PKG_BUILD_DIR)/rootfs/usr/share/rescue"/`basename $$$$i .png`.rgb; done
 endif
 	cd $(LINUX_DIR); ./usr/gen_initramfs.sh \
 	-o "$(PKG_BUILD_DIR)"/initrd.gz -u squash -g squash \
