@@ -37,6 +37,7 @@ DEVICE := omnia
 else ifeq ($(CONFIG_TARGET_ipq95xx_generic_DEVICE_cznic_turris-omnia-ng),y)
 DEVICE := omnia-ng
 ROOTFS_INSTALL+=+kmod-qca-nss-phy +kmod-qca-ssdk \
+				+kmod-hwmon-core +kmod-qca8k-cc +kmod-qca8084 \
 				+kmod-lib-crc-ccitt +kmod-slhc +kmod-ppp +kmod-iptunnel +kmod-gre +kmod-pppox +kmod-pptp \
 				+kmod-nf-conntrack +kmod-nf-conntrack6 +kmod-nat46 +kmod-qca-nss-ppe +kmod-qca-nss-dp +kmod-qca-nss-drv-lite \
 				+kmod-input-core +kmod-nls-base +kmod-input-gpio-keys +kmod-input-evdev
