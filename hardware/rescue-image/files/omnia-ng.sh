@@ -20,48 +20,65 @@ board_init() {
     RESCUE_IF_UP="`ip a s | sed -n 's|^[0-9]*:[[:blank:]]*\(eth3\)@\([^:]*\):.*|\2|p'`"
     echo '0 255 0' >  /sys/class/leds/rgb\:indicator/multi_intensity
     echo default-on > /sys/class/leds/rgb\:indicator/trigger
+    SELECTED_MODE=""
     enable_btrfs
     generic_post_init
 }
 
+check_for_mode_change() { return 1; }
+
+reset_uenv() {
+    :;
+}
+
 display_mode() {
+    [ -z "$SELECTED_MODE" ] || return
     echo '255 64 0' > /sys/class/leds/rgb\:indicator/multi_intensity
-    key=""
-    setsid cttyhack sh &
+    local key=""
     local key_pressed=""
     while [ "$key" != "1c" ]; do
         [ -e /dev/input/event0 ] || {
             sleep 1
             continue
         }
-        dd if=/usr/share/rescue/$MODE.rgb of=/dev/fb0
+        dd if=/usr/share/rescue/$MODE.rgb of=/dev/fb0 > /dev/null 2>&1
+        [ -n "$key" ] || {
+            sleep 1
+            MODE=1
+            dd if=/usr/share/rescue/1.rgb of=/dev/fb0 > /dev/null 2>&1
+        }
         echo "Current mode is $MODE"
         key="$(head -c 20 /dev/input/event0 | tail -c 2 | hexdump -e '"%02x"')"
-        echo "Key $key pressed"
+        if [ -z "$key_pressed" ]; then
+            echo "Key $key pressed"
+        else
+            echo "Key $key released"
+        fi
         if [ "$key" = "6c" ]; then
-            if [ -z "$key_press" ]; then
+            if [ -n "$key_pressed" ]; then
+                key_pressed=""
+            else
                 next_mode
                 key_pressed="yes"
-            else
-                key_pressed=""
             fi
-        elif [ "$key" = "6a" ]; then
-            if [ -z "$key_press" ]; then
+        elif [ "$key" = "67" ]; then
+            if [ -n "$key_pressed" ]; then
+                key_pressed=""
+            else
                 prev_mode
                 key_pressed="yes"
-            else
-                key_pressed=""
             fi
         fi
     done
+    SELECTED_MODE="$MODE"
 }
 
 busy() {
     echo '255 0 0' >  /sys/class/leds/rgb\:indicator/multi_intensity
     frame=0
     while true; do
-        dd if=/usr/share/rescue/wip-$frame.rgb of=/dev/fb0
-        sleep 0.2
+        dd if=/usr/share/rescue/wip-$frame.rgb of=/dev/fb0 > /dev/null 2>&1
+        sleep 0.15
         frame=$((frame + 1))
         frame=$((frame % 6))
     done &
