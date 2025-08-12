@@ -361,8 +361,8 @@ MODE4="USB flash"
 mode_4() {
     echo "Running USB flash"
     find_medkit 5
-    reset_uenv
     reflash
+    reset_uenv
 }
 
 # Open open ssh console
@@ -391,8 +391,8 @@ MODE6="Flash from the Cloud :-)"
 mode_6() {
     echo "Flashing from the Cloud :-)"
     download_medkit
-    reset_uenv
     reflash
+    reset_uenv
 }
 
 MODE7="Serial console"
