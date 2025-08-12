@@ -5,7 +5,7 @@ START=90
 STOP=10
 
 start_service() {
-  pgrep -f pakon-monitor > /dev/null && {
+  pgrep -f /usr/bin/pakon-monitor > /dev/null && {
       echo "Already running" >&2
       exit 1
   }
@@ -31,5 +31,5 @@ service_stopped() {
 }
 
 reload_service() {
-  pgrep -f pakon-monitor | xargs kill -s USR1
+  pgrep -f /usr/bin/pakon-monitor | xargs kill -s USR1
 }
