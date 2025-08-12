@@ -71,6 +71,7 @@ wait_for_mode_change() {
     echo "Now is your chance to change a mode from $MODE to something else, press the button to do so"
     waited=0
     display_mode
+    [ "$DELAY" -gt 0 ] || return
     half_delay="$(expr "$DELAY" / 2)"
     echo "Waiting for $(expr $DELAY / 10)s ..."
     while [ "$waited" -le "$DELAY" ]; do
@@ -310,10 +311,13 @@ next_mode() {
 }
 
 prev_mode() {
+    echo "Decreasing mode from $MODE"
     MODE="$(expr "$MODE" - 1 )"
+    echo "We are at $MODE"
     if [ "$MODE" -lt 1 ]; then
         MODE="$MAX_MODE"
     fi
+    echo "After corrections: $MODE"
 }
 
 
