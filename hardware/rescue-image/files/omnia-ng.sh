@@ -7,11 +7,10 @@ board_init() {
     # Default mode on Omnia NG is serial
     MODE=1
     mkdir -p /etc
-    echo "/dev/mtd16 0x0 0x0 0x10000" > /etc/fw_env.config
+    grep APPSBLENV /proc/mtd | sed 's|^\([^[:blank:]]*\):\ \([^[:blank:]]*\)\ \([^[:blank:]]*\)\ .*|/dev/\1 0x0 \2 \3|' > /etc/fw_env.config
     TARGET_DRIVE="/dev/mmcblk0"
     PART_NO="1"
     TARGET_PART="${TARGET_DRIVE}p${PART_NO}"
-    BRIGHT="`cat /sys/class/leds/omnia-led\:all/device/global_brightness`"
     WAN_IF="eth0 eth4"
     MAX_MODE=6
     MODE6_NEXT=1

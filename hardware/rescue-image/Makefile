@@ -37,10 +37,11 @@ DEVICE := omnia
 else ifeq ($(CONFIG_TARGET_ipq95xx_generic_DEVICE_cznic_turris-omnia-ng),y)
 DEVICE := omnia-ng
 ROOTFS_INSTALL+=+kmod-qca-nss-phy +kmod-qca-ssdk \
-				+kmod-hwmon-core +kmod-qca8k-cc +kmod-qca8084 \
+				+kmod-hwmon-core +kmod-qca8k-cc +kmod-qca8084 +kmod-qca81xx +kmod-qca8xxx-phc \
 				+kmod-lib-crc-ccitt +kmod-slhc +kmod-ppp +kmod-iptunnel +kmod-gre +kmod-pppox +kmod-pptp \
 				+kmod-nf-conntrack +kmod-nf-conntrack6 +kmod-nat46 +kmod-qca-nss-ppe +kmod-qca-nss-dp +kmod-qca-nss-drv-lite \
 				+kmod-input-core +kmod-nls-base +kmod-input-gpio-keys +kmod-input-evdev
+PKG_BUILD_DEPENDS+=qca-nss-drv
 else
 DEVICE := unknown
 endif
@@ -96,14 +97,16 @@ define Build/Compile
 	echo -e "Package: tar\nVersion: 1.35-r1\nDepends: libc\nStatus: install user installed\nArchitecture: $(PKGARCH)\nInstalled-Time: 0\n\n" > "$(PKG_BUILD_DIR)/rootfs/usr/lib/opkg"/status
 	touch "$(PKG_BUILD_DIR)"/rootfs/usr/lib/opkg/info/tar.list
 	for pkg in $(ROOTFS_INSTALL); do\
-		find $(OUTPUT_DIR) -name `echo $$$$pkg | sed 's|^+||'`_*_$(PKGARCH).ipk -print -exec \
-		$(STAGING_DIR_HOST)/bin/opkg --offline-root "$(PKG_BUILD_DIR)/rootfs" --force-depends install --force-depends \{\} \; ;\
+		PKG_FILE="`echo $$$$pkg | sed 's|^+||'`_*_$(PKGARCH).ipk"; \
+		PKG="`find $(OUTPUT_DIR) -name "$$$$PKG_FILE" -print`"; \
+		[ -n "$$$$PKG" ] || { echo "$$$$PKG is missing!"; exit 1; }; \
+		$(STAGING_DIR_HOST)/bin/opkg --offline-root "$(PKG_BUILD_DIR)/rootfs" --force-depends install --force-depends "$$$$PKG" ;\
 	done
 	rm -rf "$(PKG_BUILD_DIR)/rootfs"/usr/lib/opkg
 	rm -rf "$(PKG_BUILD_DIR)/rootfs"/boot
 ifeq ($(CONFIG_TARGET_ipq95xx_generic_DEVICE_cznic_turris-omnia-ng),y)
 	mkdir -p "$(PKG_BUILD_DIR)/rootfs/usr/share/rescue"
-	for i in files/imgs/*.png; do magick $$$$i -depth 8 bgra:"$(PKG_BUILD_DIR)/rootfs/usr/share/rescue"/`basename $$$$i .png`.rgb; done
+	for i in files/imgs/*.png; do convert $$$$i -depth 8 bgra:"$(PKG_BUILD_DIR)/rootfs/usr/share/rescue"/`basename $$$$i .png`.rgb; done
 endif
 	cd $(LINUX_DIR); ./usr/gen_initramfs.sh \
 	-o "$(PKG_BUILD_DIR)"/initrd.gz -u squash -g squash \
@@ -116,7 +119,7 @@ define Package/rescue-image/install
 	"$(STAGING_DIR_HOST)"/bin/mkimage -f "$(PKG_BUILD_DIR)"/rescue.its $(1)/usr/share/rescue-image/image.fit
 	xz -k9 -F lzma $(1)/usr/share/rescue-image/image.fit
 ifeq ($(CONFIG_TARGET_ipq95xx_generic_DEVICE_cznic_turris-omnia-ng),y)
-	[ "`stat -c '%s' $(1)/usr/share/rescue-image/image.fit.lzma`" -lt 11340032 ]
+	[ "`stat -c '%s' $(1)/usr/share/rescue-image/image.fit.lzma`" -lt 12451840 ]
 else
 	[ "`stat -c '%s' $(1)/usr/share/rescue-image/image.fit.lzma`" -lt 7340032 ]
 endif
