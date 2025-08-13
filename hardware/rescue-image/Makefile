@@ -21,7 +21,7 @@ ROOTFS_INSTALL:=+libgcc +libc +kernel \
 				+kmod-crypto-hash +kmod-crypto-crc32c +kmod-lib-crc32c +kmod-crypto-acompress +kmod-lib-lzo +kmod-lib-zlib-inflate +kmod-lib-zlib-deflate \
 				+kmod-lib-raid6 +kmod-lib-xor +kmod-lib-xxhash +kmod-lib-zstd +kmod-crypto-blake2b +kmod-crypto-xxhash +kmod-fs-btrfs \
 				+libubox +mtd +libpthread +librt +libattr +libuuid +zlib +libblkid +liblzo +libmount \
-				+btrfs-progs +libsmartcols +mount-utils +schnapps +dropbear +usign +cert-backup +cznic-repo-keys +libopenssl +libpcre2 +wget-ssl +libhavege +haveged \
+				+btrfs-progs +libsmartcols +mount-utils +schnapps +dropbear +usign +cert-backup-btrfs +cert-backup +cznic-repo-keys +libopenssl +libpcre2 +wget-ssl +libhavege +haveged \
 				+kmod-nls-base +kmod-usb-core +kmod-scsi-core +kmod-usb-storage +kmod-usb-storage-extras +kmod-usb-storage-uas \
 				+kmod-fs-exfat +kmod-lib-crc16 +kmod-fs-ext4 +kmod-nls-cp437 +kmod-nls-iso8859-1 +kmod-nls-utf8 +kmod-fs-vfat
 PKG_BUILD_DEPENDS:=opkg/host mtd btrfs-progs schnapps wget cznic-repo-keys usign dropbear haveged
@@ -92,6 +92,9 @@ define Build/Compile
 	export IPKG_NO_SCRIPT=1;\
 	export IPKG_INSTROOT="$(PKG_BUILD_DIR)/rootfs"; \
 	export TMPDIR="$(PKG_BUILD_DIR)/rootfs/tmp"; \
+	mkdir -p "$(PKG_BUILD_DIR)/rootfs/usr/lib/opkg/info"
+	echo -e "Package: tar\nVersion: 1.35-r1\nDepends: libc\nStatus: install user installed\nArchitecture: $(PKGARCH)\nInstalled-Time: 0\n\n" > "$(PKG_BUILD_DIR)/rootfs/usr/lib/opkg"/status
+	touch "$(PKG_BUILD_DIR)"/rootfs/usr/lib/opkg/info/tar.list
 	for pkg in $(ROOTFS_INSTALL); do\
 		find $(OUTPUT_DIR) -name `echo $$$$pkg | sed 's|^+||'`_*_$(PKGARCH).ipk -print -exec \
 		$(STAGING_DIR_HOST)/bin/opkg --offline-root "$(PKG_BUILD_DIR)/rootfs" --force-depends install --force-depends \{\} \; ;\

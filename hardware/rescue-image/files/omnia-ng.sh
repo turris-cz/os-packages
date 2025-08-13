@@ -10,12 +10,9 @@ board_init() {
     echo "/dev/mtd16 0x0 0x0 0x10000" > /etc/fw_env.config
     TARGET_DRIVE="/dev/mmcblk0"
     PART_NO="1"
-    ip link add br-wan type bridge
-    ip link set dev eth0 master br-wan
-    ip link set dev eth4 master br-wan
     TARGET_PART="${TARGET_DRIVE}p${PART_NO}"
     BRIGHT="`cat /sys/class/leds/omnia-led\:all/device/global_brightness`"
-    WAN_IF="br-wan"
+    WAN_IF="eth0 eth4"
     MAX_MODE=6
     MODE6_NEXT=1
     DELAY=0
