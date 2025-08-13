@@ -94,10 +94,12 @@ DHCP_OPTS="-qfn"
 download_medkit() {
     tries=3
     i=0
+    local time_to_end=""
     for wan_if in $WAN_IF; do
-        ip link set up dev "$WAN_IF"
-        local time_to_end=""
-        while ! udhcpc -i "$WAN_IF" $DHCP_OPTS && [ -z "$time_to_end" ]; do
+        echo "Trying to get online using $wan_if"
+        ip link set up dev "$wan_if"
+        time_to_end=""
+        while ! udhcpc -i "$wan_if" $DHCP_OPTS && [ -z "$time_to_end" ]; do
             echo "No DHCP :-("
             sleep 2
             i="$(expr "$i" + 1)"
@@ -299,8 +301,8 @@ init() {
     ip addr add 127.0.0.1/8 dev lo
     ip link set up dev lo
     depmod
-    for mod in /lib/modules/*/*.ko; do
-        modprobe $(basename $mod .ko)
+    cat /etc/modules-boot.d/* /etc/modules.d/* | while read mod; do
+        [ -z "$mod" ] || modprobe $mod
     done
     simple_udev &
 }
