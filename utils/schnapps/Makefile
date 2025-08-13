@@ -13,7 +13,7 @@ PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/schnapps.git
-PKG_MIRROR_HASH:=fbc678026272e1a10b3fe5fed97f2bc0471bcac9d417bf1a1fa96a3949881d67
+PKG_MIRROR_HASH:=09b6c2cbd8a91b4b5d35e67379516e3c8c1426fa1e137f2579311bb4ca21feef
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@nic.cz>
@@ -26,7 +26,7 @@ define Package/schnapps
   CATEGORY:=Utilities
   SUBMENU:=Filesystem
   TITLE:=Btrfs snapshots management tool
-  DEPENDS:=+btrfs-progs +mount-utils +tar +uci +cronie +cert-backup +gnupg
+  DEPENDS:=+btrfs-progs +mount-utils +tar
 endef
 
 define Package/schnapps/description
