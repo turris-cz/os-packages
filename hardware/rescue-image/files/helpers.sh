@@ -94,31 +94,39 @@ DHCP_OPTS="-qfn"
 download_medkit() {
     tries=3
     i=0
-    ip link set up dev "$WAN_IF"
-    while ! udhcpc -i "$WAN_IF" $DHCP_OPTS; do
-        echo "No DHCP :-("
-        sleep 2
-        i="$(expr "$i" + 1)"
-        [ "$i" -lt "$tries" ] || die 2 "Can't get IP"
-    done
-    echo "Got IPv4!"
-    ip addr show
-    ip route show
-    grep -q nameserver /etc/resolv.conf || echo nameserver 193.17.47.1 > /etc/resolv.conf
-    mkdir -p /mnt/src
-    # Download medkit and signature
-    for ext in tar.gz tar.gz.sig; do
-        local i=0
-        # We are checking signature, so we don't care about https certificate
-        while ! wget -T 3 --no-check-certificate -O /mnt/src/medkit.$ext https://repo.turris.cz/hbs/medkit/${BOARD}-medkit${MDKT_VARIANT}-latest.$ext; do
-            echo "Can't download $BOARD-medkit-latest.$ext :-("
+    for wan_if in $WAN_IF; do
+        ip link set up dev "$WAN_IF"
+        local time_to_end=""
+        while ! udhcpc -i "$WAN_IF" $DHCP_OPTS && [ -z "$time_to_end" ]; do
+            echo "No DHCP :-("
             sleep 2
             i="$(expr "$i" + 1)"
-            [ "$i" -lt "$tries" ] || die 2 "Can't get $BOARD-medkit-latest.$ext"
+            [ "$i" -lt "$tries" ] || time_to_end="yes"
         done
+        if [ -n "$time_to_end" ]; then
+            echo "Can't get IP"
+            continue
+        fi
+        echo "Got IPv4!"
+        ip addr show
+        ip route show
+        grep -q nameserver /etc/resolv.conf || echo nameserver 193.17.47.1 > /etc/resolv.conf
+        mkdir -p /mnt/src
+        # Download medkit and signature
+        for ext in tar.gz tar.gz.sig; do
+            local i=0
+            # We are checking signature, so we don't care about https certificate
+            while ! wget -T 3 --no-check-certificate -O /mnt/src/medkit.$ext https://repo.turris.cz/hbs/medkit/${BOARD}-medkit${MDKT_VARIANT}-latest.$ext; do
+                echo "Can't download $BOARD-medkit-latest.$ext :-("
+                sleep 2
+                i="$(expr "$i" + 1)"
+                [ "$i" -lt "$tries" ] || die 2 "Can't get $BOARD-medkit-latest.$ext"
+            done
+        done
+        usign -V -m /mnt/src/medkit.tar.gz -P /etc/opkg/keys || die 2 "Can't validate signature"
+        echo "medkit.tar.gz" > /tmp/medkit-file
     done
-    usign -V -m /mnt/src/medkit.tar.gz -P /etc/opkg/keys || die 2 "Can't validate signature"
-    echo "medkit.tar.gz" > /tmp/medkit-file
+    [ -z "$time_to_end" ] || die "No internet :-("
 }
 
 # Takes as an argument number of retries
@@ -273,9 +281,6 @@ reboot() {
 # Simple udev
 simple_udev() {
     while true; do
-        [ -f /tmp/modules-stop ] || \
-            for i in /lib/modules/*/*.ko; do insmod $i; done 2>&1 | grep -q -v 'File exists' || \
-                echo yes > /tmp/modules-stop
         mdev -s
         if [ -e /dev/watchdog0 ] && ! pidof watchdog > /dev/null; then
             watchdog -t 10 -T 60 /dev/watchdog0
@@ -293,6 +298,10 @@ init() {
     mount -t devpts devpts /dev/pts
     ip addr add 127.0.0.1/8 dev lo
     ip link set up dev lo
+    depmod
+    for mod in /lib/modules/*/*.ko; do
+        modprobe $(basename $mod .ko)
+    done
     simple_udev &
 }
 
