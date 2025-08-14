@@ -27,7 +27,21 @@ board_init() {
 check_for_mode_change() { return 1; }
 
 reset_uenv() {
-    :;
+    fw_setenv bootcmd 'env default -a;
+        if test -z "$fdt_addr_r"; then setenv fdt_addr_r 49000000; fi;
+        if test -z "$kernel_addr_r"; then setenv kernel_addr_r 50000000; fi;
+        if test -z "$scriptaddr"; then setenv scriptaddr $kernel_addr_r; fi;
+        if test -z "$rescue_offset"; then setenv rescue_offset 420000; fi;
+        if test -z "$rescue_size"; then setenv rescue_size be0000; fi;
+        setenv bootcmd "if gpio input 40 || gpio input 41 || gpio input 42 || gpio input 43 || gpio input 44; then
+                echo "Running rescue...";
+                sf probe; sf read $fdt_addr_r $rescue_offset $rescue_size; lzmadec $fdt_addr_r $kernel_addr_r; bootm $kernel_addr_r;
+            else
+                echo "Starting system...";
+                run distro_bootcmd;
+            fi";
+        saveenv;
+        reset;'
 }
 
 display_mode() {

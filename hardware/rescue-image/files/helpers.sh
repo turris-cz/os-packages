@@ -127,6 +127,7 @@ download_medkit() {
         done
         usign -V -m /mnt/src/medkit.tar.gz -P /etc/opkg/keys || die 2 "Can't validate signature"
         echo "medkit.tar.gz" > /tmp/medkit-file
+        break
     done
     [ -z "$time_to_end" ] || die "No internet :-("
 }
