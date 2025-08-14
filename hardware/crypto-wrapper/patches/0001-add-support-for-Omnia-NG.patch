@@ -1,0 +1,143 @@
+From fa16a87d34c4cad0f7147d91007f4146b35d16c9 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Marek=20Moj=C3=ADk?= <marek.mojik@nic.cz>
+Date: Fri, 8 Aug 2025 14:21:18 +0200
+Subject: [PATCH] add support for Omnia NG
+
+---
+ crypto-wrapper.sh | 57 +++++++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 55 insertions(+), 2 deletions(-)
+
+diff --git a/crypto-wrapper.sh b/crypto-wrapper.sh
+index 3ec80ef..15cf60f 100755
+--- a/crypto-wrapper.sh
++++ b/crypto-wrapper.sh
+@@ -14,6 +14,7 @@ CRYPTO_WRAPPER_ROOT_PREFIX='/tmp/crypto_wrapper'
+ 
+ SYSINFO_MODEL_FILE='/tmp/sysinfo/model'
+ TYPE_ATSHA='atsha'
++TYPE_FUSES='fuses'
+ TYPE_MCU='mcu'
+ TYPE_OTP='otp'
+ 
+@@ -22,6 +23,7 @@ MCU_OR_ATSHA_FILE='/sys/bus/i2c/devices/1-002a/serial_number'
+ 
+ # length of a hash for given type (number of hexadecimal characters)
+ HASH_LENGTH_ATSHA='64'
++HASH_LENGTH_FUSES='128'
+ HASH_LENGTH_MCU='64'
+ HASH_LENGTH_OTP='128'
+ 
+@@ -32,7 +34,8 @@ USAGE="USAGE
+         High-level command for Turris devices to query cryptographic functions
+         and device info stored during production. This command unifies
+         hardware-specific commands such as \`atsha204cmd\` for Turris 1.x and
+-        older Omnia, \`omnia-mcutool\` for newer Omnia, and \`mox-otp\` for MOX.
++        older Omnia, \`omnia-mcutool\` for newer Omnia, \`mox-otp\` for MOX, and
++        \'omnia-ng-crypto\' for Omnia NG.
+ 
+         All query commands are cached on the filesystem so querying same
+         commands will not wear-out cryptographic device.
+@@ -45,7 +48,7 @@ USAGE="USAGE
+                     Print script version and exit
+ 
+         $SCRIPTNAME hw-type
+-                    Print HW type ('$TYPE_ATSHA', '$TYPE_MCU' or '$TYPE_OTP') and exit
++                    Print HW type ('$TYPE_ATSHA', '$TYPE_MCU', '$TYPE_OTP', or '$TYPE_FUSES') and exit
+ 
+         $SCRIPTNAME serial-number
+                     Print serial number of the device
+@@ -368,6 +371,34 @@ cached_otp_sign() {
+ }
+ 
+ 
++cached_fuses_serial() {
++    cached_command string 'serial' 'omnia-ng-crypto' 'serial-number'
++}
++
++
++cached_fuses_mac() {
++    cached_command string 'mac' 'omnia-ng-crypto' 'mac-address'
++}
++
++
++# 128-bytes hex string from stdin
++cached_fuses_sign_hash() {
++    local hash="$1"
++    check_hexstring "$hash" "$HASH_LENGTH_FUSES"
++
++    cached_command string "$hash" 'omnia-ng-crypto' 'sign-hash' "$hash"
++}
++
++
++cached_fuses_sign() {
++    local file="$1"
++    check_file "$file"
++
++    cached_command file "$file" 'omnia-ng-crypto' 'sign' "$file"
++}
++
++
++
+ # --------------------------------------------------------------------
+ get_device_type(){
+     local model
+@@ -387,6 +418,11 @@ get_device_type(){
+             echo "$TYPE_ATSHA"
+             ;;
+ 
++        *Omnia\ NG*)
++            debug "Device recognized as Omnia NG"
++            echo "$TYPE_FUSES"
++            ;;
++
+         *Omnia*)
+             if [ -f "$MCU_OR_ATSHA_FILE" ]; then
+                 debug "Device recognized as Omnia without Atsha (crypto provided by MCU)"
+@@ -429,6 +465,10 @@ do_serial() {
+         debug "Call otp serial-number"
+         serial=$(cached_otp_serial)
+ 
++    elif [ "$device_type" = "$TYPE_FUSES" ]; then
++        debug "Call fuses serial-number"
++        serial=$(cached_fuses_serial)
++
+     else
+         error "Unsupported device_type '$device_type'"
+         return 2
+@@ -455,6 +495,10 @@ do_mac() {
+         debug "Call otp mac-address"
+         mac=$(cached_otp_mac)
+ 
++    elif [ "$device_type" = "$TYPE_FUSES" ]; then
++        debug "Call fuses mac-address"
++        mac=$(cached_fuses_mac)
++
+     else
+         error "Unsupported device_type '$device_type'"
+         return 2
+@@ -495,6 +539,11 @@ do_sign() {
+             cached_otp_sign "$file"
+             ;;
+ 
++        "$TYPE_FUSES")
++            debug "Call fuses sign with '$file'"
++            cached_fuses_sign "$file"
++            ;;
++
+         *)
+             error "Unsupported device_type '$device_type'"
+             return 2
+@@ -527,6 +576,10 @@ do_sign_hash() {
+         debug "Call otp sign-hash with '$hash'"
+         cached_otp_sign_hash "$hash"
+ 
++    elif [ "$device_type" = "$TYPE_FUSES" ]; then
++        debug "Call fuses sign-hash with '$hash'"
++        cached_fuses_sign_hash "$hash"
++
+     else
+         error "Unsupported device_type '$device_type'"
+         return 2
+-- 
+2.50.1
+
