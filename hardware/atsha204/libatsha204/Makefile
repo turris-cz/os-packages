@@ -38,7 +38,7 @@ define Package/libatsha204-emul
   VARIANT:=emul
 endef
 
-MAKE_FLAGS += NO_DOC=1
+MAKE_FLAGS += NO_DOC=1 DEFAULT_EMULATION_CONFIG_PATH=\"/etc/atsha204.sw\"
 
 ifeq ($(BUILD_VARIANT),real)
   MAKE_FLAGS += USE_LAYER=USE_LAYER_NI2C
