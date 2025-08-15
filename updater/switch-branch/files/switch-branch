@@ -114,11 +114,11 @@ fetch_target_version() (
 		"Turris 1.x")
 			board="turris1x"
 			;;
-		"Turris Omnia")
-			board="omnia"
-			;;
 		"Turris Omnia NG")
 			board="omnia-ng"
+			;;
+		"Turris Omnia")
+			board="omnia"
 			;;
 		"Turris Mox")
 			board="mox"
