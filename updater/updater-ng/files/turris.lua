@@ -31,6 +31,8 @@ end
 local product = os_release["OPENWRT_DEVICE_PRODUCT"] or os_release["LEDE_DEVICE_PRODUCT"]
 if product:match("[Mm]ox") then
 	board = "mox"
+elseif product:match("[Oo]mnia NG") then
+	board = "omnia-ng"
 elseif product:match("[Oo]mnia") then
 	board = "omnia"
 elseif product:match("[Tt]urris 1.x") then
