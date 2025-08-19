@@ -90,7 +90,7 @@ endef
 
 define Build/InstallDev
 	$(INSTALL_DIR) $(1)/usr/lib/pkgconfig
-	$(CP) $(PKG_INSTALL_DIR)/usr/share/pkgconfig/* /usr/lib/pkgconfig/
+	$(CP) $(PKG_INSTALL_DIR)/usr/share/pkgconfig/* $(1)/usr/lib/pkgconfig/
 endef
 
 $(eval $(call BuildPackage,xkeyboard-config))
