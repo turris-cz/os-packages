@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=unbound
-PKG_VERSION:=1.19.3
-PKG_RELEASE:=$(AUTORELEASE)
+PKG_VERSION:=1.23.0
+PKG_RELEASE:=2
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://nlnetlabs.nl/downloads/unbound/
-PKG_HASH:=3ae322be7dc2f831603e4b0391435533ad5861c2322e34a76006a9fb65eb56b9
+PKG_HASH:=959bd5f3875316d7b3f67ee237a56de5565f5b35fc9b5fc3cea6cfe735a03bb8
 
 PKG_BUILD_PARALLEL:=1
 PKG_FIXUP:=autoreconf
@@ -29,16 +29,25 @@ define Package/unbound/Default
 endef
 
 define Package/unbound
+  SECTION:=net
+  CATEGORY:=Network
+  TITLE:=Unbound (meta)
+  DEPENDS:=+unbound-daemon
+endef
+
+define Package/unbound-daemon
   $(call Package/unbound/Default)
   SECTION:=net
   CATEGORY:=Network
   SUBMENU:=IP Addresses and Names
   TITLE+= (daemon)
   USERID:=unbound=553:unbound=553
+  CONFLICTS:=unbound
+  PROVIDES:=unbound
   DEPENDS+= +libunbound +cert-backup
 endef
 
-define Package/unbound/description
+define Package/unbound-daemon/description
   This package contains the Unbound daemon.
 endef
 
@@ -48,7 +57,7 @@ define Package/unbound-anchor
   CATEGORY:=Network
   SUBMENU:=IP Addresses and Names
   TITLE+= (anchor utility)
-  DEPENDS+= +unbound +libexpat
+  DEPENDS+= +unbound-daemon +libexpat
 endef
 
 define Package/unbound-anchor/description
@@ -61,7 +70,7 @@ define Package/unbound-control-setup
   CATEGORY:=Network
   SUBMENU:=IP Addresses and Names
   TITLE+= (control setup utility)
-  DEPENDS+= +unbound +openssl-util
+  DEPENDS+= +unbound-daemon +openssl-util
 endef
 
 define Package/unbound-control-setup/description
@@ -125,7 +134,7 @@ define Build/InstallDev
 	$(INSTALL_DATA) $(PKG_INSTALL_DIR)/usr/include/unbound-event.h $(1)/usr/include/
 endef
 
-define Package/unbound/install
+define Package/unbound-daemon/install
 	$(INSTALL_DIR) $(1)/usr/sbin
 	$(CP) \
 		$(PKG_INSTALL_DIR)/usr/sbin/unbound \
@@ -142,7 +151,7 @@ define Package/unbound/install
 	$(LN) /var/etc/unbound/unbound.conf $(1)/etc/unbound/unbound.conf
 endef
 
-define Package/unbound/postinst
+define Package/unbound-daemon/postinst
 #!/bin/sh
 set -ex
 [ -n "$$IPKG_INSTROOT" ] || {
@@ -150,7 +159,7 @@ set -ex
 }
 endef
 
-define Package/unbound/prerm
+define Package/unbound-daemon/prerm
 #!/bin/sh
 set -ex
 if [ -z "$$IPKG_INSTROOT" ]; then
@@ -161,7 +170,7 @@ uci commit
 fi
 endef
 
-define Package/unbound/postrm
+define Package/unbound-daemon/postrm
 #!/bin/sh
 if [ -z "$$IPKG_INSTROOT" ]; then
 [ \! -x /etc/init.d/resolver ] || /etc/init.d/resolver restart
@@ -188,7 +197,7 @@ define Package/libunbound/install
 	$(CP) $(PKG_INSTALL_DIR)/usr/lib/libunbound.so.* $(1)/usr/lib/
 endef
 
-$(eval $(call BuildPackage,unbound))
+$(eval $(call BuildPackage,unbound-daemon))
 $(eval $(call BuildPackage,unbound-anchor))
 $(eval $(call BuildPackage,unbound-control-setup))
 $(eval $(call BuildPackage,unbound-host))
