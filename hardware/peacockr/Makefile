@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2025 CZ.NIC, z. s. p. o. (https://www.nic.cz/)
+# Copyright (C) 2025 CZ.NIC, z.s.p.o. (https://www.nic.cz/)
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -45,11 +45,10 @@ endef
 
 
 define Package/peacockr/install
-        $(INSTALL_DIR) $(1)/usr/bin/
-        $(INSTALL_BIN) $(PKG_BUILD_DIR)/target/$(RUSTC_TARGET_ARCH)/release/peacockr $(1)/usr/bin/peacockr
-        $(INSTALL_DIR) $(1)/etc/init.d/
-        $(INSTALL_BIN) ./files/peacockr.init $(1)/etc/init.d/peacockr.init
-
+	$(INSTALL_DIR) $(1)/usr/bin/
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/target/$(RUSTC_TARGET_ARCH)/release/peacockr $(1)/usr/bin/peacockr
+	$(INSTALL_DIR) $(1)/etc/init.d/
+	$(INSTALL_BIN) ./files/peacockr.init $(1)/etc/init.d/peacockr.init
 endef
 
 #Build/Compile = $(call Build/Compile/Cargo,peacockr)
