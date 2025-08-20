@@ -47,8 +47,9 @@ endef
 define Package/peacockr/install
 	$(INSTALL_DIR) $(1)/usr/bin/
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/target/$(RUSTC_TARGET_ARCH)/release/peacockr $(1)/usr/bin/peacockr
+
 	$(INSTALL_DIR) $(1)/etc/init.d/
-	$(INSTALL_BIN) ./files/peacockr.init $(1)/etc/init.d/peacockr.init
+	$(INSTALL_BIN) ./files/peacockr.init $(1)/etc/init.d/peacockr
 endef
 
 #Build/Compile = $(call Build/Compile/Cargo,peacockr)
