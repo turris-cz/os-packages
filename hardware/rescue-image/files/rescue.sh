@@ -9,23 +9,26 @@ WAN_IF="eth0"
 HAVE_BTRFS=1
 REPARTITION=1
 MODE=1
+FORCE_MODE=""
+NOR_UPDATE=""
 
 # Include all helper functions
 
+. /lib/board_helpers.sh
 . /lib/helpers.sh
 . /lib/board.sh
 
 # Main loop
 
 init
-board_init
+echo "Initialized"
 fetch_cmd_mode
 echo "Booting rescue mode for $BOARD in mode $MODE"
-wait_for_mode_change
+[ -n "$FORCE_MODE" ] || wait_for_mode_change
 echo "Mode $MODE selected!"
 busy
 override_root # Some alternative roots might take a while to initialize
 haveged -F & # Provide some extra entropy
 mode_"$MODE"
-echo "Everything done, rebooting!"
+success
 reboot

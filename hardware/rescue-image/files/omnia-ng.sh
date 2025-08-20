@@ -1,9 +1,24 @@
 #!/bin/sh
 
-. /lib/board_helpers.sh
+board_preinit() {
+    {
+    while [ ! -e /dev/fb0 ]; do
+        sleep 0.2;
+    done
+    sleep 0.2
+    echo 0 > /sys/class/graphics/fb0/blank
+    dd if=/usr/share/rescue/rescue.rgb of=/dev/fb0 > /dev/null 2>&1
+    } &
+    :
+}
+
+success() {
+    echo 1 > /busy_stop
+    dd if=/usr/share/rescue/ok.rgb of=/dev/fb0 > /dev/null 2>&1
+    sleep 2
+}
 
 board_init() {
-    generic_pre_init
     # Default mode on Omnia NG is serial
     MODE=1
     mkdir -p /etc
@@ -21,7 +36,6 @@ board_init() {
     echo default-on > /sys/class/leds/rgb\:indicator/trigger
     SELECTED_MODE=""
     enable_btrfs
-    generic_post_init
 }
 
 check_for_mode_change() { return 1; }
@@ -31,8 +45,8 @@ reset_uenv() {
         if test -z "$fdt_addr_r"; then setenv fdt_addr_r 49000000; fi;
         if test -z "$kernel_addr_r"; then setenv kernel_addr_r 50000000; fi;
         if test -z "$scriptaddr"; then setenv scriptaddr $kernel_addr_r; fi;
-        if test -z "$rescue_offset"; then setenv rescue_offset 420000; fi;
-        if test -z "$rescue_size"; then setenv rescue_size be0000; fi;
+        if test -z "$rescue_offset"; then setenv rescue_offset 430000; fi;
+        if test -z "$rescue_size"; then setenv rescue_size bd0000; fi;
         setenv bootcmd "if gpio input 40 || gpio input 41 || gpio input 42 || gpio input 43 || gpio input 44; then
                 echo "Running rescue...";
                 sf probe; sf read $fdt_addr_r $rescue_offset $rescue_size; lzmadec $fdt_addr_r $kernel_addr_r; bootm $kernel_addr_r;
@@ -89,7 +103,7 @@ display_mode() {
 busy() {
     echo '255 0 0' >  /sys/class/leds/rgb\:indicator/multi_intensity
     frame=0
-    while true; do
+    while [ ! -e /busy_stop ]; do
         dd if=/usr/share/rescue/wip-$frame.rgb of=/dev/fb0 > /dev/null 2>&1
         sleep 0.15
         frame=$((frame + 1))
@@ -101,6 +115,12 @@ die() {
     predie "$1" "$2"
     echo '0 0 255' >  /sys/class/leds/rgb\:indicator/multi_intensity
     echo timer > /sys/class/leds/rgb\:indicator/trigger
+    echo 1 > /busy_stop
+    case "$1" in
+        1) dd if=/usr/share/rescue/internet-err.rgb of=/dev/fb0 > /dev/null 2>&1 ;;
+        2) dd if=/usr/share/rescue/medkit-err.rgb of=/dev/fb0 > /dev/null 2>&1 ;;
+        *) dd if=/usr/share/rescue/fail.rgb of=/dev/fb0 > /dev/null 2>&1 ;;
+    esac
     while true; do
         sleep 1
     done

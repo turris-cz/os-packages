@@ -20,11 +20,11 @@ PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)
 ROOTFS_INSTALL:=+libgcc +libc +kernel \
 				+kmod-crypto-hash +kmod-crypto-crc32c +kmod-lib-crc32c +kmod-crypto-acompress +kmod-lib-lzo +kmod-lib-zlib-inflate +kmod-lib-zlib-deflate \
 				+kmod-lib-raid6 +kmod-lib-xor +kmod-lib-xxhash +kmod-lib-zstd +kmod-crypto-blake2b +kmod-crypto-xxhash +kmod-fs-btrfs \
-				+libubox +mtd +libpthread +librt +libattr +libuuid +zlib +libblkid +liblzo +libmount +uboot-tools \
+				+libubox +mtd +libpthread +librt +libattr +libuuid +zlib +libblkid +liblzo +libmount +uboot-envtools \
 				+btrfs-progs +libsmartcols +mount-utils +schnapps +dropbear +usign +cert-backup-btrfs +cert-backup +cznic-repo-keys +libopenssl +libpcre2 +wget-ssl +libhavege +haveged \
 				+kmod-nls-base +kmod-usb-core +kmod-scsi-core +kmod-usb-storage +kmod-usb-storage-extras +kmod-usb-storage-uas \
 				+kmod-fs-exfat +kmod-lib-crc16 +kmod-fs-ext4 +kmod-nls-cp437 +kmod-nls-iso8859-1 +kmod-nls-utf8 +kmod-fs-vfat
-PKG_BUILD_DEPENDS:=opkg/host mtd btrfs-progs schnapps wget cznic-repo-keys usign dropbear haveged
+PKG_BUILD_DEPENDS:=opkg/host mtd btrfs-progs schnapps wget cznic-repo-keys usign dropbear haveged uboot-tools
 
 include $(INCLUDE_DIR)/target.mk
 include $(INCLUDE_DIR)/kernel.mk
@@ -40,7 +40,7 @@ ROOTFS_INSTALL+=+kmod-qca-nss-phy +kmod-qca-ssdk \
 				+kmod-hwmon-core +kmod-qca8k-cc +kmod-qca8084 +kmod-qca81xx +kmod-qca8xxx-phc \
 				+kmod-lib-crc-ccitt +kmod-slhc +kmod-ppp +kmod-iptunnel +kmod-gre +kmod-pppox +kmod-pptp \
 				+kmod-nf-conntrack +kmod-nf-conntrack6 +kmod-nat46 +kmod-qca-nss-ppe +kmod-qca-nss-dp +kmod-qca-nss-drv-lite \
-				+kmod-input-core +kmod-nls-base +kmod-input-gpio-keys +kmod-input-evdev
+				+kmod-input-core +kmod-nls-base +kmod-input-gpio-keys +kmod-input-evdev +kmod-usb-dwc3 +kmod-usb-dwc3-qcom
 PKG_BUILD_DEPENDS+=qca-nss-drv
 else
 DEVICE := unknown
@@ -99,7 +99,7 @@ define Build/Compile
 	for pkg in $(ROOTFS_INSTALL); do\
 		PKG_FILE="`echo $$$$pkg | sed 's|^+||'`_*_$(PKGARCH).ipk"; \
 		PKG="`find $(OUTPUT_DIR) -name "$$$$PKG_FILE" -print`"; \
-		[ -n "$$$$PKG" ] || { echo "$$$$PKG is missing!"; exit 1; }; \
+		[ -n "$$$$PKG" ] || { echo "$$$$PKG_FILE is missing!"; exit 1; }; \
 		$(STAGING_DIR_HOST)/bin/opkg --offline-root "$(PKG_BUILD_DIR)/rootfs" --force-depends install --force-depends "$$$$PKG" ;\
 	done
 	rm -rf "$(PKG_BUILD_DIR)/rootfs"/usr/lib/opkg
@@ -119,7 +119,7 @@ define Package/rescue-image/install
 	"$(STAGING_DIR_HOST)"/bin/mkimage -f "$(PKG_BUILD_DIR)"/rescue.its $(1)/usr/share/rescue-image/image.fit
 	xz -k9 -F lzma $(1)/usr/share/rescue-image/image.fit
 ifeq ($(CONFIG_TARGET_ipq95xx_generic_DEVICE_cznic_turris-omnia-ng),y)
-	[ "`stat -c '%s' $(1)/usr/share/rescue-image/image.fit.lzma`" -lt 12451840 ]
+	[ "`stat -c '%s' $(1)/usr/share/rescue-image/image.fit.lzma`" -lt 12386304 ]
 else
 	[ "`stat -c '%s' $(1)/usr/share/rescue-image/image.fit.lzma`" -lt 7340032 ]
 endif
