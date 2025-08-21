@@ -282,7 +282,7 @@ reflash() {
         tar -C /mnt/src/nor -xzvf /mnt/src/nor.tgz || die 2 "Unpacking NOR failed!!!"
         cd /mnt/src/nor
         for img in *.img; do
-            mtd="$(grep "$(basename "$img" .img)" /proc/mtd | sed 's|^\([^[:blank:]]*\):\ \([^[:blank:]]*\)\ \([^[:blank:]]*\)\ .*|/dev/\1|')"
+            mtd="$(grep "$(basename "$img" .img)\"" /proc/mtd | sed 's|^\([^[:blank:]]*\):\ \([^[:blank:]]*\)\ \([^[:blank:]]*\)\ .*|/dev/\1|' | head -n1)"
             [ -z "$mtd" ] || mtd write $img $mtd
         done
     fi
