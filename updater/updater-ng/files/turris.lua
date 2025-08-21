@@ -77,7 +77,7 @@ if config then
 	config = config()
 	if config.url ~= nil then
 		repo_url = config.url
-		for _, field in {"pubkey", "ca", "crl", "ocsp"} do
+		for _, field in ipairs({"pubkey", "ca", "crl", "ocsp"}) do
 			if config[field] ~= nil then
 				script_options[field] = config[field]
 			end
