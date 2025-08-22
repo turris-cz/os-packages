@@ -1,0 +1,41 @@
+From a15517541c8d8997662323e4e2d12e9611318d18 Mon Sep 17 00:00:00 2001
+From: Michal Hrusecky <michal.hrusecky@turris.com>
+Date: Fri, 22 Aug 2025 15:16:39 +0200
+Subject: [PATCH] Add support for Omnia NG
+
+---
+ foris_controller/schemas/definitions/common.json | 2 +-
+ foris_controller_backends/about/__init__.py      | 4 +++-
+ 2 files changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/foris_controller/schemas/definitions/common.json b/foris_controller/schemas/definitions/common.json
+index 9acc356..56d21b8 100644
+--- a/foris_controller/schemas/definitions/common.json
++++ b/foris_controller/schemas/definitions/common.json
+@@ -10,7 +10,7 @@
+         "turris_os_version": {
+             "type": "string", "pattern": "^[0-9]+(\\.[0-9]+)*$"
+         },
+-        "turris_device": {"enum": ["omnia", "mox", "turris"]},
++        "turris_device": {"enum": ["omnia", "omnia-ng", "mox", "turris"]},
+         "dhcp_lease_time": {
+             "oneOf": [
+                 {"enum": [0]},
+diff --git a/foris_controller_backends/about/__init__.py b/foris_controller_backends/about/__init__.py
+index 662fdf2..ea00dbe 100644
+--- a/foris_controller_backends/about/__init__.py
++++ b/foris_controller_backends/about/__init__.py
+@@ -106,7 +106,9 @@ class SystemInfoFiles(BaseFile):
+         """ display standartized model name (omnia/mox/turris)
+         """
+         repr_model = self.get_model_name()
+-        if "Omnia" in repr_model:
++        if "Omnia NG" in repr_model:
++            return "omnia-ng"
++        elif "Omnia" in repr_model:
+             return "omnia"
+         elif "Mox" in repr_model:
+             return "mox"
+-- 
+2.51.0
+
