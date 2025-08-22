@@ -33,7 +33,7 @@ define Package/peacockr
   SECTION:=utils
   CATEGORY:=Utility
   TITLE:=A display controller for Turris NG
-  DEPENDS:=$(RUST_ARCH_DEPENDS) +libxkbcommon +libinput
+  DEPENDS:=$(RUST_ARCH_DEPENDS) +libxkbcommon +libinput +fontconfig +dejavu-fonts-ttf-DejaVuSans +xkeyboard-config
   URL:=https://gitlab.nic.cz/turris/peacockr/
 endef
 
