@@ -24,7 +24,7 @@ ROOTFS_INSTALL:=+libgcc +libc +kernel \
 				+btrfs-progs +libsmartcols +mount-utils +schnapps +dropbear +usign +cert-backup-btrfs +cert-backup +cznic-repo-keys +libopenssl +libpcre2 +wget-ssl +libhavege +haveged \
 				+kmod-nls-base +kmod-usb-core +kmod-scsi-core +kmod-usb-storage +kmod-usb-storage-extras +kmod-usb-storage-uas \
 				+kmod-fs-exfat +kmod-lib-crc16 +kmod-fs-ext4 +kmod-nls-cp437 +kmod-nls-iso8859-1 +kmod-nls-utf8 +kmod-fs-vfat
-PKG_BUILD_DEPENDS:=opkg/host mtd btrfs-progs schnapps wget cznic-repo-keys usign dropbear haveged uboot-tools
+PKG_BUILD_DEPENDS:=opkg/host mtd btrfs-progs schnapps wget cznic-repo-keys usign dropbear haveged uboot-tools kernel
 
 include $(INCLUDE_DIR)/target.mk
 include $(INCLUDE_DIR)/kernel.mk
@@ -41,7 +41,8 @@ ROOTFS_INSTALL+=+kmod-qca-nss-phy +kmod-qca-ssdk \
 				+kmod-lib-crc-ccitt +kmod-slhc +kmod-ppp +kmod-iptunnel +kmod-gre +kmod-pppox +kmod-pptp \
 				+kmod-nf-conntrack +kmod-nf-conntrack6 +kmod-nat46 +kmod-qca-nss-ppe +kmod-qca-nss-dp +kmod-qca-nss-drv-lite \
 				+kmod-input-core +kmod-nls-base +kmod-input-gpio-keys +kmod-input-evdev +kmod-usb-dwc3 +kmod-usb-dwc3-qcom
-PKG_BUILD_DEPENDS+=qca-nss-drv
+# Trying to make sure we are build late enough for all binary packages to be actually created
+PKG_BUILD_DEPENDS+=kmod-qca-nss-drv-lite qca-nss-drv hostapd
 else
 DEVICE := unknown
 endif
