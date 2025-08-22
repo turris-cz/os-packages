@@ -27,6 +27,7 @@ include $(INCLUDE_DIR)/package.mk
 include $(TOPDIR)/feeds/packages/lang/rust/rust-package.mk
 
 CARGO_PKG_PROFILE:=release
+CARGO_PKG_CONFIG_VARS:=WAN_IFACE=br-wan
 RUST_PKG_FEATURES:=target-turris
 
 define Package/peacockr
