@@ -13,8 +13,7 @@ PKG_RELEASE:=1
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/peacockr.git
-PKG_SOURCE_VERSION:=229bdb0ef18bc498c31e186ac1324f9890b3f6d2
-PKG_MIRROR_HASH:=648ba238b77e99b3edaec671a09875c3c8285d2cc34ba505fcdfd295fa196128
+PKG_SOURCE_VERSION:=sysinfo-processing
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 PKG_LICENSE:=GPL-3.0-or-later
