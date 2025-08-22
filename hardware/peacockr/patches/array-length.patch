@@ -1,0 +1,11 @@
+--- a/src/events/net.rs	2025-08-22 08:26:35.504509100 +0200
++++ b/src/events/net.rs	2025-08-22 08:27:12.879490685 +0200
+@@ -33,7 +33,7 @@
+ 
+ 		Ok(Self {
+ 			socket: Generic::new(socket, Interest::READ, Mode::Level),
+-			buffer: Box::new([0; _]),
++			buffer: Box::new([0; 4096]),
+ 		})
+ 	}
+ }
