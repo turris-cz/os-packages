@@ -13,6 +13,7 @@ board_preinit() {
 }
 
 success() {
+    echo '255 255 0' > /sys/class/leds/rgb\:indicator/multi_intensity
     echo 1 > /busy_stop
     dd if=/usr/share/rescue/ok.rgb of=/dev/fb0 > /dev/null 2>&1
     sleep 2
