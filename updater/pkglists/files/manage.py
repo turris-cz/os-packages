@@ -10,7 +10,7 @@ from schema import Schema, Optional, Regex, Or
 DEFINITIONS = 'definitions.json'
 LABELS = 'labels.json'
 
-BOARDS = ("mox", "omnia", "turris1x")
+BOARDS = ("mox", "omnia", "omnia-ng", "turris1x")
 
 
 def definitions():
