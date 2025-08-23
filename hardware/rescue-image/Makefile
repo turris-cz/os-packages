@@ -41,7 +41,8 @@ ROOTFS_INSTALL+=+kmod-qca-nss-phy +kmod-qca-ssdk \
 				+kmod-lib-crc-ccitt +kmod-slhc +kmod-ppp +kmod-iptunnel +kmod-gre +kmod-pppox +kmod-pptp \
 				+kmod-nf-conntrack +kmod-nf-conntrack6 +kmod-nat46 +kmod-qca-nss-ppe +kmod-qca-nss-dp +kmod-qca-nss-drv-lite \
 				+kmod-input-core +kmod-nls-base +kmod-input-gpio-keys +kmod-input-evdev +kmod-usb-dwc3 +kmod-usb-dwc3-qcom
-PKG_BUILD_DEPENDS+=kmod-qca-nss-drv-lite
+# Trying to make sure we are build late enough for all binary packages to be actually created
+PKG_BUILD_DEPENDS+=kmod-qca-nss-drv-lite qca-nss-drv hostapd
 else
 DEVICE := unknown
 endif
