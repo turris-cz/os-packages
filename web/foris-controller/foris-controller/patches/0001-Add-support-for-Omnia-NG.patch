@@ -1,12 +1,13 @@
-From a15517541c8d8997662323e4e2d12e9611318d18 Mon Sep 17 00:00:00 2001
+From 1520fa9b8d3439daade70c49a1f0776800721574 Mon Sep 17 00:00:00 2001
 From: Michal Hrusecky <michal.hrusecky@turris.com>
 Date: Fri, 22 Aug 2025 15:16:39 +0200
 Subject: [PATCH] Add support for Omnia NG
 
 ---
- foris_controller/schemas/definitions/common.json | 2 +-
- foris_controller_backends/about/__init__.py      | 4 +++-
- 2 files changed, 4 insertions(+), 2 deletions(-)
+ foris_controller/schemas/definitions/common.json       | 2 +-
+ foris_controller_backends/about/__init__.py            | 4 +++-
+ foris_controller_modules/networks/schema/networks.json | 2 +-
+ 3 files changed, 5 insertions(+), 3 deletions(-)
 
 diff --git a/foris_controller/schemas/definitions/common.json b/foris_controller/schemas/definitions/common.json
 index 9acc356..56d21b8 100644
@@ -36,6 +37,19 @@ index 662fdf2..ea00dbe 100644
              return "omnia"
          elif "Mox" in repr_model:
              return "mox"
+diff --git a/foris_controller_modules/networks/schema/networks.json b/foris_controller_modules/networks/schema/networks.json
+index 3f0bd6a..3c31294 100644
+--- a/foris_controller_modules/networks/schema/networks.json
++++ b/foris_controller_modules/networks/schema/networks.json
+@@ -125,7 +125,7 @@
+                         "device": {
+                             "type": "object",
+                             "properties": {
+-                                "model": {"enum": ["omnia", "turris", "mox"]},
++                                "model": {"enum": ["omnia", "omnia-ng", "turris", "mox"]},
+                                 "version": {"type": "string"}
+                             },
+                             "additionalProperties": false,
 -- 
 2.51.0
 
