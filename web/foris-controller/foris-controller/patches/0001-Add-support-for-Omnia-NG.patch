@@ -1,4 +1,4 @@
-From 1520fa9b8d3439daade70c49a1f0776800721574 Mon Sep 17 00:00:00 2001
+From 93d73ddb34340ece667e613281322c175b5bc27b Mon Sep 17 00:00:00 2001
 From: Michal Hrusecky <michal.hrusecky@turris.com>
 Date: Fri, 22 Aug 2025 15:16:39 +0200
 Subject: [PATCH] Add support for Omnia NG
@@ -6,8 +6,8 @@ Subject: [PATCH] Add support for Omnia NG
 ---
  foris_controller/schemas/definitions/common.json       | 2 +-
  foris_controller_backends/about/__init__.py            | 4 +++-
- foris_controller_modules/networks/schema/networks.json | 2 +-
- 3 files changed, 5 insertions(+), 3 deletions(-)
+ foris_controller_modules/networks/schema/networks.json | 4 ++--
+ 3 files changed, 6 insertions(+), 4 deletions(-)
 
 diff --git a/foris_controller/schemas/definitions/common.json b/foris_controller/schemas/definitions/common.json
 index 9acc356..56d21b8 100644
@@ -38,9 +38,18 @@ index 662fdf2..ea00dbe 100644
          elif "Mox" in repr_model:
              return "mox"
 diff --git a/foris_controller_modules/networks/schema/networks.json b/foris_controller_modules/networks/schema/networks.json
-index 3f0bd6a..3c31294 100644
+index 3f0bd6a..cda14ce 100644
 --- a/foris_controller_modules/networks/schema/networks.json
 +++ b/foris_controller_modules/networks/schema/networks.json
+@@ -3,7 +3,7 @@
+         "interface_id": {"type": "string", "minLength": 1, "pattern": "^[0-9a-z_-]*"},
+         "interface_link_speed": {"type": "integer", "minimum": 0},
+         "interface_module_id": {"type": "integer", "minimum": 0},
+-        "interface_bus": {"enum": ["eth", "pci", "usb", "sdio", "sfp"]},
++        "interface_bus": {"enum": ["eth", "pci", "usb", "sdio", "wifi", "sfp"]},
+         "interface_type": {"enum": ["eth", "wwan", "wifi"]},
+         "interface_state": {"enum": ["up", "down"]},
+         "interface_record": {
 @@ -125,7 +125,7 @@
                          "device": {
                              "type": "object",
