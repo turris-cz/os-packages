@@ -1,0 +1,61 @@
+#!/bin/sh /etc/rc.common
+
+START=99
+STOP=01
+
+start() {
+    [ "$(uci get foris.wizard.finished)" != 1 ] || exit 0
+
+    # Make sure we have wireless config
+    wifi config
+
+    # Check whether there is already a Wi-Fi password, otherwise generate one
+    PASSWORD="$(uci get wireless.@wifi-iface[0].key)"
+    [ -n "$PASSWORD" ] || PASSWORD="$(tr -dc A-Za-z0-9 < /dev/urandom | head -c 16)"
+
+    # Set password and enable all Wi-Fi networks
+    i=0
+    while [ "$(uci get "wireless.@wifi-iface[$i]" 2> /dev/null)" = wifi-iface ]; do
+        uci set "wireless.@wifi-iface[$i].key"="$PASSWORD"
+        uci set "wireless.@wifi-iface[$i].encryption"="sae-mixed"
+        uci set "wireless.@wifi-iface[$i].disabled"=0
+        uci set "wireless.$(uci get "wireless.@wifi-iface[$i].device").disabled"=0
+        i=$((i + 1))
+    done
+    uci commit wireless
+
+    # Reload Wi-Fi configuration
+    wifi
+
+    # Try to pretend to be a captive portal
+    lan_ip="$(ifstatus lan | jsonfilter -e '@["ipv4-address"][0].address')"
+    PORTALS="
+        connectivitycheck.gstatic.com
+        detectportal.firefox.com
+        clients3.google.com
+        www.msftconnecttest.com
+        www.msftncsi.com
+        www.apple.com
+        gsp1.apple.com
+        captive.apple.com
+    "
+
+    {
+    echo "hints.ttl(5)"
+    for zone in $PORTALS; do
+        echo "hints.set(\"$zone $lan_ip\")"
+    done
+    } | socat - /tmp/kresd/control/*
+
+    # Reload knot when wizzard finishes
+    {
+    while [ "$(uci get foris.wizard.finished)" != 1 ]; do
+        sleep 1
+    done
+    /etc/init.d/resolver restart
+    } &
+}
+
+stop() {
+    /etc/init.d/resolver restart
+}

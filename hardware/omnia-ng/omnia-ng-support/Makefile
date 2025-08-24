@@ -39,6 +39,8 @@ define Package/omnia-ng-support/install
 	$(INSTALL_DATA) $(LINUX_DIR)/arch/$(LINUX_KARCH)/boot/dts/qcom/ipq9574-turris-omnia-ng.dtb "$(1)"/boot
 	$(INSTALL_DATA) "$(PKG_BUILD_DIR)"/boot.scr "$(1)"/boot/boot.scr
 	ln -s boot/boot.scr "$(1)"/boot.scr
+	$(INSTALL_DIR) $(1)/etc/init.d
+	$(INSTALL_BIN) ./files/initial-setup "$(1)"/etc/init.d
 endef
 
 $(eval $(call BuildPackage,omnia-ng-support))
