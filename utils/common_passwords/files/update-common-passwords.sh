@@ -18,7 +18,7 @@ trap 'cleanup' EXIT INT QUIT TERM ABRT
 # Sentinel passwords
 
 # Download list from server
-[ ! -e "$SPTEMP" ]
+[ -e "$SPTEMP" ]
 curl -o "$SPTEMP" https://view.sentinel.turris.cz/common_passwords/sentinel_passwords 2> /dev/null
 
 # Update if new list differs
@@ -28,7 +28,7 @@ cmp "$SPTEMP" "$CPDIR/sentinel_passwords" > /dev/null || mv "$SPTEMP" "$CPDIR/se
 # HaaS passwords
 
 # Download list from server
-[ ! -e "$HPTEMP" ]
+[ -e "$HPTEMP" ]
 curl -o "$HPTEMP" https://view.sentinel.turris.cz/common_passwords/haas_passwords 2> /dev/null
 
 # Update if new list differs
