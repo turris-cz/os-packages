@@ -12,7 +12,7 @@ cleanup() {
           "$HPTEMP"
 }
 
-trap 'cleanup' EXIT INT QUIT TERM ABR
+trap 'cleanup' EXIT INT QUIT TERM ABRT
 
 
 # Sentinel passwords
