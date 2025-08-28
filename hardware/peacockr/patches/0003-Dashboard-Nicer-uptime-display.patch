@@ -1,0 +1,54 @@
+From af6d8caec3aa84d22de3329b3559561e2d51a1ee Mon Sep 17 00:00:00 2001
+From: Michal Hrusecky <michal.hrusecky@turris.com>
+Date: Thu, 28 Aug 2025 08:37:57 +0200
+Subject: [PATCH] Dashboard: Nicer uptime display
+
+---
+ ui/pages/dashboard.slint | 22 +++++++++++++++++++++-
+ 1 file changed, 21 insertions(+), 1 deletion(-)
+
+diff --git a/ui/pages/dashboard.slint b/ui/pages/dashboard.slint
+index c58a6e5..7d1e6fc 100644
+--- a/ui/pages/dashboard.slint
++++ b/ui/pages/dashboard.slint
+@@ -103,6 +103,7 @@ export component Dashboard inherits Page {
+
+         HorizontalLayout {
+             padding: 4px;
++            spacing: 8px;
+             alignment: start;
+
+             pure function formatted_uptime(uptime: duration) -> string {
+@@ -105,8 +105,28 @@ export component Dashboard inherits Page {
+             padding: 4px;
+             alignment: start;
+ 
++            pure function formatted_uptime(uptime: duration) -> string {
++                if (uptime > 172800s) {
++                    return "\{Math.floor(uptime / 86400s)} days";
++                } else if (uptime > 7200s) {
++                    return "\{Math.floor(uptime / 3600s)} hours";
++                } else {
++                    return "\{Math.floor(uptime / 60s)} minutes";
++                }
++            }
++
++            Text {
++                text: "Uptime:";
++                color: Theme.light-gray;
++                font-size: Theme.font-size-normal;
++                font-weight: Theme.font-weight-normal;
++                font-family: Theme.font-family;
++                vertical-alignment: center;
++            }
++
++
+             Text {
+-                text: "\{Readouts.uptime / 1s} s";
++                text: formatted_uptime(Readouts.uptime);
+                 color: Theme.foreground;
+                 font-size: Theme.font-size-normal;
+                 font-weight: Theme.font-weight-bold;
+-- 
+2.51.0
+
