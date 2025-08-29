@@ -29,6 +29,5 @@ return {
 	]]
 	--ca = true,
 	--crl = false,
-	--ocsp = true,
-
+	--ocsp = false,
 }

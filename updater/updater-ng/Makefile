@@ -1,5 +1,5 @@
 #
-## Copyright (C) 2016-2022 CZ.NIC z.s.p.o. (https://www.nic.cz/)
+## Copyright (C) 2016-2025 CZ.NIC z.s.p.o. (https://www.nic.cz/)
 #
 ## This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=updater-ng
-PKG_VERSION:=70.2.0
+PKG_VERSION:=70.2.1
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/updater/updater.git
-PKG_MIRROR_HASH:=6b0004bd64d238c661318d15038f669ad4e4564ff13f4a70863464e8a1d203eb
+PKG_MIRROR_HASH:=359087e8873c75db163cd9b85895bd34fe906b861ef54e3e3e8d988cfffea40e
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
