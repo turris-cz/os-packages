@@ -24,7 +24,9 @@ start() {
 
     # Set password and enable all Wi-Fi networks
     i=0
+    SSID="Turris-$(printf %d 0x$(crypto-wrapper serial | tail -c 4))"
     while [ "$(uci get "wireless.@wifi-iface[$i]" 2> /dev/null)" = wifi-iface ]; do
+        uci set "wireless.@wifi-iface[$i].ssid"="$SSID"
         uci set "wireless.@wifi-iface[$i].key"="$PASSWORD"
         uci set "wireless.@wifi-iface[$i].encryption"="sae-mixed"
         uci set "wireless.@wifi-iface[$i].disabled"=0
