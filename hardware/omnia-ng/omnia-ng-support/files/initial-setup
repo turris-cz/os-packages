@@ -6,6 +6,15 @@ STOP=01
 start() {
     [ "$(uci get foris.wizard.finished)" != 1 ] || exit 0
 
+    # Check WAN port
+    if [ "$(cat /sys/class/net/eth0/carrier)" -eq 1 ]; then
+        uci set "network.wan.device=eth0"
+        uci commit network
+    else
+        uci set "network.wan.device=eth4"
+        uci commit network
+    fi
+
     # Make sure we have wireless config
     wifi config
 
@@ -47,12 +56,12 @@ start() {
     done
     } | socat - /tmp/kresd/control/*
 
-    # Reload knot when wizzard finishes
+    # Reload knot when wizard finishes
     {
-    while [ "$(uci get foris.wizard.finished)" != 1 ]; do
-        sleep 1
-    done
-    /etc/init.d/resolver restart
+        while [ "$(uci get foris.wizard.finished)" != 1 ]; do
+            sleep 1
+        done
+        /etc/init.d/resolver restart
     } &
 }
 
