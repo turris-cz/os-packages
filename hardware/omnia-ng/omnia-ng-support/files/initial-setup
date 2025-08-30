@@ -20,7 +20,7 @@ start() {
 
     # Check whether there is already a Wi-Fi password, otherwise generate one
     PASSWORD="$(uci get wireless.@wifi-iface[0].key)"
-    [ -n "$PASSWORD" ] || PASSWORD="$(tr -dc A-Za-z0-9 < /dev/urandom | head -c 16)"
+    [ -n "$PASSWORD" ] || PASSWORD="$(tr -dc A-NP-Za-z1-9 < /dev/urandom | head -c 16)"
 
     # Set password and enable all Wi-Fi networks
     i=0
