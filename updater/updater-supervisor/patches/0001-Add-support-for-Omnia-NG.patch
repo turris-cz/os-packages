@@ -1,0 +1,29 @@
+From 218b94fbbc3b0c26fe5380158c6f5554910989f1 Mon Sep 17 00:00:00 2001
+From: Michal Hrusecky <michal.hrusecky@turris.com>
+Date: Sun, 31 Aug 2025 12:29:48 +0200
+Subject: [PATCH] Add support for Omnia NG
+
+Add Turris Omnia NG among the boards that we support.
+---
+ svupdater/_board.py | 2 ++
+ 1 file changed, 2 insertions(+)
+
+Index: updater-supervisor-1.6.0/svupdater/_board.py
+===================================================================
+--- updater-supervisor-1.6.0.orig/svupdater/_board.py
++++ updater-supervisor-1.6.0/svupdater/_board.py
+@@ -4,12 +4,13 @@ import functools
+ import distro
+ 
+ # These are all board
+-BOARDS = ("mox", "omnia", "turris1x")
++BOARDS = ("mox", "omnia", "omnia-ng", "turris1x")
+ 
+ # turrishw mapping to updater names
+ BOARD_MAP = {
+     "Turris Mox": "mox",
+     "Turris Omnia": "omnia",
++    "Turris Omnia NG": "omnia-ng",
+     "Turris 1.x": "turris1x",
+ }
+ 
