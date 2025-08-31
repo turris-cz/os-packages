@@ -7,6 +7,8 @@ start() {
     [ "$(uci get foris.wizard.finished)" != 1 ] || exit 0
 
     # Check WAN port
+    ip link set up dev eth0
+    sleep 2
     if [ "$(cat /sys/class/net/eth0/carrier)" -eq 1 ]; then
         uci set "network.wan.device=eth0"
         uci commit network
@@ -39,6 +41,7 @@ start() {
     wifi
 
     # Try to pretend to be a captive portal
+    /etc/init.d/resovler restart
     lan_ip="$(ifstatus lan | jsonfilter -e '@["ipv4-address"][0].address')"
     PORTALS="
         connectivitycheck.gstatic.com
@@ -60,10 +63,12 @@ start() {
 
     # Reload knot when wizard finishes
     {
-        while [ "$(uci get foris.wizard.finished)" != 1 ]; do
+        while [ "$(uci get foris.wizard.finished 2> /dev/null)" != 1 ]; do
             sleep 1
         done
         /etc/init.d/resolver restart
+        /etc/init.d/network restart
+        wifi
     } &
 }
 
