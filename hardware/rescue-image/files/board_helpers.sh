@@ -32,6 +32,7 @@ board_init() {
 
 success() {
     echo "Everything done!"
+    grep -v 'dont_reboot' /proc/cmdline > /dev/null || sleep 99999
 }
 
 generic_post_init() {

@@ -16,6 +16,7 @@ success() {
     echo '255 255 0' > /sys/class/leds/rgb\:indicator/multi_intensity
     echo 1 > /busy_stop
     dd if=/usr/share/rescue/ok.rgb of=/dev/fb0 > /dev/null 2>&1
+    grep -v 'dont_reboot' /proc/cmdline > /dev/null || sleep 99999
     sleep 2
 }
 
@@ -42,7 +43,11 @@ board_init() {
 check_for_mode_change() { return 1; }
 
 reset_uenv() {
-    fw_setenv bootcmd 'env default -a;
+    contract="$(fw_printenv -n contract 2> /dev/null)"
+    if [ -n "$contract" ]; then
+         contract="setenv contract '$contract';"
+    fi
+    fw_setenv bootcmd 'env default -a; '"$contract"'
         if test -z "$fdt_addr_r"; then setenv fdt_addr_r 49000000; fi;
         if test -z "$kernel_addr_r"; then setenv kernel_addr_r 50000000; fi;
         if test -z "$scriptaddr"; then setenv scriptaddr $kernel_addr_r; fi;
@@ -50,7 +55,7 @@ reset_uenv() {
         if test -z "$rescue_size"; then setenv rescue_size bd0000; fi;
         setenv bootcmd "if gpio input 40 || gpio input 41 || gpio input 42 || gpio input 43 || gpio input 44; then
                 echo "Running rescue...";
-                sf probe; sf read $fdt_addr_r $rescue_offset $rescue_size; lzmadec $fdt_addr_r $kernel_addr_r; bootm $kernel_addr_r;
+                dsp invert on; sf probe; sf read $fdt_addr_r $rescue_offset $rescue_size; lzmadec $fdt_addr_r $kernel_addr_r; bootm $kernel_addr_r;
             else
                 echo "Starting system...";
                 run distro_bootcmd;

@@ -1,5 +1,5 @@
 #
-## Copyright (C) 2016 CZ.NIC z.s.p.o. (http://www.nic.cz/)
+## Copyright (C) 2025 CZ.NIC z.s.p.o. (http://www.nic.cz/)
 #
 ## This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -17,13 +17,13 @@ PKG_SOURCE_URL:=https://www.busybox.net/downloads \
 PKG_HASH:=6843ba7977081e735fa0fdb05893e3c002c8c5ad7c9c80da206e603cc0ac47e7
 PKG_MAINTAINER:=Michal Hrusecky <michal.hrusecky@nic.cz>
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)
-ROOTFS_INSTALL:=+libgcc +libc +kernel \
-				+kmod-crypto-hash +kmod-crypto-crc32c +kmod-lib-crc32c +kmod-crypto-acompress +kmod-lib-lzo +kmod-lib-zlib-inflate +kmod-lib-zlib-deflate \
-				+kmod-lib-raid6 +kmod-lib-xor +kmod-lib-xxhash +kmod-lib-zstd +kmod-crypto-blake2b +kmod-crypto-xxhash +kmod-fs-btrfs \
-				+libubox +mtd +libpthread +librt +libattr +libuuid +zlib +libblkid +liblzo +libmount +uboot-envtools \
-				+btrfs-progs +libsmartcols +mount-utils +schnapps +dropbear +usign +cert-backup-btrfs +cert-backup +cznic-repo-keys +libopenssl +libpcre2 +wget-ssl +libhavege +haveged \
-				+kmod-nls-base +kmod-usb-core +kmod-scsi-core +kmod-usb-storage +kmod-usb-storage-extras +kmod-usb-storage-uas \
-				+kmod-fs-exfat +kmod-lib-crc16 +kmod-fs-ext4 +kmod-nls-cp437 +kmod-nls-iso8859-1 +kmod-nls-utf8 +kmod-fs-vfat
+ROOTFS_INSTALL:=libgcc libc kernel \
+				kmod-crypto-hash kmod-crypto-crc32c kmod-lib-crc32c kmod-crypto-acompress kmod-lib-lzo kmod-lib-zlib-inflate kmod-lib-zlib-deflate \
+				kmod-lib-raid6 kmod-lib-xor kmod-lib-xxhash kmod-lib-zstd kmod-crypto-blake2b kmod-crypto-xxhash kmod-fs-btrfs \
+				libubox mtd libpthread librt libattr libuuid zlib libblkid liblzo libmount uboot-envtools \
+				btrfs-progs libsmartcols mount-utils schnapps dropbear usign cert-backup-btrfs cert-backup cznic-repo-keys cznic-repo-keys-test libopenssl libpcre2 wget-ssl libhavege haveged \
+				kmod-nls-base kmod-usb-core kmod-scsi-core kmod-usb-storage kmod-usb-storage-extras kmod-usb-storage-uas \
+				kmod-fs-exfat kmod-lib-crc16 kmod-fs-ext4 kmod-nls-cp437 kmod-nls-iso8859-1 kmod-nls-utf8 kmod-fs-vfat
 PKG_BUILD_DEPENDS:=opkg/host mtd btrfs-progs schnapps wget cznic-repo-keys usign dropbear haveged uboot-tools kernel
 
 include $(INCLUDE_DIR)/target.mk
@@ -36,13 +36,13 @@ else ifeq ($(CONFIG_TARGET_mvebu_cortexa9_DEVICE_cznic_turris-omnia),y)
 DEVICE := omnia
 else ifeq ($(CONFIG_TARGET_ipq95xx_generic_DEVICE_cznic_turris-omnia-ng),y)
 DEVICE := omnia-ng
-ROOTFS_INSTALL+=+kmod-qca-nss-phy +kmod-qca-ssdk \
-				+kmod-hwmon-core +kmod-qca8k-cc +kmod-qca8084 +kmod-qca81xx +kmod-qca8xxx-phc \
-				+kmod-lib-crc-ccitt +kmod-slhc +kmod-ppp +kmod-iptunnel +kmod-gre +kmod-pppox +kmod-pptp \
-				+kmod-nf-conntrack +kmod-nf-conntrack6 +kmod-nat46 +kmod-qca-nss-ppe +kmod-qca-nss-dp +kmod-qca-nss-drv-lite \
-				+kmod-input-core +kmod-nls-base +kmod-input-gpio-keys +kmod-input-evdev +kmod-usb-dwc3 +kmod-usb-dwc3-qcom
+ROOTFS_INSTALL+=kmod-qca-nss-phy kmod-qca-ssdk \
+				kmod-hwmon-core kmod-qca8k-cc kmod-qca8084 kmod-qca81xx kmod-qca8xxx-phc \
+				kmod-lib-crc-ccitt kmod-slhc kmod-ppp kmod-iptunnel kmod-gre kmod-pppox kmod-pptp \
+				kmod-nf-conntrack kmod-nf-conntrack6 kmod-nat46 kmod-qca-nss-ppe kmod-qca-nss-dp kmod-qca-nss-drv-lite \
+				kmod-input-core kmod-nls-base kmod-input-gpio-keys kmod-input-evdev kmod-usb-dwc3 kmod-usb-dwc3-qcom
 # Trying to make sure we are build late enough for all binary packages to be actually created
-PKG_BUILD_DEPENDS+=kmod-qca-nss-drv-lite qca-nss-drv hostapd
+PKG_BUILD_DEPENDS+=qssdk qca-nss-drv qca-nss-phy hostapd nat64 qca-nss-ppe qca-nss-dp
 else
 DEVICE := unknown
 endif
@@ -98,7 +98,7 @@ define Build/Compile
 	echo -e "Package: tar\nVersion: 1.35-r1\nDepends: libc\nStatus: install user installed\nArchitecture: $(PKGARCH)\nInstalled-Time: 0\n\n" > "$(PKG_BUILD_DIR)/rootfs/usr/lib/opkg"/status
 	touch "$(PKG_BUILD_DIR)"/rootfs/usr/lib/opkg/info/tar.list
 	for pkg in $(ROOTFS_INSTALL); do\
-		PKG_FILE="`echo $$$$pkg | sed 's|^+||'`_*_$(PKGARCH).ipk"; \
+		PKG_FILE="$$$${pkg}_*_$(PKGARCH).ipk"; \
 		PKG="`find $(OUTPUT_DIR) -name "$$$$PKG_FILE" -print`"; \
 		[ -n "$$$$PKG" ] || { echo "$$$$PKG_FILE is missing!"; exit 1; }; \
 		$(STAGING_DIR_HOST)/bin/opkg --offline-root "$(PKG_BUILD_DIR)/rootfs" --force-depends install --force-depends "$$$$PKG" ;\
