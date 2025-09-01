@@ -74,6 +74,7 @@ start() {
         done
         /etc/init.d/resolver restart
         /etc/init.d/network restart
+        /etc/init.d/peacockr restart
         wifi
     } &
 }
