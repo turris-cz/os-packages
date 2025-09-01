@@ -1,0 +1,48 @@
+From 485e8a224306cb810489c091df5e3af32dafe5e8 Mon Sep 17 00:00:00 2001
+From: Michal Hrusecky <michal.hrusecky@turris.com>
+Date: Mon, 1 Sep 2025 07:09:45 +0200
+Subject: [PATCH] dashboard: Nicer bandwidth display
+
+---
+ ui/pages/dashboard.slint | 17 ++++++++++++++---
+ 1 file changed, 14 insertions(+), 3 deletions(-)
+
+diff --git a/ui/pages/dashboard.slint b/ui/pages/dashboard.slint
+index 7d1e6fc..bbce326 100644
+--- a/ui/pages/dashboard.slint
++++ b/ui/pages/dashboard.slint
+@@ -148,11 +149,21 @@ export component Dashboard inherits Page {
+             spacing: 16px;
+             alignment: start;
+ 
++            pure function formatted_bandwidth(bw: int) -> string {
++                if (bw > 1024 * 1024 * 1024 * 10) {
++                    return "\{Math.floor(bw / (1024 * 1024 * 1024))} GiB/s";
++                } else if (bw > 1024 * 1024 * 10) {
++                    return "\{Math.floor(bw / (1024 * 1024))} MiB/s";
++                } else {
++                    return "\{Math.floor(bw / 1024)} KiB/s";
++                }
++            }
++
+             HorizontalLayout {
+                 spacing: 4px;
+ 
+                 Text {
+-                    text: "\{(Readouts.wan-bandwidth.rx / 10 / 1024).floor()} Kib/s"; // Dynamic download speed
++                    text: formatted_bandwidth(Readouts.wan-bandwidth.rx / 10); // Dynamic download speed
+                     color: Theme.foreground;
+                     font-size: Theme.font-size-normal;
+                     font-weight: Theme.font-weight-bold;
+@@ -172,7 +183,7 @@ export component Dashboard inherits Page {
+                 spacing: 4px;
+ 
+                 Text {
+-                    text: "\{(Readouts.wan-bandwidth.tx / 10 / 1024).floor()} Kib/s"; // Dynamic upload speed
++                    text: formatted_bandwidth(Readouts.wan-bandwidth.tx / 10); // Dynamic upload speed
+                     color: Theme.foreground;
+                     font-size: Theme.font-size-normal;
+                     font-weight: Theme.font-weight-bold;
+-- 
+2.51.0
+
