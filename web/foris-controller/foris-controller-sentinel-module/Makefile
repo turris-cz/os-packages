@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2020-2024 CZ.NIC z. s. p. o. (https://www.nic.cz/)
+# Copyright (C) 2020-2025 CZ.NIC z. s. p. o. (https://www.nic.cz/)
 #
 # This is free software, licensed under the GNU General Public License v3.
 # See /LICENSE for more information.
@@ -8,7 +8,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=foris-controller-sentinel-module
-PKG_VERSION:=1.0.0
+PKG_VERSION:=1.1.0
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
