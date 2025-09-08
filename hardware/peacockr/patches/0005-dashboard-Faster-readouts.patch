@@ -1,0 +1,49 @@
+From 7789167a90a743e5cf8cb15e2782ff78141f328e Mon Sep 17 00:00:00 2001
+From: Michal Hrusecky <michal.hrusecky@turris.com>
+Date: Mon, 8 Sep 2025 14:59:19 +0200
+Subject: [PATCH 5/6] dashboard: Faster readouts
+
+Mainly for bandwidth, to make the user experience more dynamic.
+---
+ ui/app.slint             | 2 +-
+ ui/pages/dashboard.slint | 4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/ui/app.slint b/ui/app.slint
+index 6077e75..c6dc484 100644
+--- a/ui/app.slint
++++ b/ui/app.slint
+@@ -50,7 +50,7 @@ export component App inherits Window {
+     }
+ 
+     Timer {
+-        interval: 10s;
++        interval: 1s;
+         triggered => {
+              Readouts.wan-bandwidth = Readouts.fetch-wan-bandwidth(Readouts.wan-bandwidth);
+         }
+diff --git a/ui/pages/dashboard.slint b/ui/pages/dashboard.slint
+index 2574e3b..86ae3ff 100644
+--- a/ui/pages/dashboard.slint
++++ b/ui/pages/dashboard.slint
+@@ -154,7 +154,7 @@ export component Dashboard inherits Page {
+                 spacing: 4px;
+ 
+                 Text {
+-                    text: formatted_bandwidth(Readouts.wan-bandwidth.rx / 10); // Dynamic download speed
++                    text: formatted_bandwidth(Readouts.wan-bandwidth.rx); // Dynamic download speed
+                     color: Theme.foreground;
+                     font-size: Theme.font-size-normal;
+                     font-weight: Theme.font-weight-bold;
+@@ -174,7 +174,7 @@ export component Dashboard inherits Page {
+                 spacing: 4px;
+ 
+                 Text {
+-                    text: formatted_bandwidth(Readouts.wan-bandwidth.tx / 10); // Dynamic upload speed
++                    text: formatted_bandwidth(Readouts.wan-bandwidth.tx); // Dynamic upload speed
+                     color: Theme.foreground;
+                     font-size: Theme.font-size-normal;
+                     font-weight: Theme.font-weight-bold;
+-- 
+2.51.0
+

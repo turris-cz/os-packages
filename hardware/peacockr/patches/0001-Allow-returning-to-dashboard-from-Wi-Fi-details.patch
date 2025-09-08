@@ -1,14 +1,14 @@
-From ee9c16fe34ab38c90db82f1c15304a7680d960cf Mon Sep 17 00:00:00 2001
+From 83a94df2ba2e3880f4b391418364e8d2cc7c0934 Mon Sep 17 00:00:00 2001
 From: Michal Hrusecky <michal.hrusecky@turris.com>
 Date: Fri, 22 Aug 2025 22:48:58 +0200
-Subject: [PATCH 1/2] Allow returning to dashboard from Wi-Fi details
+Subject: [PATCH 1/6] Allow returning to dashboard from Wi-Fi details
 
 ---
  ui/pages/dashboard.slint | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/ui/pages/dashboard.slint b/ui/pages/dashboard.slint
-index cefd0b8..c114fc9 100644
+index c58a6e5..6abce6a 100644
 --- a/ui/pages/dashboard.slint
 +++ b/ui/pages/dashboard.slint
 @@ -69,7 +69,7 @@ export component Dashboard inherits Page {
