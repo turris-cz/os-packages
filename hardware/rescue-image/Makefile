@@ -21,7 +21,7 @@ ROOTFS_INSTALL:=libgcc libc kernel \
 				kmod-crypto-hash kmod-crypto-crc32c kmod-lib-crc32c kmod-crypto-acompress kmod-lib-lzo kmod-lib-zlib-inflate kmod-lib-zlib-deflate \
 				kmod-lib-raid6 kmod-lib-xor kmod-lib-xxhash kmod-lib-zstd kmod-crypto-blake2b kmod-crypto-xxhash kmod-fs-btrfs \
 				libubox mtd libpthread librt libattr libuuid zlib libblkid liblzo libmount uboot-envtools \
-				btrfs-progs libsmartcols mount-utils schnapps dropbear usign cert-backup-btrfs cert-backup cznic-repo-keys cznic-repo-keys-test libopenssl libpcre2 wget-ssl libhavege haveged \
+				btrfs-progs libsmartcols mount-utils schnapps dropbear usign cert-backup-btrfs cert-backup cznic-repo-keys libopenssl libpcre2 wget-ssl libhavege haveged \
 				kmod-nls-base kmod-usb-core kmod-scsi-core kmod-usb-storage kmod-usb-storage-extras kmod-usb-storage-uas \
 				kmod-fs-exfat kmod-lib-crc16 kmod-fs-ext4 kmod-nls-cp437 kmod-nls-iso8859-1 kmod-nls-utf8 kmod-fs-vfat
 PKG_BUILD_DEPENDS:=opkg/host mtd btrfs-progs schnapps wget cznic-repo-keys usign dropbear haveged uboot-tools kernel

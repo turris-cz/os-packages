@@ -32,8 +32,8 @@ board_init() {
     MAX_MODE=6
     MODE6_NEXT=1
     DELAY=0
-    RESCUE_IF="`ip a s | sed -n 's|^[0-9]*:[[:blank:]]*\(eth3\)@.*|\1|p'`"
-    RESCUE_IF_UP="`ip a s | sed -n 's|^[0-9]*:[[:blank:]]*\(eth3\)@\([^:]*\):.*|\2|p'`"
+    RESCUE_IF="eth3"
+    RESCUE_IF_UP="eth3"
     echo '0 255 0' >  /sys/class/leds/rgb\:indicator/multi_intensity
     echo default-on > /sys/class/leds/rgb\:indicator/trigger
     SELECTED_MODE=""
@@ -41,28 +41,6 @@ board_init() {
 }
 
 check_for_mode_change() { return 1; }
-
-reset_uenv() {
-    contract="$(fw_printenv -n contract 2> /dev/null)"
-    if [ -n "$contract" ]; then
-         contract="setenv contract '$contract';"
-    fi
-    fw_setenv bootcmd 'env default -a; '"$contract"'
-        if test -z "$fdt_addr_r"; then setenv fdt_addr_r 49000000; fi;
-        if test -z "$kernel_addr_r"; then setenv kernel_addr_r 50000000; fi;
-        if test -z "$scriptaddr"; then setenv scriptaddr $kernel_addr_r; fi;
-        if test -z "$rescue_offset"; then setenv rescue_offset 430000; fi;
-        if test -z "$rescue_size"; then setenv rescue_size bd0000; fi;
-        setenv bootcmd "if gpio input 40 || gpio input 41 || gpio input 42 || gpio input 43 || gpio input 44; then
-                echo "Running rescue...";
-                dsp invert on; sf probe; sf read $fdt_addr_r $rescue_offset $rescue_size; lzmadec $fdt_addr_r $kernel_addr_r; bootm $kernel_addr_r;
-            else
-                echo "Starting system...";
-                run distro_bootcmd;
-            fi";
-        saveenv;
-        reset;'
-}
 
 display_mode() {
     [ -z "$SELECTED_MODE" ] || return
