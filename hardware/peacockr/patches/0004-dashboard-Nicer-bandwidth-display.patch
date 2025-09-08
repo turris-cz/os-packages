@@ -1,17 +1,17 @@
-From 485e8a224306cb810489c091df5e3af32dafe5e8 Mon Sep 17 00:00:00 2001
+From fe72a46929ffc3d2a86bb4d6e29d400c759bfccd Mon Sep 17 00:00:00 2001
 From: Michal Hrusecky <michal.hrusecky@turris.com>
 Date: Mon, 1 Sep 2025 07:09:45 +0200
-Subject: [PATCH] dashboard: Nicer bandwidth display
+Subject: [PATCH 4/6] dashboard: Nicer bandwidth display
 
 ---
- ui/pages/dashboard.slint | 17 ++++++++++++++---
- 1 file changed, 14 insertions(+), 3 deletions(-)
+ ui/pages/dashboard.slint | 14 ++++++++++++--
+ 1 file changed, 12 insertions(+), 2 deletions(-)
 
 diff --git a/ui/pages/dashboard.slint b/ui/pages/dashboard.slint
-index 7d1e6fc..bbce326 100644
+index 85c7943..2574e3b 100644
 --- a/ui/pages/dashboard.slint
 +++ b/ui/pages/dashboard.slint
-@@ -148,11 +149,21 @@ export component Dashboard inherits Page {
+@@ -140,11 +140,21 @@ export component Dashboard inherits Page {
              spacing: 16px;
              alignment: start;
  
@@ -34,7 +34,7 @@ index 7d1e6fc..bbce326 100644
                      color: Theme.foreground;
                      font-size: Theme.font-size-normal;
                      font-weight: Theme.font-weight-bold;
-@@ -172,7 +183,7 @@ export component Dashboard inherits Page {
+@@ -164,7 +174,7 @@ export component Dashboard inherits Page {
                  spacing: 4px;
  
                  Text {

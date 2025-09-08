@@ -1,26 +1,21 @@
-From af6d8caec3aa84d22de3329b3559561e2d51a1ee Mon Sep 17 00:00:00 2001
+From 96121c7d2d0d42d2c3022ace9b45aec2f00bfbee Mon Sep 17 00:00:00 2001
 From: Michal Hrusecky <michal.hrusecky@turris.com>
 Date: Thu, 28 Aug 2025 08:37:57 +0200
-Subject: [PATCH] Dashboard: Nicer uptime display
+Subject: [PATCH 3/6] Dashboard: Nicer uptime display
 
 ---
- ui/pages/dashboard.slint | 22 +++++++++++++++++++++-
- 1 file changed, 21 insertions(+), 1 deletion(-)
+ ui/pages/dashboard.slint | 23 ++++++++++++++++++++++-
+ 1 file changed, 22 insertions(+), 1 deletion(-)
 
 diff --git a/ui/pages/dashboard.slint b/ui/pages/dashboard.slint
-index c58a6e5..7d1e6fc 100644
+index 133e90c..85c7943 100644
 --- a/ui/pages/dashboard.slint
 +++ b/ui/pages/dashboard.slint
-@@ -103,6 +103,7 @@ export component Dashboard inherits Page {
-
+@@ -94,10 +94,31 @@ export component Dashboard inherits Page {
+ 
          HorizontalLayout {
              padding: 4px;
 +            spacing: 8px;
-             alignment: start;
-
-             pure function formatted_uptime(uptime: duration) -> string {
-@@ -105,8 +105,28 @@ export component Dashboard inherits Page {
-             padding: 4px;
              alignment: start;
  
 +            pure function formatted_uptime(uptime: duration) -> string {
