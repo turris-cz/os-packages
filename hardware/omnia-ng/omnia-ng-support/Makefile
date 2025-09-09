@@ -44,7 +44,7 @@ define Package/omnia-ng-support/install
 	$(INSTALL_BIN) ./files/minirainbow.init "$(1)"/etc/init.d/minirainbow
 	$(INSTALL_BIN) ./files/minirainbow-boot.init "$(1)"/etc/init.d/minirainbow-boot
 	$(INSTALL_DIR) $(1)/usr/libexec
-	$(INSTALL_BIN) ./files/minirainbow.sd "$(1)"/usr/libexec
+	$(INSTALL_BIN) ./files/minirainbow.sh "$(1)"/usr/libexec
 endef
 
 $(eval $(call BuildPackage,omnia-ng-support))
