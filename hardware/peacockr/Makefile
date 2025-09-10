@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=peacockr
 PKG_VERSION:=0.1
-PKG_RELEASE:=2025-09-08-01
+PKG_RELEASE:=2025-09-11-01
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/peacockr.git
@@ -45,13 +45,19 @@ define Package/peacockr/description
         More information on https://gitlab.nic.cz/turris/peacockr
 endef
 
+define Package/peacockr/conffiles
+/etc/config/peacockr
+endef
 
 define Package/peacockr/install
 	$(INSTALL_DIR) $(1)/usr/bin/
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/target/$(RUSTC_TARGET_ARCH)/release/peacockr $(1)/usr/bin/peacockr
 
 	$(INSTALL_DIR) $(1)/etc/init.d/
-	$(INSTALL_BIN) ./files/peacockr.init $(1)/etc/init.d/peacockr
+	$(INSTALL_BIN) ./files/peacockr.init   $(1)/etc/init.d/peacockr
+
+	$(INSTALL_DIR) $(1)/etc/config/
+	$(INSTALL_BIN) ./files/peacockr.config $(1)/etc/config/peacockr
 endef
 
 #Build/Compile = $(call Build/Compile/Cargo,peacockr)
