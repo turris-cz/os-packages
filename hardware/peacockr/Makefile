@@ -50,6 +50,8 @@ define Package/peacockr/install
 
 	$(INSTALL_DIR) $(1)/etc/init.d/
 	$(INSTALL_BIN) ./files/peacockr.init   $(1)/etc/init.d/peacockr
+
+	$(INSTALL_DIR) $(1)/etc/config/
 	$(INSTALL_BIN) ./files/peacockr.config $(1)/etc/config/peacockr
 endef
 
