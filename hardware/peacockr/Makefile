@@ -43,6 +43,9 @@ define Package/peacockr/description
         More information on https://gitlab.nic.cz/turris/peacockr
 endef
 
+define Package/peacockr/conffiles
+/etc/config/peacockr
+endef
 
 define Package/peacockr/install
 	$(INSTALL_DIR) $(1)/usr/bin/
