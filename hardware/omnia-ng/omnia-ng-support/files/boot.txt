@@ -1,3 +1,4 @@
+dsp boot-turris
 if part uuid ${devtype} ${devnum}:${distro_bootpart} partuuid; then
 	if test "${bootfstype}" = "btrfs"; then
 		rootflags="commit=5,subvol=@"
@@ -28,3 +29,4 @@ if part uuid ${devtype} ${devnum}:${distro_bootpart} partuuid; then
 
 	env delete partuuid
 fi
+dsp logo
