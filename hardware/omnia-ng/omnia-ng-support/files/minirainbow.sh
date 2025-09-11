@@ -112,7 +112,7 @@ if ! uci show system 2> /dev/null | grep '^system.@led[0-9*].sysfs=.rgb:power.';
 fi
 
 uci show rainbow 2> /dev/null | grep -q 'rainbow.all.brightness' || {
-    touch /etc/onfig/rainbow
+    touch /etc/config/rainbow
     uci set rainbow.all=led
     uci set rainbow.all.brightness="$BRIGHTNESS"
     uci commit rainbow
