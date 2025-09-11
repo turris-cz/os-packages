@@ -83,19 +83,21 @@ flash() {
         return 0
     fi
 
-    if [ ! -c "/dev/$part" ]; then
-        die "/dev/$part is missing!"
-    fi
+    for p in $part; do
+        if [ ! -c "/dev/$p" ]; then
+            die "/dev/$p is missing!"
+        fi
 
-    v_echo "Checking and flashing '$flashing' partition: $1 -> /dev/$part"
-    if mtd verify "$1" "/dev/$part"; then
-        v_echo "Partition with $flashing was up to date already."
-    else
-        "$preupdate_hook"
-        mtd -e "/dev/$part" write "$1" "/dev/$part" || \
-            die "Flashing '$flashing' partition (/dev/$part) failed!"
-        "$postupdate_hook"
-    fi
+        v_echo "Checking and flashing '$flashing' partition: $1 -> /dev/$p"
+        if mtd verify "$1" "/dev/$p"; then
+            v_echo "Partition with $flashing was up to date already."
+        else
+            "$preupdate_hook"
+            mtd write "$1" "/dev/$p" || \
+                die "Flashing '$flashing' partition (/dev/$part) failed!"
+            "$postupdate_hook"
+        fi
+    done
 }
 
 uboot_preupdate() {
