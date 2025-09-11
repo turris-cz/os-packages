@@ -45,27 +45,6 @@ start() {
     wifi
     /etc/init.d/peacockr restart
 
-    # Try to pretend to be a captive portal
-    /etc/init.d/resolver restart
-    lan_ip="$(ifstatus lan | jsonfilter -e '@["ipv4-address"][0].address')"
-    PORTALS="
-        connectivitycheck.gstatic.com
-        detectportal.firefox.com
-        clients3.google.com
-        www.msftconnecttest.com
-        www.msftncsi.com
-        www.apple.com
-        gsp1.apple.com
-        captive.apple.com
-    "
-
-    {
-    echo "hints.ttl(5)"
-    for zone in $PORTALS; do
-        echo "hints.set(\"$zone $lan_ip\")"
-    done
-    } | socat - /tmp/kresd/control/*
-
     # Reload knot when wizard finishes
     {
         while [ "$(uci get foris.wizard.finished 2> /dev/null)" != 1 ]; do
