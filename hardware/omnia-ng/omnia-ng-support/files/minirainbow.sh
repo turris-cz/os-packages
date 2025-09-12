@@ -31,7 +31,6 @@ set_val() {
 }
 
 set_brightness() {
-    BRIGHTNESS="$(uci get rainbow.all.brightness 2> /dev/null)"
     for i in /sys/class/leds/*; do
         echo "$BRIGHTNESS" > "$i/brightness"
     done
@@ -58,6 +57,7 @@ wan_status() {
             status="$RED"
         fi
     fi
+    BRIGHTNESS="$(uci get rainbow.all.brightness 2> /dev/null)"
     set_color "$status" "$WAN_LED"
     if [ "$TRIGGERS" = yes ]; then
         set_trigger "netdev" "$WAN_LED"/trigger
@@ -68,7 +68,7 @@ wan_status() {
     else
         set_trigger "default-on" "$WAN_LED"/trigger
     fi
-    set_brightness
+    set_val "$BRIGHTNESS" "$WAN_LED"/brightness
     [ "$status" = "$GREEN" ] || [ "$status" = "$CYAN" ]
     return $?
 }
@@ -89,6 +89,7 @@ wifi_status() {
     else
         color="$ORANGE"
     fi
+    BRIGHTNESS="$(uci get rainbow.all.brightness 2> /dev/null)"
     set_color "$color" "$WIFI_LED"
     if [ "$TRIGGERS" = yes ]; then
         set_trigger "netdev" "$WIFI_LED"/trigger
@@ -99,7 +100,7 @@ wifi_status() {
     else
         set_trigger "default-on" "$WIFI_LED"/trigger
     fi
-    set_brightness
+    set_val "$BRIGHTNESS" "$WAN_LED"/brightness
 }
 
 BRIGHTNESS="$(uci get rainbow.all.brightness 2> /dev/null)"
