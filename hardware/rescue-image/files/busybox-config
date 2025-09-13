@@ -205,7 +205,7 @@ CONFIG_CAT=y
 # CONFIG_CHMOD is not set
 # CONFIG_CHOWN is not set
 # CONFIG_FEATURE_CHOWN_LONG_OPTIONS is not set
-# CONFIG_CHROOT is not set
+CONFIG_CHROOT=y
 # CONFIG_CKSUM is not set
 # CONFIG_COMM is not set
 CONFIG_CP=y
