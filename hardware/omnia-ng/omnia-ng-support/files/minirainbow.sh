@@ -100,7 +100,7 @@ wifi_status() {
     else
         set_trigger "default-on" "$WIFI_LED"/trigger
     fi
-    set_val "$BRIGHTNESS" "$WAN_LED"/brightness
+    set_val "$BRIGHTNESS" "$WIFI_LED"/brightness
 }
 
 BRIGHTNESS="$(uci get rainbow.all.brightness 2> /dev/null)"
