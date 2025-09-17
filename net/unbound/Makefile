@@ -151,12 +151,38 @@ define Package/unbound-daemon/install
 	$(LN) /var/etc/unbound/unbound.conf $(1)/etc/unbound/unbound.conf
 endef
 
+
+define Package/unbound-daemon/preinst
+#!/bin/sh
+set -ex
+if [ -z "$$IPKG_INSTROOT" ]; then
+uci -q get resolver.common.prefered_resolver > /etc/unbound/prev-preferred 2>/dev/null
+fi
+endef
+
 define Package/unbound-daemon/postinst
 #!/bin/sh
 set -ex
 [ -n "$$IPKG_INSTROOT" ] || {
 /usr/share/unbound/postinst
 }
+if [ -z "$$IPKG_INSTROOT" ]; then
+restore_unbound(){
+prev="$(cat /etc/unbound/prev-preferred 2>/dev/null)"
+cur="$(uci -q get resolver.common.prefered_resolver)"
+if [ "$prev" = "unbound" ] && [ "$cur" != "unbound" ]; then
+uci -q set resolver.common.prefered_resolver='unbound'
+uci -q commit resolver
+fi
+rm -f /etc/unbound/prev-preferred 2>/dev/null
+}
+(
+while [ -e /var/lock/opkg.lock ]; do
+    sleep 1
+done
+restore_unbound
+)&
+fi
 endef
 
 define Package/unbound-daemon/prerm
