@@ -1,5 +1,5 @@
 #
-## Copyright (C) 2020-2022 CZ.NIC z.s.p.o. (https://www.nic.cz/)
+## Copyright (C) 2020-2025 CZ.NIC z.s.p.o. (https://www.nic.cz/)
 #
 ## This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -42,7 +42,7 @@ define Py3Package/turris-survey/install
 	$(CP) $(PKG_INSTALL_DIR)/usr/bin/* $(1)/usr/bin/
 
 	$(INSTALL_DIR) $(1)/etc/cron.d
-	$(INSTALL_CONF) ./files/crond $(1)/etc/cron.d/turris-survey
+	$(INSTALL_CONF) ./files/turris-survey.cron $(1)/etc/cron.d/turris-survey
 
 	$(INSTALL_DIR) $(1)/usr/libexec/sentinel/status.d
 	$(INSTALL_BIN) ./files/sentinel-status.sh $(1)/usr/libexec/sentinel/status.d/22-turris-survey.sh
