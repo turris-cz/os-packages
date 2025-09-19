@@ -1,5 +1,5 @@
 #
-## Copyright (C) 2019-2022 CZ.NIC z.s.p.o. (http://www.nic.cz/)
+## Copyright (C) 2019-2025 CZ.NIC z.s.p.o. (http://www.nic.cz/)
 #
 ## This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=uriparser
-PKG_VERSION:=0.9.7
+PKG_VERSION:=0.9.8
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://github.com/uriparser/uriparser/archive
-PKG_HASH:=8e19250654a204af0858408b55dc78941382a8c824bf38fc7f2a95ca6e16d7a0
+PKG_HASH:=d6289387eaf2495e38ed80d709ad673fe04d63fad707badfee96f3d2dabc7c35
 PKG_BUILD_DIR:=$(BUILD_DIR)/uriparser-uriparser-$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
@@ -49,7 +49,7 @@ define package/liburiparser/description
   strictly rfc 3986 compliant uri parsing and handling library written in c89
 endef
 
-CMAKE_OPTIONS := \
+CMAKE_OPTIONS += \
 	-DBUILD_SHARED_LIBS=ON \
 	-DURIPARSER_BUILD_CHAR=ON \
 	-DURIPARSER_BUILD_DOCS=OFF \

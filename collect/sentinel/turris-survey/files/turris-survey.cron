@@ -1,0 +1,2 @@
+MAILTO=""
+~	0~5	*	*	*	root	/bin/sh -c "source /lib/functions/sentinel.sh; allowed_to_run "survey" && exec turris-survey"

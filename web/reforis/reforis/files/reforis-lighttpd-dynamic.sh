@@ -21,13 +21,15 @@ config_get BUS_PORT mqtt port "11883"
 config_get CREDENTIALS_FILE mqtt credentials_file "/etc/fosquitto/credentials.plain"
 CONTROLLER_ID=$(crypto-wrapper serial-number)
 
+REFORIS_PATH=$(python -c 'from pathlib import Path;print(Path(__import__("reforis").__file__).parent.parent)')
+
 echo "var.reforis.bin = \"/usr/bin/reforis\""
 echo "var.reforis.scriptname = \"$SCRIPTNAME\""
 
 echo
 echo "\$HTTP[\"url\"] =~ \"^\" + var.reforis.scriptname + \"/\" {"
 echo " \$HTTP[\"url\"] =~ \"^\" + var.reforis.scriptname + \"/static/\" {"
-echo "  alias.url += ( var.reforis.scriptname + \"/static/\" => \"/usr/lib/pythonX.X/site-packages/reforis_static/\" )"
+echo "  alias.url += ( var.reforis.scriptname + \"/static/\" => \"${REFORIS_PATH}/reforis_static/\" )"
 echo " } else {"
 echo "  server.max-read-idle = 90"
 echo '	fastcgi.debug = 0'

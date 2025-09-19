@@ -1,0 +1,30 @@
+From 6d07ea84e549caba3c96ea805cb7aafdc33fc2db Mon Sep 17 00:00:00 2001
+From: Richard Muzik <richard.muzik@turris.com>
+Date: Tue, 12 Aug 2025 10:29:45 +0200
+Subject: [PATCH] pakon-show: reintroduce json output
+
+When the package was reworked to be a proper python package this
+functionality was deleted by mistake. Reintroducing this allows to get
+json format expected by the cgi.
+---
+ pakon/show/__main__.py | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/pakon/show/__main__.py b/pakon/show/__main__.py
+index 6178fcc..38386f0 100644
+--- a/pakon/show/__main__.py
++++ b/pakon/show/__main__.py
+@@ -113,6 +113,10 @@ def main():
+     finally:
+         sock.close()
+ 
++    if args.json:
++        print(response)
++        sys.exit(0)
++
+     data = json.loads(response)
+     if not data:
+         print("no records to show")
+-- 
+2.50.1
+

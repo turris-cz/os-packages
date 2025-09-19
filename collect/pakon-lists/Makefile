@@ -43,7 +43,6 @@ endef
 define Package/pakon-lists/postinst
 #!/bin/sh
 [ -n "$$IPKG_INSTROOT" ] || {
-	/usr/bin/python3 /usr/libexec/pakon-light/domains_reapply.py
 	/etc/init.d/pakon-monitor restart
 	/etc/init.d/pakon-handler restart
 }
