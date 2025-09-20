@@ -1,0 +1,20 @@
+diff --git a/turris_auth/password.py b/turris_auth/password.py
+index 1ad18aa..26f89f9 100644
+--- a/turris_auth/password.py
++++ b/turris_auth/password.py
+@@ -2,6 +2,7 @@
+ # Copyright 2021, CZ.NIC z.s.p.o. (http://www.nic.cz/)
+ import euci
+ import pbkdf2
++import time
+ 
+ PASSWORD_ITERATIONS = 1000
+ 
+@@ -31,5 +32,7 @@ def is_set() -> bool:
+ def verify(password: str) -> bool:
+     """Verify password."""
+     password_hash = _password_hash()
++    # To prevent theoretical brute force attacks
++    time.sleep(0.5)
+     # Note: no password means no login is required.
+     return bool(password_hash) and password_hash == pbkdf2.crypt(password.encode(), salt=password_hash)
