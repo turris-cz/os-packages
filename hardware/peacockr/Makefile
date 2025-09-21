@@ -13,7 +13,7 @@ PKG_RELEASE:=2025-09-12-01
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/peacockr.git
-PKG_SOURCE_VERSION:=sysinfo-processing
+PKG_SOURCE_VERSION:=d50593fa0179e3791194a4079843a4efd118b026
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 PKG_LICENSE:=GPL-3.0-or-later
