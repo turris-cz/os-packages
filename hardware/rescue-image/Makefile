@@ -49,7 +49,7 @@ endif
 
 define Package/rescue-image
 	TITLE:=rescue-image
-	DEPENDS:=@(TARGET_mvebu_cortexa53_DEVICE_cznic_turris-mox||TARGET_mvebu_cortexa9_DEVICE_cznic_turris-omnia||TARGET_ipq95xx_generic_DEVICE_cznic_turris-omnia-ng) $(ROOTFS_INSTALL)
+	DEPENDS:=@(TARGET_mvebu_cortexa53_DEVICE_cznic_turris-mox||TARGET_mvebu_cortexa9_DEVICE_cznic_turris-omnia||TARGET_ipq95xx_generic_DEVICE_cznic_turris-omnia-ng)
 endef
 
 define Build/Prepare
