@@ -1,9 +1,9 @@
 #
-## Copyright (C) 2025 CZ.NIC z.s.p.o. (http://www.nic.cz/)
+# Copyright (C) 2016-2025 CZ.NIC z.s.p.o. (http://www.nic.cz/)
 #
-## This is free software, licensed under the GNU General Public License v2.
+# This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
-# #
+#
 #
 include $(TOPDIR)/rules.mk
 
@@ -81,7 +81,7 @@ define Build/Configure
 	cp files/busybox-config $(PKG_BUILD_DIR)/busybox/.config
 	$(MAKE) -C "$(PKG_BUILD_DIR)/busybox" $(PKG_JOBS) $(MAKE_FLAGS) oldconfig
 	sed -i \
-		-e 's|./Image|$(LINUX_DIR)/arch/$(LINUX_KARCH)/boot/Image|' \
+		-e 's|./\(z\?\)Image|$(LINUX_DIR)/arch/$(LINUX_KARCH)/boot/\1Image|' \
 		-e 's|./dts|$(LINUX_DIR)/arch/$(LINUX_KARCH)/boot/dts|' \
 		-e 's|./initrd|$(PKG_BUILD_DIR)/initrd.gz|' \
 		"$(PKG_BUILD_DIR)/rescue.its"
