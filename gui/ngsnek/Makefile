@@ -32,7 +32,7 @@ define Package/ngsnek
   SECTION:=gui
   CATEGORY:=GUI Utilities
   TITLE:=Turris Omnia System NG Event Kontrol Program
-  DEPENDS:=$(RUST_ARCH_DEPENDS) +libwayland
+  DEPENDS:=$(RUST_ARCH_DEPENDS) +libwayland +xkeyboard-config
   URL:=https://gitlab.nic.cz/ekalouskova/ngsnek/
 endef
 

@@ -30,12 +30,10 @@ CARGO_PKG_PROFILE:=release
 RUST_PKG_FEATURES:=target-turris
 
 define Package/peacockr
-  SECTION:=utils
-  CATEGORY:=Utility
-  TITLE:=A display controller for Turris NG
-  DEPENDS:=@TARGET_ipq95xx_generic_DEVICE_cznic_turris-omnia-ng \
-		$(RUST_ARCH_DEPENDS) +libxkbcommon +libinput \
-		+fontconfig +dejavu-fonts-ttf-DejaVuSans +xkeyboard-config
+  SECTION:=gui
+  CATEGORY:=GUI Applications
+  TITLE:=A status monitor and control interface for Turris Omnia NG
+  DEPENDS:=$(RUST_ARCH_DEPENDS) +fontconfig +dejavu-fonts-ttf-DejaVuSans +libwayland +xkeyboard-config
   URL:=https://gitlab.nic.cz/turris/peacockr/
 endef
 
