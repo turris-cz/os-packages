@@ -9,11 +9,11 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=peacomp
 PKG_VERSION:=0.1
-PKG_RELEASE:=2025-09-12-03
+PKG_RELEASE:=2025-09-25-02
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/ekalouskova/peacomp.git
-PKG_SOURCE_VERSION:=f9ad755e517a7d77c2ea65cd1d09277329845ead
+PKG_SOURCE_VERSION:=c52eecd0ffd63a86a830b96fa73cf6a7f858b574
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 PKG_LICENSE:=GPL-3.0-or-later
@@ -27,6 +27,8 @@ include $(INCLUDE_DIR)/package.mk
 include $(TOPDIR)/feeds/packages/lang/rust/rust-package.mk
 
 CARGO_PKG_PROFILE:=release
+RUST_PKG_FEATURES:=backend-linux
+CARGO_PKG_ARGS += --no-default-features
 
 define Package/peacomp
   SECTION:=gui
