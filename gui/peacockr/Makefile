@@ -33,7 +33,7 @@ define Package/peacockr
   SECTION:=gui
   CATEGORY:=GUI Applications
   TITLE:=A status monitor and control interface for Turris Omnia NG
-  DEPENDS:=$(RUST_ARCH_DEPENDS) +fontconfig +dejavu-fonts-ttf-DejaVuSans +wayland
+  DEPENDS:=$(RUST_ARCH_DEPENDS) +fontconfig +dejavu-fonts-ttf-DejaVuSans +libwayland
   URL:=https://gitlab.nic.cz/turris/peacockr/
 endef
 
