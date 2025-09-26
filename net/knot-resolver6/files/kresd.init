@@ -1,363 +1,365 @@
 #!/bin/sh /etc/rc.common
 
+. /usr/share/libubox/jshn.sh
 . /usr/share/resolver/functions.sh
 
 START=61
 STOP=00
-
 USE_PROCD=1
-extra_command "test_ipv6" "Test IPv6 connection"
-PROG=/usr/sbin/kresd
-CONFIGFILE=/tmp/kresd.config
+
+# executables
+KRES_EXEC=/usr/bin/knot-resolver
+KRESCTL_EXEC=/usr/bin/kresctl
+
+# tmpfs dirs
+RUN_DIR=/var/run/knot-resolver
+CACHE_DIR=/var/cache/knot-resolver
+
+# config files, YAML is static, JSON is generated
+CONFIG_FILE_YAML=/etc/knot-resolver/config.yaml
+CONFIG_FILE_JSON=/var/run/knot-resolver/config.json
+
+# variables
 ROOTKEYFILE=/etc/root.keys
-DEFAULT_RUNDIR=/tmp/kresd
-STATIC_DOMAINS=1
-DYNAMIC_DOMAINS=0
-USERNAME=kresd
-GROUP=kresd
 
 # Check the /etc/unbound/root.keys is reasonable and try to fix it with given command
 check_root_key() {
-	# Don't do anything if it looks OK
-	grep -qE '[[:space:]](DNSKEY|DS|TYPE[[:digit:]][[:digit:]])[[:space:]]' $ROOTKEYFILE && return
-	# Not OK -> run the command and hope for the best
-	echo "Trying to restore broken $ROOTKEYFILE with command $@"
-	eval "$@"
+    # Don't do anything if it looks OK
+    grep -qE '[[:space:]](DNSKEY|DS|TYPE[[:digit:]][[:digit:]])[[:space:]]' $ROOTKEYFILE && return
+    # Not OK -> run the command and hope for the best
+    echo "Trying to restore broken $ROOTKEYFILE with command $@"
+    eval "$@"
 }
 
-print() {
-	echo "...---..."
+json_add_interface() {
+    local interface="$1"
+    local port="$2"
+    [ "$interface" = "::0" ] && interface="::"
+    json_add_object ""
+    json_add_string interface "${interface}@${port}"
+    json_add_string kind "dns"
+    json_close_object
+    json_add_object ""
+    json_add_string interface "$interface@853"
+    json_add_string kind "dot"
+    json_close_object
+}
+
+json_add_network() {
+    config_load resolver
+    local section="common"
+
+    json_add_object network
+
+    local port
+    config_get port "$section" port
+    json_add_array listen
+    config_list_foreach "$section" interface json_add_interface "$port"
+    json_close_array
+
+    local do_ipv4
+    config_get_bool do_ipv4 "$section" net_ipv4
+    json_add_boolean do-ipv4 $do_ipv4
+
+    local do_ipv6
+    config_get_bool do_ipv6 "$section" net_ipv6
+    json_add_boolean do-ipv6 $do_ipv6
+
+    local edns_buffer_size
+    config_get edns_buffer_size "$section" edns_buffer_size 1232
+    if [ "$edns_buffer_size" -ge 512 ]; then
+        json_add_object edns-buffer-size
+        json_add_string upstream "${edns_buffer_size}B"
+        json_add_string downstream "${edns_buffer_size}B"
+        json_close_object
+    fi
+
+    json_close_object
+}
+
+json_add_dnssec() {
+    config_load resolver
+    local section="common"
+
+    local ignore_root_key
+    config_get_bool ignore_root_key "$section" ignore_root_key 0
+    if [ "$ignore_root_key" = "0" ]; then
+        local keyfile
+        config_get keyfile "$section" keyfile
+        if [ -n "$keyfile" ]; then
+            ROOTKEYFILE=$keyfile
+            check_root_key cert-backup -x $ROOTKEYFILE
+            json_add_object dnssec
+            json_add_array trust-anchors-files
+            json_add_object
+            json_add_string file "$ROOTKEYFILE"
+            json_add_boolean read-only 1
+            json_close_object
+            json_close_array
+            json_close_object
+        fi
+    else
+        json_add_object dnssec
+        json_add_boolean enable 0
+        json_close_object
+        #FIXME: check this with forwarding, to be sure
+    fi
+}
+
+json_add_addresses_file() {
+    local file="$1"
+    json_add_string "" "$file"
+}
+
+json_add_rpz() {
+    local file="$1"
+    json_add_object ""
+    json_add_string file "$file"
+    json_close_object
+}
+
+json_add_addresses() {
+    local domain="$2"
+    local section="$1"
+    local ip name
+    config_get ip "$section" ip
+    config_get name "$section" name
+
+    if [ -n "$name" ] && [ -n "$domain" ] && [ -n "$ip" ]; then
+        json_add_string "$name.$domain" "$ip"
+    fi
+}
+
+json_add_local_data() {
+    config_load resolver
+    local section="kresd"
+
+    json_add_object local-data
+    json_add_boolean nodata 1
+
+    local static_domains
+    config_get_bool static_domains common static_domains 1
+
+    config_load dhcp
+    if [ "$static_domains" = "1" ]; then
+        local domain
+        config_get domain dnsmasq local
+        [ -z "$domain" ] || domain="`echo "$domain" | sed 's|/||g'`"
+
+        local host_ip host_name
+        config_get host_ip host ip
+        config_get host_name host name
+
+        local domain_ip domain_name
+        config_get domain_ip domain ip
+        config_get domain_name domain name
+
+        if [ -n "$domain" ] && (([ -n "$host_ip" ] && [ -n "$host_name" ]) || ([ -n "$domain_ip" ] && [ -n "$domain_name" ])); then
+            json_add_object addresses
+            json_add_string "$host_name.$domain" "$host_ip"
+            json_add_string "$domain_name.$domain" "$domain_ip"
+            json_close_object
+        fi
+    fi
+    config_load resolver
+
+    local hostname_config
+    config_get hostname_config "$section" hostname_config
+    if [ -e "$hostname_config" ] && [ "$static_domains" = "1" ]; then
+        json_add_array addresses-files
+        config_list_foreach "$section" hostname_config json_add_addresses_file
+        json_close_array
+    fi
+
+    local rpz_file
+    config_get rpz_file "$section" rpz_file
+    if [ -e "$rpz_file" ]; then
+        json_add_array rpz
+        config_list_foreach "$section" rpz_file json_add_rpz
+        json_close_array
+    fi
+
+    json_close_object
+}
+
+json_add_forward_subtree() {
+    local ip_list="$1"
+    local enable_tls="$2"
+    local port="$3"
+    local pin_sha256="$4"
+    local hostname="$5"
+    local ca_files="$6"
+
+    if [ -z "$ip_list" ]; then return; fi
+
+    json_add_object
+    json_add_string subtree "."
+    json_add_array servers
+    json_add_object
+
+    for ip in $ip_list
+    do
+        json_add_array address
+        #check nonstandard port 
+        if [ "$port" == "853" ] || [ -z "$port" ]; then
+            json_add_string "" "$ip"
+        else
+            json_add_string "" "$ip@$port"
+        fi
+        json_close_array
+    done
+
+    # check of DNS-over-TLS
+    if [ "$enable_tls" == "1" ]; then
+        json_add_string transport "tls"
+        # prefer pin over hostname
+        if [ ! -z "$pin_sha256" ]; then
+            json_add_string pin-sha256 "$pin_sha256"
+        elif [ ! -z "$hostname" ]; then
+            json_add_string hostname "$hostname"
+            if [ ! -z "$ca_file" ] && [ -f "$ca_file" ]; then
+                json_add_string ca-file "$ca_file"
+            fi
+        fi
+    fi
+    json_close_object
+    json_close_array
+    json_close_object
+}
+
+json_add_forward() {
+    config_load resolver
+    local section="common"
+
+    local forward_upstream forward_custom
+    config_get_bool forward_upstream "$section" forward_upstream 1
+    config_get forward_custom "$section" forward_custom
+
+    json_add_array forward
+
+    if [ -n "$forward_custom" ] && [ "$forward_upstream" = "1" ]; then
+        dns_config_load "$forward_custom" json_add_forward_subtree
+    elif [ "$forward_upstream" = "1" ] ; then
+        # Test for resolv.conf.auto new location
+        # https://github.com/openwrt/openwrt/commit/cd48d8d3420dd4df03daaa548227ceb487ba7104
+        resolv_conf_path="$(ls -1 /tmp/resolv.conf.d/resolv.conf.vpn.* 2>/dev/null | head -n1)"
+        if [ \! -f "$resolv_conf_path" ]; then
+            if [ -f "/tmp/resolv.conf.d/resolv.conf.auto" ]; then
+                resolv_conf_path="/tmp/resolv.conf.d/resolv.conf.auto"
+            elif [ -f "/tmp/resolv.conf.auto" ]; then
+                resolv_conf_path="/tmp/resolv.conf.auto"
+            else
+                resolv_conf_path=""
+                echo "Error! File resolv.conf.auto is missing"
+            fi
+        fi
+
+        local net_ipv4 net_ipv6
+        config_get_bool net_ipv4 "$section" net_ipv4
+        config_get_bool net_ipv6 "$section" net_ipv6
+
+        local servers=$(get_servers_ip_addresses "$net_ipv4" "$net_ipv6" "$resolv_conf_path" 4)
+        if [ -n "$servers" ]; then
+            json_add_forward_subtree "$servers"
+        fi
+    fi
+
+    json_close_array
+}
+
+json_add_cache() {
+    config_load resolver
+    local section="common"
+
+    json_add_object cache
+
+    local prefetch
+    config_get_bool prefetch "$section" prefetch 0
+    json_add_object prefetch
+    json_add_boolean expiring $prefetch
+    json_close_object
+
+    json_close_object
+}
+
+
+json_add_logging() {
+    config_load resolver
+    local section="common"
+
+    local verbose
+    config_get verbose "$section" verbose 0
+    if [ "$verbose" -ge 1 ]; then
+        json_add_object logging
+        json_add_string level "debug"
+        json_close_object
+    fi
+}
+
+json_add_lua() {
+    config_load resolver
+    local section="kresd"
+
+    local include_config
+    config_get lua_file_path "$section" include_config
+    if [ -e "$include_config" ]; then
+        json_add_object lua
+        json_add_string script-file "$include_config"
+        json_close_object
+    else
+        [ -z "$include_config" ] || echo "Warning! Knot Resolver custom Lua config file '$include_config' doesn't exist."
+    fi
+}
+
+create_tmpfs_dirs() {
+    mkdir -p "$RUN_DIR" "$CACHE_DIR"
+}
+
+create_json_config() {
+    json_init
+    json_add_network
+    json_add_dnssec
+    json_add_local_data
+    json_add_forward
+    json_add_cache
+    json_add_logging
+    json_add_lua
+    json_close_object
+
+    echo "$(json_dump -i)" > "$CONFIG_FILE_JSON"
+}
+
+start_knot_resolver() {
+    config_load resolver
+    local section="kresd"
+
+    procd_open_instance
+
+    # procd stdout/err logging
+    local log_stderr log_stdout
+    config_get_bool log_stderr "$section" log_stderr  1
+    procd_set_param stderr "$log_stderr"
+    config_get_bool log_stdout "$section" log_stdout  1
+    procd_set_param stdout "$log_stdout"
+
+    procd_set_param file /etc/config/resolver
+    procd_set_param command $KRES_EXEC
+    procd_append_param command --config $CONFIG_FILE_YAML $CONFIG_FILE_JSON
+    procd_set_param respawn
+    procd_close_instance
 }
 
 service_triggers() {
 	procd_add_reload_trigger "dhcp"
 }
 
-add_listen_addr() {
-	local addr="$1"
-	local port="$2"
-	[ "$addr" = "::0" ] && addr="::"
-	echo "net.listen('$addr', $port, { kind = 'dns' })" >> "$CONFIGFILE"
-	echo "net.listen('$addr',   853, { kind = 'tls' })" >> "$CONFIGFILE"
-}
-
-init_header() {
-	echo "--Automatically generated file; DO NOT EDIT" > "$CONFIGFILE"
-	echo "ffi = require('ffi')" >> "$CONFIGFILE"
-
-	echo "modules = {" >> $CONFIGFILE
-	echo "  'hints > iterate',"  >> $CONFIGFILE
-	config_get_bool prefetch common prefetch 0
-	if [ "$prefetch" \!= 0 ]; then
-		echo "  'stats'," >> $CONFIGFILE
-		echo "  predict = { window = 0, period = 0 }," >> $CONFIGFILE
-	fi
-	echo "}" >> $CONFIGFILE
-
-	echo "hints.use_nodata(true)" >> $CONFIGFILE
-
-	# clear hints file
-	echo "" > $HINTS_CONFIG
-}
-
-set_param_func() {
-	local func_name="$1"
-	local val="$2"
-	echo "$func_name($val)">>$CONFIGFILE
-}
-
-set_param_var() {
-	local name="$1"
-	local val="$2"
-	echo "$name=$val">>$CONFIGFILE
-}
-
-include_custom_config() {
-	local custom_config_path
-	config_get custom_config_path "kresd" include_config
-	if [ -e "$custom_config_path" ]; then
-		echo "" >> $CONFIGFILE
-		echo "--- Included custom configuration file from: ---" >> $CONFIGFILE
-		echo "--- $custom_config_path " >> $CONFIGFILE
-		cat $custom_config_path >> $CONFIGFILE
-	else
-		[ -z "$custom_config_path" ] || echo "Warning! Kresd custom config file  $custom_config_path doesn't exist."
-	fi
-}
-
-load_uci_config_common() {
-	local interface keyfile verbose port edns_buffer_size net_ipv4 net_ipv6 msg_cache_size do_forward ignore_root_key keep_cache_bool
-	local forward_dns
-	local resolv_conf_path
-	local section="common"
-
-	# port
-	config_get port "$section" port
-
-	# list of listen addresses
-	config_get interface "$section" interface
-
-	# in case of empty interface list try to listen automatically
-	if [ -z "$interface" ]; then
-		{
-			echo "for iface_name, iface in pairs(net.interfaces()) do"
-			echo "	if iface_name == 'lo' or iface_name == 'br-lan' then"
-			echo "		net.listen(iface, $port, { kind = 'dns' })"
-			echo "		net.listen(iface,   853, { kind = 'tls' })"
-			echo "	end"
-			echo "end"
-		} >> "$CONFIGFILE"
-
-	else
-		config_list_foreach "$section" interface add_listen_addr "$port"
-	fi
-
-	# ignore keyfile
-	config_get_bool ignore_root_key "$section" ignore_root_key 0
-
-	if [ "$ignore_root_key" = "0" ]; then
-		#keyfile
-		config_get keyfile "$section" keyfile
-		if [ -n "$keyfile" ]; then
-			ROOTKEYFILE=$keyfile
-			check_root_key cert-backup -x $ROOTKEYFILE
-			echo "trust_anchors.remove('.')">>$CONFIGFILE
-			echo "trust_anchors.add_file('$ROOTKEYFILE', true)">>$CONFIGFILE
-		fi
-	else
-		echo "trust_anchors.remove('.')">>$CONFIGFILE
-		#FIXME: check this with forwarding, to be sure
-	fi
-
-	# verbosity
-	config_get verbose "$section" verbose 0
-	[ "$verbose" -ge 1 ] && procd_append_param command -v
-
-	# EDNS payload
-	config_get edns_buffer_size "$section" edns_buffer_size 1232
-	[ "$edns_buffer_size" -ge 512 ] && set_param_func "net.bufsize" "$edns_buffer_size"
-
-	# ipv4
-	config_get_bool net_ipv4 "$section" net_ipv4
-	net_ipv4_bool=$(if test "$net_ipv4" -eq "1"; then echo true; else echo false; fi)
-	set_param_var "net.ipv4" "$net_ipv4_bool"
-
-	# ipv6
-	config_get_bool net_ipv6 "$section" net_ipv6
-	net_ipv6_bool=$(if test "$net_ipv6" -eq "1"; then echo true; else echo false; fi)
-	set_param_var "net.ipv6" "$net_ipv6_bool"
-
-	config_get_bool do_forward "$section" forward_upstream 1
-	config_get forward_dns "$section" forward_custom
-
-
-	# Test for resolv.conf.auto new location
-	# https://github.com/openwrt/openwrt/commit/cd48d8d3420dd4df03daaa548227ceb487ba7104
-	resolv_conf_path="$(ls -1 /tmp/resolv.conf.d/resolv.conf.vpn.* 2>/dev/null | head -n1)"
-	if [ \! -f "$resolv_conf_path" ]; then
-		if [ -f "/tmp/resolv.conf.d/resolv.conf.auto" ]; then
-			resolv_conf_path="/tmp/resolv.conf.d/resolv.conf.auto"
-		elif [ -f "/tmp/resolv.conf.auto" ]; then
-			resolv_conf_path="/tmp/resolv.conf.auto"
-		else
-			resolv_conf_path=""
-			echo "Error! File resolv.conf.auto is missing"
-		fi
-	fi
-
-	# Configure forwarding
-	if [ -n "$forward_dns" ] && [ "$do_forward" = "1" ]; then
-		dns_config_load "$forward_dns" print_kresd_forward_config
-	elif [ "$do_forward" = "1" ] ; then
-		# Get IP list for forwarding with respect to net_ipv4/6 setting
-		local SERVERS=$(get_servers_ip_addresses "$net_ipv4" "$net_ipv6" "$resolv_conf_path" 4)
-		if [ -n "$SERVERS" ]; then
-			print_kresd_forward_config "$SERVERS"
-		fi
-	fi
-
-	# enable static local domains
-	config_get_bool STATIC_DOMAINS "$section" static_domains 1
-
-	# get dynamic domains
-	config_get_bool DYNAMIC_DOMAINS "$section" dynamic_domains 1
-
-	# include custom kresd config
-	include_custom_config
-}
-
-get_local_domain() {
-	config_get DOMAIN $1 local
-	[ -z "$DOMAIN" ] || DOMAIN="`echo "$DOMAIN" | sed 's|/||g'`"
-}
-
-set_local_host() {
-	config_get NAME $1 name
-	config_get IP $1 ip
-	if [ -n "$NAME" ] && [ -n "$DOMAIN" ] && [ -n "$IP" ]; then
-		echo "$IP $NAME.$DOMAIN" >> $HINTS_CONFIG
-	fi
-}
-
-get_dnsmasq_dhcp_script() {
-	local config="$1"
-	local DHCPSCRIPT
-	config_get DHCPSCRIPT "$config" dhcpscript
-	echo $DHCPSCRIPT
-}
-
-add_rpz_file() {
-	local rpz_file="$1"
-	if [ -e "$rpz_file" ]; then cat >> $CONFIGFILE <<EOF
-
-rpzfc = ffi.new('struct kr_rule_zonefile_config')
-rpzfc.nodata = true
-rpzfc.is_rpz = true
-rpzfc.filename = '${rpz_file}'
-assert(ffi.C.kr_rule_zonefile(rpzfc) == 0)
-
-EOF
-	fi
-}
-
-add_hostname_config() {
-	local hostname_config="$1"
-	if [ -e "$hostname_config" ] && [ "$STATIC_DOMAINS" = "1" ]; then
-		cat $hostname_config >> $HINTS_CONFIG
-	fi
-}
-
-modify_rundir() {
-	local rundir
-	local section="kresd"
-
-	#rundir
-	config_get rundir "$section" rundir "$DEFAULT_RUNDIR"
-	if [ ! -d "$rundir" ]; then
-		mkdir -p "$rundir"
-	fi
-
-	chown -R $USERNAME:$GROUP "$rundir"
-
-	DEFAULT_RUNDIR="$rundir"
-	HINTS_CONFIG=$DEFAULT_RUNDIR/hints.tmp
-}
-
-load_uci_config_kresd() {
-	local addr config keyfile verbose log_stderr log_stdout hostname_config
-	local section="kresd"
-
-	# knot-resolver config
-	procd_append_param command -c "$CONFIGFILE"
-
-	# rundir
-	procd_append_param command "$DEFAULT_RUNDIR"
-
-	# procd stdout/err logging
-	config_get_bool log_stderr "$section" log_stderr  1
-	procd_set_param stderr "$log_stderr"
-	config_get_bool log_stdout "$section" log_stdout  1
-	procd_set_param stdout "$log_stdout"
-
-	# hostnames for local DNS
-	config_list_foreach "$section" hostname_config add_hostname_config
-
-	# add rpz files
-	config_list_foreach "$section" rpz_file add_rpz_file
-
-	config_load dhcp
-	config_foreach get_local_domain dnsmasq
-
-	if [ "$STATIC_DOMAINS" = "1" ]; then
-		config_foreach set_local_host host
-		config_foreach set_local_host domain
-	fi
-
-	config_load resolver
-
-	# load hints config
-	set_param_func "hints.config" "'$HINTS_CONFIG'"
-}
-
-test_ipv6() {
-	if [ -s "$(ls -1 "$DEFAULT_RUNDIR"/control/*)" ] && \
-	   ip -6 r s | grep -q '^default' && \
-	   ping -c 1 185.43.135.1 > /dev/null 2>&1 && \
-	   ! ping6 -c 1 2001:148f:fffe::1 > /dev/null 2>&1; then
-		echo "IPv6 seems broken, disabling it in knot-resolver..."
-		echo "net.ipv6 = false" | socat - UNIX-CONNECT:"$(ls -1 "$DEFAULT_RUNDIR"/control/*)" > /dev/null 2>&1
-	fi
-}
-
-run_instance() {
-	procd_open_instance
-	procd_set_param file /etc/config/resolver
-	procd_set_param command "$PROG"
-	procd_append_param command --noninteractive
-	procd_set_param nice '-5'
-	procd_set_param respawn
-	modify_rundir
-	init_header
-	load_uci_config_kresd
-	load_uci_config_common
-
-	echo "user('$USERNAME','$GROUP')" >> $CONFIGFILE
-
-	procd_close_instance
-	[ \! -x "$(which at)" ] || echo "/etc/init.d/kresd test_ipv6" | at now+2min 2>&1 | grep -Fv 'warning: commands will be executed using /bin/sh'
-}
-
-print_kresd_forward_config() {
-
-	local ip_list="$1"
-	local enable_tls="$2"
-	local port="$3"
-	local pin_sha256="$4"
-	local hostname="$5"
-	local ca_files="$6"
-
-	echo "policy.rule_forward_add('.', {}, {" >> $CONFIGFILE
-	for ip in $ip_list
-	do
-		if [ -z "$ip" ]; then continue; fi
-		echo -ne "  {" >> $CONFIGFILE
-
-		#check nonstandard port
-		if [ "$port" == "853" ] || [ -z "$port" ]; then
-			echo "'$ip', " >> $CONFIGFILE
-		else
-			echo "'$ip@$port', " >> $CONFIGFILE
-		fi
-
-		#check of DNS-over-TLS
-		if [ "$enable_tls" == "1" ]; then
-			echo "    tls = true, " >> $CONFIGFILE
-
-			#prefer pin
-			if [ ! -z "$pin_sha256" ]; then
-				echo "    pin_sha256 = '$pin_sha256', " >> $CONFIGFILE
-			#else use hostname and certificate from system ca storage
-			elif [ ! -z "$hostname" ]; then
-				echo "    hostname = '$hostname', " >> $CONFIGFILE
-				#or use ca file if defined
-				if [ ! -z "$ca_file" ] && [ -f "$ca_file" ]; then
-					echo "    ca_file = '$ca_file', " >> $CONFIGFILE
-				fi
-			fi
-		fi
-
-		echo "  }," >> $CONFIGFILE
-	done
-	echo "})" >> $CONFIGFILE
-}
-
 start_service() {
-	config_load resolver
-	run_instance
+    create_tmpfs_dirs
+    create_json_config
+    start_knot_resolver
 }
 
-reload_service()
-{
-	stop
-	start
+reload_service() {
+    create_json_config
+    $KRESCTL_EXEC --config $CONFIG_FILE_YAML reload
 }
