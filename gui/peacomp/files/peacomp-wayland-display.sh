@@ -1,1 +1,2 @@
-export WAYLAND_DISPLAY=/run/wayland-0
+export XDG_RUNTIME_DIR="/run/$USER"
+export WAYLAND_DISPLAY="$XDG_RUNTIME_DIR/wayland-1"
