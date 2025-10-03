@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=peacockr
 PKG_VERSION:=0.1
-PKG_RELEASE:=2025-09-25-01
+PKG_RELEASE:=2025-09-25-02
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/peacockr.git

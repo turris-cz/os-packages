@@ -9,6 +9,7 @@ start_service() {
 	chown $USER "$XDG_RUNTIME_DIR"
 	chmod 0700 "$XDG_RUNTIME_DIR"
 	procd_open_instance
+	procd_set_param respawn 120 1 10
 	procd_set_param command "/usr/bin/peacomp"
 	procd_set_param stdout  1
 	procd_set_param stderr  1
