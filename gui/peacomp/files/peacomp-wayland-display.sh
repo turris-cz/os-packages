@@ -1,2 +1,3 @@
 export XDG_RUNTIME_DIR="/run/$USER"
-export WAYLAND_DISPLAY="$XDG_RUNTIME_DIR/wayland-1"
+[[ "${WAYLAND_DISPLAY}" = "" ]] && export WAYLAND_DISPLAY="$XDG_RUNTIME_DIR/wayland-1"
+
