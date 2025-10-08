@@ -10,7 +10,7 @@ HOSTS_PATH="/run/hosts/dhcpv6-dns.hosts"
 /usr/sbin/odhcpd-update ||:
 
 # Do we even do this?
-is_enabled=$(uci get resolver.common.dynamic_domain)
+is_enabled=$(uci get resolver.common.dynamic_domains)
 if [[ "${is_enabled}" != @(1|enabled|on|true) ]]; then
 	exit 0
 fi
