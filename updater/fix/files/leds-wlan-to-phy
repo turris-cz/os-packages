@@ -1,0 +1,20 @@
+#!/bin/sh
+. /lib/functions.sh
+
+fix_led() {
+    local dev
+    local trigger
+    config_get dev "$1" dev ""
+    config_get trigger "$1" trigger ""
+    if [ "$trigger" != netdev ] || [ -z "$dev" ]; then
+        return
+    fi
+    new_dev="$(echo "$dev" | sed -n 's|wlan\([0-9]*\)-\([0-9]*\)|phy\1ap\2|p')"
+    [ -n "$new_dev" ] || new_dev="$(echo "$dev" | sed -n 's|wlan\([0-9]*\)|phy\1ap0|p')"
+    [ -n "$new_dev" ] || return
+    uci_set system "$1" dev "$new_dev"
+}
+
+config_load system
+config_foreach fix_led led
+uci_commit system
