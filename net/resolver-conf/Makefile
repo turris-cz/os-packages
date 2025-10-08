@@ -44,6 +44,7 @@ define Package/resolver-conf/install
 	$(INSTALL_DIR) $(1)/etc/resolver
 	$(INSTALL_BIN) ./files/resolver-conv $(1)/etc/resolver/resolver-conv.sh
 	$(INSTALL_BIN) ./files/dhcp_host_domain_ng.py $(1)/etc/resolver/dhcp_host_domain_ng.py
+	$(INSTALL_BIN) ./files/dhcpv6-host-domain.sh $(1)/etc/resolver/dhcpv6-host-domain.sh
 	$(INSTALL_BIN) ./files/dynamic-domain-conv $(1)/etc/resolver/dynamic-domain-conv.sh
 
 	$(INSTALL_DIR) $(1)/usr/bin/

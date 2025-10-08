@@ -5,6 +5,7 @@ SERVICE_USE_PID=0
 
 DHCP_SCRIPT=/etc/resolver/dhcp_host_domain_ng.py
 DHCP_SCRIPT_OLD=/etc/kresd/dhcp_host_domain_ng.sh
+DHCPV6_SCRIPT="/etc/resolver/dhcpv6-host-domain.sh"
 
 START=60
 
@@ -35,6 +36,7 @@ get_dhcp_script() {
 
 set_dhcp_script() {
 	uci_set dhcp "@dnsmasq[0]" dhcpscript "$DHCP_SCRIPT"
+	uci_set dhcp odhcpd leasetrigger "$DHCPV6_SCRIPT"
 	uci_commit dhcp
 }
 
