@@ -11,9 +11,14 @@ HOSTS_PATH="/run/hosts/dhcpv6-dns.hosts"
 
 # Do we even do this?
 is_enabled=$(uci get resolver.common.dynamic_domains)
-if [[ "${is_enabled}" != @(1|enabled|on|true) ]]; then
-	exit 0
-fi
+case "${is_enabled}" in
+	1 | enabled | on | true) ;;
+	0 | disabled | off | false) exit 0 ;;
+	*)
+		echo "unknown value for config resolver.common.dynamic_domains: \"${is_enabled}\"" >&2
+		exit 22
+	;;
+esac
 
 # Ask DHCP service for leases
 domain=$(uci get dhcp.dnsmasq.domain)
