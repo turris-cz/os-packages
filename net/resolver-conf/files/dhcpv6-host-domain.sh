@@ -4,16 +4,16 @@
 
 set -e
 
-HOSTS_PATH="/run/hosts/dhcpv6-dns.hosts"
+HOSTS_PATH="/tmp/hosts/dhcpv6-dns.hosts"
 
 # Call the odhcpd-provided script
-/usr/sbin/odhcpd-update ||:
+/usr/sbin/odhcpd-update 2>/dev/null ||:
 
 # Do we even do this?
 is_enabled=$(uci get resolver.common.dynamic_domains)
 case "${is_enabled}" in
 	1 | enabled | on | true) ;;
-	0 | disabled | off | false) exit 0 ;;
+	0 | disabled | off | false) echo 0 ;;
 	*)
 		echo "unknown value for config resolver.common.dynamic_domains: \"${is_enabled}\"" >&2
 		exit 22
@@ -21,7 +21,7 @@ case "${is_enabled}" in
 esac
 
 # Ask DHCP service for leases
-domain=$(uci get dhcp.dnsmasq.domain)
+domain=$(uci get "dhcp.@dnsmasq[0].domain")
 ubus -S call dhcp ipv6leases \
 	| jq  -r --arg domain "${domain}" '
 		.device.[].leases.[]
@@ -39,7 +39,11 @@ case "${prefered_resolver}" in
 			echo "kresd is probably not running, no socket found" >&2
 		fi
 
-		echo "hints.add_hosts \"${HOSTS_PATH}\"" | socat - UNIX-CONNECT:"${run_dir}/control/${sock_name}"
+		reply=$(echo "hints.add_hosts(\"${HOSTS_PATH}\").result" | socat - UNIX-CONNECT:"${run_dir}/control/${sock_name}" | tail -c +3 | head -c -2)
+		if [[ "${reply}" != "true" ]]; then
+			echo "Error when loading hosts file to Knot Resolver" >&2
+			exit 71
+		fi
 	;;
 	*) echo "unsupported resolver \"${prefered_resolver}\"" >&2 ;;
 esac
