@@ -103,6 +103,15 @@ while [[ $$status_code -ne 0 ]]; do
 	timeout 30 /etc/init.d/mysqld status 2>/dev/null
 	status_code=$$?
 done
+timeout 10 mysql -u root -e "exit" 2>/dev/null
+status_code=$$?
+while [[ $$status_code -ne 0 ]];do
+        timeout 10 mysql -u root -e "exit" 2>/dev/null
+        status_code=$$?
+        sleep 5
+done
+mysql -u root -e "ALTER TABLE mysql.column_stats MODIFY histogram longblob;"
+mysql -u root -e "ALTER TABLE mysql.column_stats MODIFY hist_type enum('SINGLE_PREC_HB','DOUBLE_PREC_HB','JSON_HB');"
 rm -f /etc/updater/hook_postupdate/91_nextcloud.sh 2>/dev/null
 EOF
 fi
