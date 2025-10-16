@@ -1,0 +1,25 @@
+#!/bin/sh /etc/rc.common
+START=01
+STOP=01
+
+BRIGHTNESS="$(uci get rainbow.all.brightness 2> /dev/null)"
+[ -n "$BRIGHTNESS" ] || BRIGHTNESS=255
+
+boot() {
+    if [ -z "$(uci show systemn | grep '^system.@led[0-9*].sysfs=.rgb:power.')" ]; then
+        echo 255 255 0 > /sys/class/leds/rgb:power/multi_intensity
+        echo default-on > /sys/class/leds/rgb:power/trigger
+        echo "$BRIGHTNESS" > /sys/class/leds/rgb:power/brightness
+    fi
+}
+
+restart() { :; }
+
+stop() {
+    if [ -z "$(uci show systemn | grep '^system.@led[0-9*].sysfs=.rgb:power.')" ]; then
+        echo 255 255 0 > /sys/class/leds/rgb:power/multi_intensity
+        echo heartbeat > /sys/class/leds/rgb:power/trigger
+        echo "$BRIGHTNESS" > /sys/class/leds/rgb:power/brightness
+    fi
+}
+

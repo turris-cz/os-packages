@@ -1,0 +1,49 @@
+From ff828720a619c3dcfc0d3fdc049ecfb96e0680cd Mon Sep 17 00:00:00 2001
+From: Michal Hrusecky <michal.hrusecky@turris.com>
+Date: Thu, 11 Sep 2025 22:22:35 +0200
+Subject: [PATCH] Update foris.js to include Wi-Fi 7
+
+---
+ js/package-lock.json | 5 ++---
+ js/package.json      | 2 +-
+ 2 files changed, 3 insertions(+), 4 deletions(-)
+
+diff --git a/js/package-lock.json b/js/package-lock.json
+index 1dbc7463..83eeb9bb 100644
+--- a/js/package-lock.json
++++ b/js/package-lock.json
+@@ -16,7 +16,7 @@
+                 "axios": "^0.21.1",
+                 "bootstrap": "^5.3.6",
+                 "bootswatch": "^5.3.6",
+-                "foris": "^6.7.2",
++                "foris": "git+https://gitlab.nic.cz/turris/reforis/foris-js.git#feature/EHT-wifi-modes",
+                 "immutability-helper": "^3.1.1",
+                 "ipaddr": "npm:ipaddr.js@^1.9.1",
+                 "moment": "^2.30.1",
+@@ -9171,8 +9171,7 @@
+         },
+         "node_modules/foris": {
+             "version": "6.7.2",
+-            "resolved": "https://registry.npmjs.org/foris/-/foris-6.7.2.tgz",
+-            "integrity": "sha512-CMiFB0Z4krfsL3FmqdTk6BaKjIJFW87c7075ATQShCqybeHbPZBmF6wL6GxLsxYNAKN++mLZsGThlB0SH9wfxw==",
++            "resolved": "git+https://gitlab.nic.cz/turris/reforis/foris-js.git#feature/EHT-wifi-modes",
+             "license": "GPL-3.0",
+             "dependencies": {
+                 "@fortawesome/fontawesome-svg-core": "^6.7.2",
+diff --git a/js/package.json b/js/package.json
+index 60840006..c9c65abc 100644
+--- a/js/package.json
++++ b/js/package.json
+@@ -24,7 +24,7 @@
+         "axios": "^0.21.1",
+         "bootstrap": "^5.3.6",
+         "bootswatch": "^5.3.6",
+-        "foris": "^6.7.2",
++        "foris": "git+https://gitlab.nic.cz/turris/reforis/foris-js.git#feature/EHT-wifi-modes",
+         "immutability-helper": "^3.1.1",
+         "ipaddr": "npm:ipaddr.js@^1.9.1",
+         "moment": "^2.30.1",
+-- 
+2.51.0
+

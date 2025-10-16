@@ -71,6 +71,7 @@ wait_for_mode_change() {
     echo "Now is your chance to change a mode from $MODE to something else, press the button to do so"
     waited=0
     display_mode
+    [ "$DELAY" -gt 0 ] || return
     half_delay="$(expr "$DELAY" / 2)"
     echo "Waiting for $(expr $DELAY / 10)s ..."
     while [ "$waited" -le "$DELAY" ]; do
@@ -93,31 +94,54 @@ DHCP_OPTS="-qfn"
 download_medkit() {
     tries=3
     i=0
-    ip link set up dev "$WAN_IF"
-    while ! udhcpc -i "$WAN_IF" $DHCP_OPTS; do
-        echo "No DHCP :-("
-        sleep 2
-        i="$(expr "$i" + 1)"
-        [ "$i" -lt "$tries" ] || die 2 "Can't get IP"
-    done
-    echo "Got IPv4!"
-    ip addr show
-    ip route show
-    grep -q nameserver /etc/resolv.conf || echo nameserver 193.17.47.1 > /etc/resolv.conf
-    mkdir -p /mnt/src
-    # Download medkit and signature
-    for ext in tar.gz tar.gz.sig; do
-        local i=0
-        # We are checking signature, so we don't care about https certificate
-        while ! wget -T 3 --no-check-certificate -O /mnt/src/medkit.$ext https://repo.turris.cz/hbs/medkit/${BOARD}-medkit${MDKT_VARIANT}-latest.$ext; do
-            echo "Can't download $BOARD-medkit-latest.$ext :-("
+    local time_to_end=""
+    for wan_if in $WAN_IF; do
+        echo "Trying to get online using $wan_if"
+        ip link set up dev "$wan_if"
+        time_to_end=""
+        while ! udhcpc -i "$wan_if" $DHCP_OPTS && [ -z "$time_to_end" ]; do
+            echo "No DHCP :-("
             sleep 2
             i="$(expr "$i" + 1)"
-            [ "$i" -lt "$tries" ] || die 2 "Can't get $BOARD-medkit-latest.$ext"
+            [ "$i" -lt "$tries" ] || time_to_end="yes"
         done
+        if [ -n "$time_to_end" ]; then
+            echo "Can't get IP"
+            continue
+        fi
+        echo "Got IPv4!"
+        ip addr show
+        ip route show
+        grep -q nameserver /etc/resolv.conf || echo nameserver 193.17.47.1 > /etc/resolv.conf
+        mkdir -p /mnt/src
+        # Download medkit and signature
+        for ext in tar.gz tar.gz.sig; do
+            local i=0
+            # We are checking signature, so we don't care about https certificate
+            while ! wget -T 3 --no-check-certificate -O /mnt/src/medkit.$ext https://repo.turris.cz/hbs/medkit/${BOARD}-medkit${MDKT_VARIANT}-latest.$ext; do
+                echo "Can't download $BOARD-medkit-latest.$ext :-("
+                sleep 2
+                i="$(expr "$i" + 1)"
+                [ "$i" -lt "$tries" ] || die 2 "Can't get $BOARD-medkit-latest.$ext"
+            done
+            i=0
+            if [ -n "$NOR_UPDATE" ]; then
+                while ! wget -T 3 --no-check-certificate -O /mnt/src/nor.$ext https://repo.turris.cz/hbs/medkit/${BOARD}-nor-latest.$ext; do
+                    echo "Can't download $BOARD-nor-latest.$ext :-("
+                    sleep 2
+                    i="$(expr "$i" + 1)"
+                    [ "$i" -lt "$tries" ] || die 2 "Can't get $BOARD-nor-latest.$ext"
+                done
+            fi
+        done
+        usign -V -m /mnt/src/medkit.tar.gz -P /etc/opkg/keys || die 2 "Can't validate medkit signature"
+        if [ -n "$NOR_UPDATE" ]; then
+            usign -V -m /mnt/src/nor.tar.gz -P /etc/opkg/keys || die 2 "Can't validate nor signature"
+        fi
+        echo "medkit.tar.gz" > /tmp/medkit-file
+        break
     done
-    usign -V -m /mnt/src/medkit.tar.gz -P /etc/opkg/keys || die 2 "Can't validate signature"
-    echo "medkit.tar.gz" > /tmp/medkit-file
+    [ -z "$time_to_end" ] || die 1 "No internet :-("
 }
 
 # Takes as an argument number of retries
@@ -189,10 +213,10 @@ EOF
         fi
         fdisk -l "$TARGET_DRIVE" >> /tmp/debug.txt
         echo "Formatting the drive..."
-        mkfs.btrfs -f "$TARGET_PART" >> /tmp/debug.txt 2>&1 || die 4 "Can't format the partition"
+        mkfs.btrfs -f "$TARGET_PART" >> /tmp/debug.txt 2>&1 || die 3 "Can't format the partition"
         mkdir -p "$trg_mnt_pth"
-        mount "$TARGET_PART" "$trg_mnt_pth" || die 5 "Can't mount the partition"
-        btrfs subvolume create "$trg_mnt_pth"/@ >> /tmp/debug.txt 2>&1 || die 6 "Can't create a subvolume"
+        mount "$TARGET_PART" "$trg_mnt_pth" || die 3 "Can't mount the partition"
+        btrfs subvolume create "$trg_mnt_pth"/@ >> /tmp/debug.txt 2>&1 || die 3 "Can't create a subvolume"
         ln -s @/boot/boot.scr "$trg_mnt_pth"/boot.scr
         echo "ROOT_DEV='${TARGET_PART}'" >> "$trg_mnt_pth"/@/etc/schnapps/config
         umount "$trg_mnt_pth"
@@ -243,16 +267,25 @@ reflash() {
     format_and_mount_target /mnt/trg
     echo "Unpacking rootfs to the target directory"
     mount >> /tmp/debug.txt
-    tar -C /mnt/trg -xzf /mnt/src/"$(cat /tmp/medkit-file)" >> /tmp/debug.txt || die 7 "Flashing failed!!!"
+    tar -C /mnt/trg -xzf /mnt/src/"$(cat /tmp/medkit-file)" >> /tmp/debug.txt || die 2 "Flashing failed!!!"
     local extra_file="/mnt/src/$(sed 's|\.tar\.gz$|-extra.tar.gz|' /tmp/medkit-file)"
     if [ -f "$extra_file" ]; then
-        tar -C /mnt/trg -xzf "$extra_file" >> /tmp/debug.txt || die 7 "Flashing failed!!!"
+        tar -C /mnt/trg -xzf "$extra_file" >> /tmp/debug.txt || die 2 "Flashing failed!!!"
     fi
     echo "Rootfs should be ready"
     check_clock /mnt/trg/etc/shadow
     sync
     umount -fl /mnt/trg
     create_factory
+    if [ -n "$NOR_UPDATE" ] && [ -f /mnt/src/nor.tgz ]; then
+        mkdir -p /mnt/src/nor
+        tar -C /mnt/src/nor -xzvf /mnt/src/nor.tgz || die 2 "Unpacking NOR failed!!!"
+        cd /mnt/src/nor
+        for img in *.img; do
+            mtd="$(grep "$(basename "$img" .img)\"" /proc/mtd | sed 's|^\([^[:blank:]]*\):\ \([^[:blank:]]*\)\ \([^[:blank:]]*\)\ .*|/dev/\1|' | head -n1)"
+            [ -z "$mtd" ] || mtd write $img $mtd
+        done
+    fi
 }
 
 reboot() {
@@ -287,9 +320,22 @@ init() {
     mount -t proc none /proc
     mkdir /dev/pts
     mount -t devpts devpts /dev/pts
+
+    board_preinit
+
     ip addr add 127.0.0.1/8 dev lo
     ip link set up dev lo
+
+    depmod
+    cat /etc/modules-boot.d/* /etc/modules.d/* | while read mod; do
+        [ -z "$mod" ] || modprobe $mod
+    done
+
     simple_udev &
+
+    generic_pre_init
+    board_init
+    generic_post_init
 }
 
 next_mode() {
@@ -301,7 +347,21 @@ next_mode() {
         # Default next mode is one number higher if not set
         MODE="$(expr "$MODE" + 1 )"
     fi
+    if [ "$MODE" -gt "$MAX_MODE" ]; then
+        MODE=1
+    fi
 }
+
+prev_mode() {
+    echo "Decreasing mode from $MODE"
+    MODE="$(expr "$MODE" - 1 )"
+    echo "We are at $MODE"
+    if [ "$MODE" -lt 1 ]; then
+        MODE="$MAX_MODE"
+    fi
+    echo "After corrections: $MODE"
+}
+
 
 fetch_cmd_mode() {
     local cmd_mode=""
@@ -314,6 +374,9 @@ fetch_cmd_mode() {
             MODE=1
         fi
     fi
+    FORCE_MODE="$(sed -n 's|.*force_mode=\([0-9]\+\).*|\1|p' /proc/cmdline)"
+    NOR_UPDATE="$(sed -n 's|.*nor_update.*|yes|p' /proc/cmdline)"
+    [ -z "$FORCE_MODE" ] || MODE="$FORCE_MODE"
 }
 
 # Various modes
@@ -343,8 +406,8 @@ MODE4="USB flash"
 mode_4() {
     echo "Running USB flash"
     find_medkit 5
-    reset_uenv
     reflash
+    reset_uenv
 }
 
 # Open open ssh console
@@ -364,6 +427,7 @@ mode_5() {
     ip addr add 192.168.1.1/24 dev br_lan
     rm -f /etc/dropbear/*
     dropbear -R -B -E
+    success
     setsid cttyhack sh
     reboot
 }
@@ -373,14 +437,15 @@ MODE6="Flash from the Cloud :-)"
 mode_6() {
     echo "Flashing from the Cloud :-)"
     download_medkit
-    reset_uenv
     reflash
+    reset_uenv
 }
 
 MODE7="Serial console"
 MODE7_NEXT=1
 mode_7() {
     echo "Running shell"
+    success
     setsid cttyhack sh
     reboot
 }

@@ -1,0 +1,64 @@
+#!/bin/sh /etc/rc.common
+
+START=95
+STOP=01
+
+check_interfaces() {
+    uci get foris.wizard.passed 2> /dev/null | grep -v networks > /dev/null || return
+    ip link set up dev eth0
+    if [ "$(cat /sys/class/net/eth0/carrier 2> /dev/null)" -eq 1 ]; then
+        uci set "network.wan.device=eth0"
+        uci commit network
+    else
+        uci set "network.wan.device=eth4"
+        uci commit network
+    fi
+}
+
+start() {
+    [ "$(uci get foris.wizard.finished)" != 1 ] || exit 0
+
+    # Check WAN port
+    check_interfaces
+
+    # Make sure we have wireless config
+    wifi config
+
+    # Check whether there is already a Wi-Fi password, otherwise generate one
+    PASSWORD="$(uci get wireless.@wifi-iface[0].key)"
+    [ -n "$PASSWORD" ] || PASSWORD="$(tr -dc A-HJ-NP-Za-km-z1-9 < /dev/urandom | head -c 16)"
+    [ "$PASSWORD" != 0123456789 ] || PASSWORD="$(tr -dc A-HJ-NP-Za-km-z1-9 < /dev/urandom | head -c 16)"
+
+    # Set password and enable all Wi-Fi networks
+    i=0
+    SSID="Turris-$(printf %d 0x$(crypto-wrapper serial | tail -c 4))"
+    while [ "$(uci get "wireless.@wifi-iface[$i]" 2> /dev/null)" = wifi-iface ]; do
+        uci set "wireless.@wifi-iface[$i].ssid"="$SSID"
+        uci set "wireless.@wifi-iface[$i].key"="$PASSWORD"
+        uci set "wireless.@wifi-iface[$i].encryption"="sae-mixed"
+        uci set "wireless.@wifi-iface[$i].disabled"=0
+        uci set "wireless.$(uci get "wireless.@wifi-iface[$i].device").disabled"=0
+        i=$((i + 1))
+    done
+    uci commit wireless
+
+    # Reload Wi-Fi configuration
+    wifi
+    /etc/init.d/peacockr restart
+
+    # Reload knot when wizard finishes
+    {
+        while [ "$(uci get foris.wizard.finished 2> /dev/null)" != 1 ]; do
+            check_interfaces
+            sleep 1
+        done
+        /etc/init.d/resolver restart
+        /etc/init.d/network restart
+        /etc/init.d/peacockr restart
+        wifi
+    } &
+}
+
+stop() {
+    /etc/init.d/resolver restart
+}

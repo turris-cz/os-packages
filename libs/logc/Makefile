@@ -1,5 +1,5 @@
 #
-## Copyright (C) 2020-2021 CZ.NIC z.s.p.o. (https://www.nic.cz/)
+## Copyright (C) 2020-2025 CZ.NIC z.s.p.o. (https://www.nic.cz/)
 #
 ## This is free software, licensed under the GNU General Public License v3.
 # See /LICENSE for more information.
@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=logc
-PKG_VERSION:=0.4.0
+PKG_VERSION:=0.5.0
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/logc.git
-PKG_MIRROR_HASH:=8d9d5d0fec6b70e1c85c78eb786c77d0b4489935f88aaf6b4901af6a73626e85
+PKG_MIRROR_HASH:=e254bbf351deb06f96ee2de6d5e91d0b75d9522027920785e1df5e04d3ddb879
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
@@ -26,7 +26,7 @@ PKG_INSTALL:=1
 PKG_FIXUP:=autoreconf
 
 include $(INCLUDE_DIR)/package.mk
-include $(INCLUDE_DIR)/autotools.mk
+include $(INCLUDE_DIR)/meson.mk
 
 define Package/logc/Default
   SECTION:=libs
@@ -42,6 +42,7 @@ endef
 define Package/logc-argp
   $(call Package/logc/Default)
   TITLE:=logc-argp
+  DEPENDS:=logc
 endef
 
 define Package/logc/description

@@ -27,7 +27,8 @@ define Package/crypto-wrapper
   DEPENDS:=\
     +TARGET_mpc85xx_p2020_DEVICE_cznic_turris1x:libatsha204 \
     +TARGET_mvebu_cortexa9_DEVICE_cznic_turris-omnia:libatsha204 +TARGET_mvebu_cortexa9_DEVICE_cznic_turris-omnia:omnia-mcutool \
-    +TARGET_mvebu_cortexa53_DEVICE_cznic_turris-mox:mox-otp
+    +TARGET_mvebu_cortexa53_DEVICE_cznic_turris-mox:mox-otp \
+	+TARGET_ipq95xx_generic_DEVICE_cznic_turris-omnia-ng:omnia-ng-crypto
 endef
 
 define Package/crypto-wrapper/description

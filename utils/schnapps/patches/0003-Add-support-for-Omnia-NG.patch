@@ -1,0 +1,26 @@
+From f2cbfdc3b4d3faf3810a7460ac7eee19c71610bc Mon Sep 17 00:00:00 2001
+From: Michal Hrusecky <michal.hrusecky@turris.com>
+Date: Mon, 18 Aug 2025 13:17:55 +0200
+Subject: [PATCH] Add support for Omnia NG
+
+---
+ schnapps.sh | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/schnapps.sh b/schnapps.sh
+index c500d8f..acc5ea0 100755
+--- a/schnapps.sh
++++ b/schnapps.sh
+@@ -645,6 +645,9 @@ tar_it() {
+ 
+ get_board() {
+     case "$(cat /sys/firmware/devicetree/base/model 2> /dev/null)" in
++        *Omnia\ NG*)
++            BOARD="omnia-ng"
++            ;;
+         *Omnia*)
+             BOARD="omnia"
+             ;;
+-- 
+2.50.1
+
