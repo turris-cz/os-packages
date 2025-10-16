@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2018-2024 CZ.NIC, z. s. p. o. (https://www.nic.cz/)
+# Copyright (C) 2018-2025 CZ.NIC, z. s. p. o. (https://www.nic.cz/)
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=nextcloud
-PKG_VERSION:=29.0.2
-PKG_RELEASE:=$(AUTORELEASE)
+PKG_VERSION:=32.0.0
+PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.bz2
 PKG_SOURCE_URL:=https://download.nextcloud.com/server/releases/
-PKG_HASH:=2d49d297dc340092021057823e8e78a312bc00f56de7d8677ac790590918ab17
+PKG_HASH:=57448d55d9b87102f17c36347320346a1b258f6017c63b958c789efd42e345a3
 
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)
 
@@ -94,9 +94,21 @@ if [ -z "$$IPKG_INSTROOT" ]; then
 		cp /usr/share/nextcloud/placeholder.php /srv/www/nextcloud/index.php
 		/etc/init.d/lighttpd restart
 	fi
+cat << 'EOF' > /etc/updater/hook_postupdate/91_nextcloud.sh
+#!/bin/sh
+timeout 10 /etc/init.d/mysqld status 2>/dev/null
+status_code=$$?
+while [[ $$status_code -ne 0 ]]; do
+	kill -9 $$(pgrep mysqld) && /etc/init.d/mysqld start 2>/dev/null
+	timeout 30 /etc/init.d/mysqld status 2>/dev/null
+	status_code=$$?
+done
+rm -f /etc/updater/hook_postupdate/91_nextcloud.sh 2>/dev/null
+EOF
 fi
 chown -R nobody:nogroup "$$IPKG_INSTROOT"/srv/www/nextcloud/
 chown nobody:nogroup "$$IPKG_INSTROOT"/usr/bin/nextcloud-cron.sh
+chmod 755 /etc/updater/hook_postupdate/91_nextcloud.sh
 endef
 
 $(eval $(call BuildPackage,nextcloud))
