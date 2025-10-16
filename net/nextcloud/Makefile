@@ -109,6 +109,8 @@ fi
 chown -R nobody:nogroup "$$IPKG_INSTROOT"/srv/www/nextcloud/
 chown nobody:nogroup "$$IPKG_INSTROOT"/usr/bin/nextcloud-cron.sh
 chmod 755 /etc/updater/hook_postupdate/91_nextcloud.sh
+mysql -u root -e "ALTER TABLE mysql.column_stats MODIFY histogram longblob;"
+mysql -u root -e "ALTER TABLE mysql.column_stats MODIFY hist_type enum('SINGLE_PREC_HB','DOUBLE_PREC_HB','JSON_HB');"
 endef
 
 $(eval $(call BuildPackage,nextcloud))
