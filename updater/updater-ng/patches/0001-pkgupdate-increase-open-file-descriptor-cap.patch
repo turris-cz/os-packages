@@ -1,0 +1,39 @@
+From fb83a171cb829b95aebb795ebf6216ebe2ac7d68 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Tom=C3=A1=C5=A1=20Macholda?= <tomas.macholda@nic.cz>
+Date: Thu, 23 Oct 2025 17:08:40 +0200
+Subject: [PATCH] pkgupdate: increase open file descriptor cap
+
+---
+ src/pkgupdate/main.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/src/pkgupdate/main.c b/src/pkgupdate/main.c
+index cccc7d4..e98baed 100644
+--- a/src/pkgupdate/main.c
++++ b/src/pkgupdate/main.c
+@@ -20,6 +20,7 @@
+ #include <stdbool.h>
+ #include <stdio.h>
+ #include <string.h>
++#include <sys/resource.h>
+ #include <errno.h>
+ #include <time.h>
+ #include "../lib/syscnf.h"
+@@ -123,6 +124,14 @@ int main(int argc, char *argv[]) {
+ 
+ 	system_detect();
+ 
++	// Increase max number of open file descriptors (crashes on large updates)
++	struct rlimit rlim;
++	int res = getrlimit(RLIMIT_NOFILE, &rlim);
++	ASSERT_MSG(!res, "%s", strerror(errno));
++	rlim.rlim_cur = 2048;
++	res = setrlimit(RLIMIT_NOFILE, &rlim);
++	ASSERT_MSG(!res, "%s", strerror(errno));
++
+ 	struct events *events = events_new();
+ 	// Prepare the interpreter and load it with the embedded lua scripts
+ 	struct interpreter *interpreter = interpreter_create(events);
+-- 
+2.51.0
+
