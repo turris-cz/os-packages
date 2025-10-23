@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2020, 2022 CZ.NIC z. s. p. o. (https://www.nic.cz/)
+# Copyright (C) 2019-2025 CZ.NIC z. s. p. o. (https://www.nic.cz/)
 #
 # This is free software, licensed under the GNU General Public License v3.
 # See /LICENSE for more information.
@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=foris-controller-openvpn_client-module
-PKG_VERSION:=1.0.0
+PKG_VERSION:=1.0.1
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/foris-controller/foris-controller-openvpn_client-module.git
-PKG_MIRROR_HASH:=00a6858bda5fd75f4d35a61ddebb6e899496f172f3d97c8b4a1ccfdf7f05f54d
+PKG_MIRROR_HASH:=a1ac7e2bce97169c24ec07aebb2dc53d3e64b1aa18af545c079ee6047c818c34
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
