@@ -9,11 +9,11 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=peacockr
 PKG_VERSION:=0.1
-PKG_RELEASE:=2025-09-12-02
+PKG_RELEASE:=2025-09-25-02
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/peacockr.git
-PKG_SOURCE_VERSION:=d50593fa0179e3791194a4079843a4efd118b026
+PKG_SOURCE_VERSION:=4f1bc97f6bda457f7f42bb505de7ee1606c21870
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 PKG_LICENSE:=GPL-3.0-or-later
@@ -30,17 +30,15 @@ CARGO_PKG_PROFILE:=release
 RUST_PKG_FEATURES:=target-turris
 
 define Package/peacockr
-  SECTION:=utils
-  CATEGORY:=Utility
-  TITLE:=A display controller for Turris NG
-  DEPENDS:=@TARGET_ipq95xx_generic_DEVICE_cznic_turris-omnia-ng \
-		$(RUST_ARCH_DEPENDS) +libxkbcommon +libinput \
-		+fontconfig +dejavu-fonts-ttf-DejaVuSans +xkeyboard-config
+  SECTION:=gui
+  CATEGORY:=GUI Applications
+  TITLE:=A status monitor and control interface for Turris Omnia NG
+  DEPENDS:=$(RUST_ARCH_DEPENDS) +fontconfig +dejavu-fonts-ttf-DejaVuSans +libwayland +xkeyboard-config
   URL:=https://gitlab.nic.cz/turris/peacockr/
 endef
 
 define Package/peacockr/description
-        A display controller to be used in Turris NG device. Written in Rust using Slint for the user interface.
+        A status monitor and control interface to be used in Turris Omnia NG device. Written in Rust using Slint for the user interface.
 
         More information on https://gitlab.nic.cz/turris/peacockr
 endef
