@@ -66,8 +66,8 @@ define Package/suricata-bin
 	+libnet-1.2.x \
 	+nspr \
 	+libnss \
-  	+liblz4 \
-	+libunwind
+	+liblz4 \
+	+PACKAGE_libunwind:libunwind
 endef
 
 define Package/suricata-rules
