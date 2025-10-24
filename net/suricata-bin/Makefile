@@ -26,6 +26,7 @@ PKG_INSTALL:=1
 PKG_FIXUP:=autoreconf
 PKG_BUILD_DEPENDS:=rust/host
 PKG_BUILD_PARALLEL:=1
+PKG_SSP:=0
 
 include $(INCLUDE_DIR)/package.mk
 include $(TOPDIR)/feeds/packages/lang/rust/rust-values.mk
@@ -42,6 +43,11 @@ CONFIGURE_ARGS+= \
 	--disable-python \
 	--host=$(RUSTC_TARGET_ARCH) \
 	--enable-debug # for more log levels
+
+# Disable stack protector to avoid __stack_chk_fail_local errors on musl/PowerPC
+# This is needed because Rust's cc crate compiles vendored C code (like libz-sys)
+# with stack protection enabled by default, which doesn't work with musl on 32-bit arches
+TARGET_CFLAGS+=-fno-stack-protector
 
 define Package/suricata-bin
   SECTION:=net
