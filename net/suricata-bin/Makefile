@@ -67,6 +67,7 @@ define Package/suricata-bin
 	+nspr \
 	+libnss \
 	+liblz4 \
+	+zlib \
 	+PACKAGE_libunwind:libunwind
 endef
 
