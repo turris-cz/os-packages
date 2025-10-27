@@ -31,9 +31,6 @@ PKG_SSP:=0
 include $(INCLUDE_DIR)/package.mk
 include $(TOPDIR)/feeds/packages/lang/rust/rust-values.mk
 
-TARGET_CFLAGS += \
-        -fcommon
-
 CONFIGURE_ARGS+= \
 	--enable-nflog \
 	--enable-nfqueue \
