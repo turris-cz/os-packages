@@ -46,6 +46,9 @@ CONFIGURE_ARGS+= \
 # with stack protection enabled by default, which doesn't work with musl on 32-bit arches
 TARGET_CFLAGS+=-fno-stack-protector
 
+# Add atomic library for 64-bit atomic operations on 32-bit PowerPC
+TARGET_LDFLAGS+=-latomic
+
 define Package/suricata-bin
   SECTION:=net
   CATEGORY:=Network
@@ -67,6 +70,7 @@ define Package/suricata-bin
 	+nspr \
 	+libnss \
 	+liblz4 \
+	+zlib \
 	+PACKAGE_libunwind:libunwind
 endef
 
