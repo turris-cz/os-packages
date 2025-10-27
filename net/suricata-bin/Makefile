@@ -52,6 +52,7 @@ define Package/suricata-bin
   TITLE:=Network IDS, IPS and NSM engine
   URL:=https://suricata-ids.org/
   DEPENDS:= \
+	$(RUST_ARCH_DEPENDS) \
 	+libpcre2 \
 	+libyaml \
 	+jansson \
