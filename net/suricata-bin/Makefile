@@ -56,9 +56,6 @@ define Package/suricata-bin
 	+libpcre2 \
 	+libyaml \
 	+jansson \
-	+libmagic \
-	+libpthread \
-	+librt \
 	+libpcap \
 	+libcap-ng \
 	+libnetfilter-queue \
