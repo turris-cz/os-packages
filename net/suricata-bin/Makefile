@@ -60,7 +60,6 @@ define Package/suricata-bin
 	+librt \
 	+libpcap \
 	+libcap-ng \
-	$(LUAJIT_DEP) \
 	+libnetfilter-queue \
 	+iptables-mod-nfqueue \
 	+libnetfilter-log \
