@@ -71,6 +71,7 @@ define Package/suricata-bin
 	+libnss \
 	+liblz4 \
 	+zlib \
+	+libatomic \
 	+PACKAGE_libunwind:libunwind
 endef
 
