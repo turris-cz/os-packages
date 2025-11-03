@@ -13,7 +13,7 @@ HOSTS_PATH="/tmp/hosts/dhcpv6-dns.hosts"
 is_enabled=$(uci get resolver.common.dynamic_domains)
 case "${is_enabled}" in
 	1 | enabled | on | true) ;;
-	0 | disabled | off | false) echo 0 ;;
+	0 | disabled | off | false) exit 0 ;;
 	*)
 		echo "unknown value for config resolver.common.dynamic_domains: \"${is_enabled}\"" >&2
 		exit 22
