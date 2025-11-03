@@ -138,8 +138,8 @@ class Kresd:
                 if not line or line.startswith("#"):
                     continue
                 try:
-                    host = line.strip().split()[1]
-                    self._call_kresd("hints.del('%s')" % host)
+                    addr, host, *_ = line.strip().split()
+                    self._call_kresd("hints.del('%s %s')" % (host, addr))
                 except:
                     log("Wrong host format '%s' in host file %s " %
                         (line, filename), LOG_ERR)
