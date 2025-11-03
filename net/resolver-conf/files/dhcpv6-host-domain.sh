@@ -37,6 +37,7 @@ case "${prefered_resolver}" in
 		sock_name=$(ls "${run_dir}/control/" | head -n1)
 		if [[ -z "${sock_name}" ]]; then
 			echo "kresd is probably not running, no socket found" >&2
+			exit 2
 		fi
 
 		reply=$(echo "hints.add_hosts(\"${HOSTS_PATH}\").result" | socat - UNIX-CONNECT:"${run_dir}/control/${sock_name}" | tail -c +3 | head -c -2)
