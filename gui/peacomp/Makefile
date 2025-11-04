@@ -9,11 +9,11 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=peacomp
 PKG_VERSION:=0.1
-PKG_RELEASE:=2025-09-25-04
+PKG_RELEASE:=2025-11-04-01
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/ekalouskova/peacomp.git
-PKG_SOURCE_VERSION:=c52eecd0ffd63a86a830b96fa73cf6a7f858b574
+PKG_SOURCE_VERSION:=ef26e1ac556a6696792eed3dc017ed41307a33ec
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 PKG_LICENSE:=GPL-3.0-or-later
