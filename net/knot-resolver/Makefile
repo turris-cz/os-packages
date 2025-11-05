@@ -92,9 +92,6 @@ define Package/knot-resolver/postinst
 #!/bin/sh
 set -x
 if [ -z "$$IPKG_INSTROOT" ]; then
-/etc/init.d/dnsmasq restart
-sleep 2 # Cooldown for above (problems in times of reinstall)
-
 # convert static_domain from kresd to common section
 stat_dom=`uci -q get resolver.kresd.static_domains`
 if [ ! -z "$$stat_dom" ]; then
