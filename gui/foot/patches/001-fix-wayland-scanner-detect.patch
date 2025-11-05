@@ -1,0 +1,33 @@
+diff --git a/meson.build b/meson.build
+index a1d0104d..214cc6b1 100644
+--- a/meson.build
++++ b/meson.build
+@@ -161,8 +161,13 @@ fcft = dependency('fcft', version: ['>=3.3.1', '<4.0.0'], fallback: 'fcft')
+ wayland_protocols_datadir = wayland_protocols.get_variable('pkgdatadir')
+ 
+ wscanner = dependency('wayland-scanner', native: true)
+-wscanner_prog = find_program(
+-  wscanner.get_variable('wayland_scanner'), native: true)
++
++if (get_option('scanner_bin') == '')
++  wscanner_prog = find_program(
++    wscanner.get_variable('wayland_scanner'), native: true)
++else
++  wscanner_prog = find_program(get_option('scanner_bin'))
++endif
+ 
+ wl_proto_headers = []
+ wl_proto_src = []
+diff --git a/meson_options.txt b/meson_options.txt
+index ab7a07be..1a19e1e6 100644
+--- a/meson_options.txt
++++ b/meson_options.txt
+@@ -27,3 +27,8 @@ option('utmp-backend', type: 'combo', value: 'auto', choices: ['none', 'libutemp
+        description: 'Which utmp logging backend to use. This affects how (with what arguments) the utmp helper binary (see \'utmp-default-helper-path\')is called. Default: auto (linux=libutempter, freebsd=ulog, others=none)')
+ option('utmp-default-helper-path', type: 'string', value: 'auto',
+        description: 'Default path to the utmp helper binary. Default: auto-detect')
++
++option('scanner_bin',
++       description: 'Path to wayland-scanner binary',
++       type: 'string',
++       value: '')

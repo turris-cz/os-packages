@@ -1,0 +1,31 @@
+diff --git a/meson.build b/meson.build
+index a84cda4..0a899ce 100644
+--- a/meson.build
++++ b/meson.build
+@@ -13,7 +13,12 @@ dep_scanner = dependency('wayland-scanner',
+     native: true,
+     fallback: 'wayland'
+ )
+-prog_scanner = find_program(dep_scanner.get_variable(pkgconfig: 'wayland_scanner', internal: 'wayland_scanner'))
++
++if (get_option('scanner_bin') == '')
++	prog_scanner = find_program(dep_scanner.get_variable(pkgconfig: 'wayland_scanner', internal: 'wayland_scanner'))
++else
++	prog_scanner = find_program(get_option('scanner_bin'))
++endif
+ 
+ stable_protocols = {
+ 	'linux-dmabuf': ['v1'],
+diff --git a/meson_options.txt b/meson_options.txt
+index f361d3b..64416ec 100644
+--- a/meson_options.txt
++++ b/meson_options.txt
+@@ -2,3 +2,8 @@ option('tests',
+        type: 'boolean',
+        value: true,
+        description: 'Build the tests')
++
++option('scanner_bin',
++       description: 'Path to wayland-scanner binary',
++       type: 'string',
++       value: '')
