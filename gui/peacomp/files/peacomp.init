@@ -13,6 +13,6 @@ start_service() {
 	procd_set_param command "/usr/bin/peacomp"
 	procd_set_param stdout  1
 	procd_set_param stderr  1
-	procd_set_param env PEACOMP_BACKEND=linux XDG_RUNTIME_DIR="$XDG_RUNTIME_DIR" PEACOMP_WAYLAND_DISPLAY="path:${WAYLAND_DISPLAY}"
+	procd_set_param env peacomp::TEST_PROGRAM_PATH=/usr/libexec/ng-snek peacomp::BACKEND=linux XDG_RUNTIME_DIR="$XDG_RUNTIME_DIR" peacomp::WAYLAND_DISPLAY="path:${WAYLAND_DISPLAY}"
 	procd_close_instance
 }
