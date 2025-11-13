@@ -1,0 +1,25 @@
+From 6a4c8784475083a7cef903c16a1f28604aeef85a Mon Sep 17 00:00:00 2001
+From: Stepan Henek <stepan.henek@nic.cz>
+Date: Thu, 13 Nov 2025 13:39:39 +0100
+Subject: [PATCH] Fix url to schnapps cgi script updated in lighttpd
+
+---
+ js/src/snapshots/SnapshotsTable.js | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/js/src/snapshots/SnapshotsTable.js b/js/src/snapshots/SnapshotsTable.js
+index fe9a38e..015ba49 100644
+--- a/js/src/snapshots/SnapshotsTable.js
++++ b/js/src/snapshots/SnapshotsTable.js
+@@ -97,7 +97,7 @@ function renderThreeDotsMenu(rollbackSnapshot, deleteSnapshot, { row }) {
+     const { number } = row.original;
+ 
+     const handleDownloadSnapshot = () => {
+-        window.location.href = `/snapshot.tar.gz?num=${number}`;
++        window.location.href = `/snapshots/snapshot.tar.gz?num=${number}`;
+     };
+ 
+     const threeDotsMenuItems = [
+-- 
+2.43.0
+
