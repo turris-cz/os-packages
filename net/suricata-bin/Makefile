@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=suricata-bin
-PKG_VERSION:=8.0.0
+PKG_VERSION:=8.0.1
 PKG_RELEASE=$(AUTORELEASE)
 
 PKG_SOURCE:=suricata-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://www.openinfosecfoundation.org/download/
-PKG_HASH:=51f36ef492cbee8779d6018e4f18b98a08e677525851251279c1f851654f451f
+PKG_HASH:=bd868f41717e5431cdda3a99386810257aafdbe2dbcbb58d07fb8476a03358a5
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 PKG_LICENSE:=GPL-2.0
@@ -26,12 +26,10 @@ PKG_INSTALL:=1
 PKG_FIXUP:=autoreconf
 PKG_BUILD_DEPENDS:=rust/host
 PKG_BUILD_PARALLEL:=1
+PKG_SSP:=0
 
 include $(INCLUDE_DIR)/package.mk
 include $(TOPDIR)/feeds/packages/lang/rust/rust-values.mk
-
-TARGET_CFLAGS += \
-        -fcommon
 
 CONFIGURE_ARGS+= \
 	--enable-nflog \
@@ -43,21 +41,26 @@ CONFIGURE_ARGS+= \
 	--host=$(RUSTC_TARGET_ARCH) \
 	--enable-debug # for more log levels
 
+# Disable stack protector to avoid __stack_chk_fail_local errors on musl/PowerPC
+# This is needed because Rust's cc crate compiles vendored C code (like libz-sys)
+# with stack protection enabled by default, which doesn't work with musl on 32-bit arches
+TARGET_CFLAGS+=-fno-stack-protector
+
+# Add atomic library for 64-bit atomic operations on 32-bit PowerPC
+TARGET_LDFLAGS+=-latomic
+
 define Package/suricata-bin
   SECTION:=net
   CATEGORY:=Network
   TITLE:=Network IDS, IPS and NSM engine
   URL:=https://suricata-ids.org/
   DEPENDS:= \
+	$(RUST_ARCH_DEPENDS) \
 	+libpcre2 \
 	+libyaml \
 	+jansson \
-	+libmagic \
-	+libpthread \
-	+librt \
 	+libpcap \
 	+libcap-ng \
-	$(LUAJIT_DEP) \
 	+libnetfilter-queue \
 	+iptables-mod-nfqueue \
 	+libnetfilter-log \
@@ -66,8 +69,10 @@ define Package/suricata-bin
 	+libnet-1.2.x \
 	+nspr \
 	+libnss \
-  	+liblz4 \
-	+libunwind
+	+liblz4 \
+	+zlib \
+	+libatomic \
+	+PACKAGE_libunwind:libunwind
 endef
 
 define Package/suricata-rules
