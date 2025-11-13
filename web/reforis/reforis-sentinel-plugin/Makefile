@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=reforis-sentinel-plugin
-PKG_VERSION:=2.1.0
+PKG_VERSION:=2.2.0
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/reforis/reforis-sentinel
-PKG_MIRROR_HASH:=a9d7bac416a1ddb3a43fb60f442a0c32e47c6f4595b21c8cbb9ccf3b81c1b6ea
+PKG_MIRROR_HASH:=0c638485a509b08baaef8b759252af0423eb4691f4a85eb0ece0d6b2a7272715
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
