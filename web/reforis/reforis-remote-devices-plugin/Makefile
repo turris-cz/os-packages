@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=reforis-remote-devices-plugin
-PKG_VERSION:=2.3.0
+PKG_VERSION:=2.4.0
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/reforis/reforis-remote-devices
-PKG_MIRROR_HASH:=1bdab9241cf9ba8fa91317b41cb92353c1e65350b14d081920c97b4cbbd342df
+PKG_MIRROR_HASH:=5b2f178f7c31a62ad4e0d1ffc3e040f898bed58d057a1de91fe909d3a8a21b67
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
