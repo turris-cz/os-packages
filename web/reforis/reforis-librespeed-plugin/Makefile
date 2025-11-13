@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=reforis-librespeed-plugin
-PKG_VERSION:=1.3.0
+PKG_VERSION:=1.4.0
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/reforis/reforis-librespeed
-PKG_MIRROR_HASH:=b43a0d74e4c564963b333fc8c43b23815c2e9837c9e70b8c2677aef4ebf13b6a
+PKG_MIRROR_HASH:=df3f50edb40795c9c6640c4a954cc5200d0962e1cedc6be036251ad99cd1b28b
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
