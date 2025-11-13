@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=reforis-remote-wifi-settings-plugin
-PKG_VERSION:=2.2.0
+PKG_VERSION:=2.3.0
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/reforis/reforis-remote-wifi-settings
-PKG_MIRROR_HASH:=bfe0f8a7afe2470c979e62e2d59d4bd3fe88e9f95617f27d7ddf3822fb5ad405
+PKG_MIRROR_HASH:=1a89cdf6c5be7832478d4dd2ad0dfe9026ab59af41c19f40f57b6ba517b7bb20
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
