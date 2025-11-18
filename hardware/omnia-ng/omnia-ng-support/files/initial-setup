@@ -37,6 +37,7 @@ start() {
         uci set "wireless.@wifi-iface[$i].key"="$PASSWORD"
         uci set "wireless.@wifi-iface[$i].encryption"="sae-mixed"
         uci set "wireless.@wifi-iface[$i].disabled"=0
+        uci set "wireless.@wifi-iface[$i].channel"='auto'
         uci set "wireless.$(uci get "wireless.@wifi-iface[$i].device").disabled"=0
         i=$((i + 1))
     done
