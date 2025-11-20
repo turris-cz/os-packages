@@ -7,8 +7,8 @@
 
 include $(TOPDIR)/rules.mk
 
-PKG_NAME:=omnia-5g-kit
-PKG_VERSION:=v0.3
+PKG_NAME:=turris-5g-kit
+PKG_VERSION:=v0.4
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
@@ -16,36 +16,46 @@ PKG_LICENSE:=GPL-2.0
 
 include $(INCLUDE_DIR)/package.mk
 
-define Package/omnia-5g-kit
-  TITLE:=Support for Turris Omnia 5G kit
-  DEPENDS:=@TARGET_mvebu_cortexa9_DEVICE_cznic_turris-omnia \
-          +turris-nor-update \
+define Package/turris-5g-kit
+  TITLE:=Support for Turris 5G kit
+  DEPENDS:=@(TARGET_mvebu_cortexa9_DEVICE_cznic_turris-omnia||TARGET_ipq95xx_generic_DEVICE_cznic_turris-omnia-ng) \
+          +TARGET_mvebu_cortexa9_DEVICE_cznic_turris-omnia:turris-nor-update \
           +comgt-ncm +mwan3 +watchcat \
           +luci-proto-ncm +luci-app-mwan3 +luci-app-watchcat \
           +kmod-usb-net-cdc-ncm +kmod-usb-serial-option
+  PROVIDES:=omnia-5g-kit
   CONFLICTS:=modem-manager-autosetup modem-manager
 endef
 
-define Package/omnia-5g-kit/description
-This package switches internal mPCIe slot into USB3 mode, reconfigures GSM
-network to work with our Quectell RM500U-EA 5G modem and also connects to the
-internet on every boot.
+define Package/turris-5g-kit/description
+This package reconfigures GSM network to work with our Quectell RM500U-EA 5G
+modem and also connects to the internet on every boot.
+
+On Turris Omnia, it will also reconfigure the internal mPCIe to support USB3
+disabling one of the outside USB ports.
 endef
 
 define Build/Compile
 	true
 endef
 
-define Package/omnia-5g-kit/install
+ifeq ($(CONFIG_TARGET_mvebu_cortexa9_DEVICE_cznic_turris-omnia),y)
+BOARD:=omnia
+else
+BOARD:=omnia-ng
+endif
+
+define Package/turris-5g-kit/install
 	$(INSTALL_DIR) $(1)/etc/init.d
 	$(INSTALL_BIN) ./files/5g-kit.init $(1)/etc/init.d/5g-kit
+	sed -i 's|@BOARD@|${BOARD}|g' $(1)/etc/init.d/5g-kit
 	$(INSTALL_DIR) $(1)/etc/hotplug.d/net
-	$(INSTALL_BIN) ./files/hotplug-net-5g-kit $(1)/etc/hotplug.d/net/50-5g-kit
+	$(INSTALL_BIN) ./files/${BOARD}/hotplug-net-5g-kit $(1)/etc/hotplug.d/net/50-5g-kit
 	$(INSTALL_DIR) $(1)/etc/hotplug.d/tty
-	$(INSTALL_BIN) ./files/hotplug-tty-5g-kit $(1)/etc/hotplug.d/tty/50-5g-kit
+	$(INSTALL_BIN) ./files/${BOARD}/hotplug-tty-5g-kit $(1)/etc/hotplug.d/tty/50-5g-kit
 endef
 
-define Package/omnia-5g-kit/postinst
+define Package/turris-5g-kit/postinst
 #!/bin/sh
 [ -n "$$IPKG_INSTROOT" ] || {
     /etc/init.d/5g-kit restart
@@ -85,10 +95,12 @@ EOF
 endef
 
 
-define Package/omnia-5g-kit/prerm
+define Package/turris-5g-kit/prerm
 #!/bin/sh
 [ -n "$$IPKG_INSTROOT" ] || {
-    fw_setenv omnia_wwan_slot pcie
+    if [ "${BOARD}" = 'omnia' ]; then
+        fw_setenv omnia_wwan_slot pcie
+    fi
     uci -q delete network.gsm || :
     uci -q delete network.gsm6 || :
     uci -q delete watchcat.5gkit || :
@@ -104,8 +116,10 @@ define Package/omnia-5g-kit/prerm
         fi
         uci commit firewall
     fi
-    fw_setenv omnia_wwan_slot pcie > /dev/null 2>&1 < /dev/null
+    if [ "${BOARD}" = 'omnia' ]; then
+        fw_setenv omnia_wwan_slot pcie > /dev/null 2>&1 < /dev/null
+    fi
 }
 endef
 
-$(eval $(call BuildPackage,omnia-5g-kit))
+$(eval $(call BuildPackage,turris-5g-kit))
