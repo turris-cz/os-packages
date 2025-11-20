@@ -35,6 +35,11 @@ start() {
     while [ "$(uci get "wireless.@wifi-iface[$i]" 2> /dev/null)" = wifi-iface ]; do
         uci set "wireless.@wifi-iface[$i].ssid"="$SSID"
         uci set "wireless.@wifi-iface[$i].key"="$PASSWORD"
+        if [ "$(uci get "wireless.$(uci get "wireless.@wifi-iface[$i].device").band")" = "6g" ]; then
+            uci set "wireless.@wifi-iface[$i].encryption"="sae"
+        else
+            uci set "wireless.@wifi-iface[$i].encryption"="sae-mixed"
+        fi
         uci set "wireless.@wifi-iface[$i].encryption"="sae-mixed"
         uci set "wireless.@wifi-iface[$i].disabled"=0
         uci set "wireless.@wifi-iface[$i].channel"='auto'
