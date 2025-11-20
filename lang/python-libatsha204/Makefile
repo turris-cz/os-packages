@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2020 CZ.NIC z.s.p.o. (https://www.nic.cz/)
+# Copyright (C) 2020-2025 CZ.NIC z.s.p.o. (https://www.nic.cz/)
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -13,7 +13,7 @@ PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/libatsha204.git
-PKG_MIRROR_HASH:=13e6c61c73bb40ef374939419778cb62426758db0967c54502a7e2c52fc86817
+PKG_MIRROR_HASH:=ef0c60fda15945d547b73b3eb9e182e9a0df81087c2d0ed52fbc167acebd9df5
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 
