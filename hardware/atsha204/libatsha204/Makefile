@@ -12,6 +12,7 @@ PKG_VERSION:=29.3
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
+PKG_GIT_OPTS:=--config fetch.fsckobjects=false
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/libatsha204.git
 PKG_MIRROR_HASH:=c7ed37c122a31ee13df66ee1311c22fae9ea0d04e68642bf0c9f232bb98a37ea
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
