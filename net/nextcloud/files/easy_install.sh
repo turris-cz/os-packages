@@ -31,6 +31,7 @@ mkdir --parents /srv/www/nextcloud/
 if [ ! -f /srv/www/nextcloud/remote.php ]; then
     tar -C /srv/www/nextcloud --strip-components 1 -oxjf /usr/share/nextcloud/nextcloud.tar.bz2 || \
         die "Can't deploy Nextcloud to srv/www/nextcloud/"
+    mkdir -p /srv/www/nextcloud/data
     date +%s > /srv/www/nextcloud/data/.last_update_check
     chown -Rh nobody:nogroup /srv/www/nextcloud
 fi
@@ -81,9 +82,21 @@ fi
 
 # Hack MySQL database
 /etc/init.d/mysqld stop 2> /dev/null
+kill -9 $(pgrep mysqld) 2> /dev/null
 sleep $DELAY
 sudo -u mariadb mysqld --skip-networking --skip-grant-tables --socket=/tmp/mysql_nextcloud.sock > /dev/null 2>&1 &
+sleep $DELAY
 PID="$!"
+
+# Wait until databse is ready
+timeout 10 mysql -u root -e "exit" --socket=/tmp/mysql_nextcloud.sock 2>/dev/null
+status_code=$?
+while [[ $status_code -ne 0 ]];do
+		timeout 10 mysql -u root -e "exit" --socket=/tmp/mysql_nextcloud.sock 2>/dev/null
+        status_code=$?
+        sleep 5
+done
+
 i=0
 while [ "$i" -lt 15 ] && [ \! -S /tmp/mysql_nextcloud.sock ]; do
     sleep 1
