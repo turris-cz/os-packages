@@ -50,7 +50,7 @@ define Package/omnia-rainbow-backend
   DEPENDS:=\
     @TARGET_mvebu_cortexa9_DEVICE_cznic_turris-omnia \
     +kmod-leds-turris-omnia \
-    +rainbow-button-sync \
+    +rainbow-button-sync
   PROVIDES:=rainbow-backend
 endef
 
@@ -60,7 +60,7 @@ define Package/mox-rainbow-backend
     @TARGET_mvebu_cortexa53_DEVICE_cznic_turris-mox \
     +kmod-ledtrig-activity \
     +python3-uci \
-    +rainbow-button-sync \
+    +rainbow-button-sync
   PROVIDES:=rainbow-backend
 endef
 
@@ -69,7 +69,7 @@ define Package/turris1x-rainbow-backend
   DEPENDS:=\
     @TARGET_mpc85xx_p2020_DEVICE_cznic_turris1x \
     +kmod-leds-turris-1x \
-    +rainbow-button-sync \
+    +rainbow-button-sync
   PROVIDES:=rainbow-backend
 endef
 
