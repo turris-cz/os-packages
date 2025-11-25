@@ -13,7 +13,7 @@ PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/foris-controller/foris-controller-librespeed-module.git
-PKG_MIRROR_HASH:=5b71f7f1203a0967721f46d7d4f2a1d95ae1bb1f120cf09220f4801bd187963d  # TODO update hash
+PKG_MIRROR_HASH:=03edeffc5263be21cd7185bb226ecccdf19e76f7cb68c25e976c579b6f20f838
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
