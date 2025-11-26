@@ -2,7 +2,7 @@ include $(TOPDIR)/rules.mk
 include $(INCLUDE_DIR)/kernel.mk
 
 PKG_NAME:=omnia-ng-support
-PKG_VERSION:=1.1
+PKG_VERSION:=1.2
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
@@ -43,6 +43,7 @@ define Package/omnia-ng-support/install
 	$(INSTALL_BIN) ./files/initial-setup "$(1)"/etc/init.d
 	$(INSTALL_BIN) ./files/minirainbow.init "$(1)"/etc/init.d/minirainbow
 	$(INSTALL_BIN) ./files/minirainbow-boot.init "$(1)"/etc/init.d/minirainbow-boot
+	$(INSTALL_BIN) ./files/wifi-checker.init "$(1)"/etc/init.d/wifi-checker
 	$(INSTALL_DIR) $(1)/usr/libexec
 	$(INSTALL_BIN) ./files/minirainbow.sh "$(1)"/usr/libexec
 endef
