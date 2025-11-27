@@ -256,6 +256,10 @@ define Package/leds-wlan-to-phy/description
   change the LEDs configuration to match the new system.
 endef
 
+define Package/fix-wifi7-6ghz/description
+  Default settings on Omnia NG could produce non-working 6 GHz Wi-Fi 7. If we detect the
+  wrong default values, we fix them.
+endef
 
 $(eval $(call FIX,sentinel-remove-invalid-firewall-rules,+firewall +uci))
 $(eval $(call FIX,samba-migrate-to-samba4,+samba4-server +uci))
@@ -291,3 +295,4 @@ $(eval $(call FIX,rainbow-button-sync-enable,+rainbow +rainbow-button-sync))
 $(eval $(call FIX,iptables-to-nftables-packages,+firewall4))
 $(eval $(call FIX,preserve-librespeed-config))
 $(eval $(call FIX,leds-wlan-to-phy))
+$(eval $(call FIX,wifi7-6ghz))
