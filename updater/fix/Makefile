@@ -251,7 +251,7 @@ define Package/fix-preserve-librespeed-config/description
   Keep LibreSpeed config unchanged during the update.
 endef
 
-define Package/leds-wlan-to-phy/description
+define Package/fix-leds-wlan-to-phy/description
   Wi-Fi interfaces are no longer named wlan[0-9], but phy[0-9]ap[0-9]. Let's automatically
   change the LEDs configuration to match the new system.
 endef
