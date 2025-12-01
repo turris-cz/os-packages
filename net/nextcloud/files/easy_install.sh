@@ -91,9 +91,15 @@ PID="$!"
 # Wait until databse is ready
 timeout 10 mysql -u root -e "exit" --socket=/tmp/mysql_nextcloud.sock 2>/dev/null
 status_code=$?
-while [[ $status_code -ne 0 ]];do
-		timeout 10 mysql -u root -e "exit" --socket=/tmp/mysql_nextcloud.sock 2>/dev/null
+counter=0
+while [[ $status_code -ne 0 ]] && [[ $counter -lt 12 ]];do
+
+        timeout 10 mysql -u root -e "exit" --socket=/tmp/mysql_nextcloud.sock 2>/dev/null
         status_code=$?
+
+       [[ $counter -ge 10 ]] && die "Installation failed, because database is not properly running!"
+
+        counter="`expr $counter + 1`"
         sleep 5
 done
 
