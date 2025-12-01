@@ -1,5 +1,5 @@
 #
-## Copyright (C) 2019-2023 CZ.NIC z.s.p.o. (https://www.nic.cz/)
+## Copyright (C) 2019-2025 CZ.NIC z.s.p.o. (https://www.nic.cz/)
 #
 ## This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -261,6 +261,11 @@ define Package/fix-wifi7-6ghz/description
   wrong default values, we fix them.
 endef
 
+define Package/luci-wireguard-app-to-proto/description
+  Package luci-app-wireguard changed to luci-proto-wireguard. Let's change this in updater,
+	so that the users do not have to reinstall this manually.
+endef
+
 $(eval $(call FIX,sentinel-remove-invalid-firewall-rules,+firewall +uci))
 $(eval $(call FIX,samba-migrate-to-samba4,+samba4-server +uci))
 $(eval $(call FIX,updater-v65.0-alternatives-update,+updater-ng +uci,prerm))
@@ -296,3 +301,4 @@ $(eval $(call FIX,iptables-to-nftables-packages,+firewall4))
 $(eval $(call FIX,preserve-librespeed-config))
 $(eval $(call FIX,leds-wlan-to-phy))
 $(eval $(call FIX,wifi7-6ghz))
+$(eval $(call FIX,luci-wireguard-app-to-proto))
