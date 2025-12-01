@@ -261,7 +261,7 @@ define Package/fix-wifi7-6ghz/description
   wrong default values, we fix them.
 endef
 
-define Package/luci-wireguard-app-to-proto/description
+define Package/fix-luci-wireguard-app-to-proto/description
   Package luci-app-wireguard changed to luci-proto-wireguard. Let's change this in updater,
 	so that the users do not have to reinstall this manually.
 endef
