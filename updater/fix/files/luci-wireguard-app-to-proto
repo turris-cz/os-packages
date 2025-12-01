@@ -1,0 +1,2 @@
+#!/bin/sh
+sed -i 's/^Install("luci-app-wireguard")$/Install("luci-proto-wireguard")/' /etc/updater/conf.d/opkg-auto.lua

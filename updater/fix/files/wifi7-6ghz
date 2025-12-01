@@ -1,0 +1,20 @@
+#!/bin/sh
+i=0
+changed=no
+while [ "$(uci get "wireless.@wifi-iface[$i]" 2> /dev/null)" = wifi-iface ]; do
+    if [ "$(uci get "wireless.$(uci get "wireless.@wifi-iface[$i].device").band")" = "6g" ]; then
+        if [ "$(uci -q get "wireless.$(uci get "wireless.@wifi-iface[$i].device").channel")" = 1 ]; then
+            uci set "wireless.$(uci get "wireless.@wifi-iface[$i].device").channel"='auto'
+            changed=yes
+        fi
+        if [ "$(uci -q get "wireless.@wifi-iface[$i].encryption")" = "sae-mixed" ]; then
+            uci set "wireless.@wifi-iface[$i].encryption"="sae"
+            changed=yes
+        fi
+    fi
+    i=$((i + 1))
+done
+if [ "$changed" = yes ]; then
+    uci commit wireless
+    wifi
+fi
