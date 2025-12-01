@@ -13,7 +13,7 @@ PKG_RELEASE:=2025-09-25-02
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/peacockr.git
-PKG_SOURCE_VERSION:=4f1bc97f6bda457f7f42bb505de7ee1606c21870
+PKG_SOURCE_VERSION:=c46ee2b6df2a3aa30986e9f437672ca76954ec56
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 PKG_LICENSE:=GPL-3.0-or-later
@@ -54,8 +54,8 @@ define Package/peacockr/install
 	$(INSTALL_DIR) $(1)/etc/init.d/
 	$(INSTALL_BIN) ./files/peacockr.init   $(1)/etc/init.d/peacockr
 
-	$(INSTALL_DIR) $(1)/etc/config/
-	$(INSTALL_BIN) ./files/peacockr.config $(1)/etc/config/peacockr
+	$(INSTALL_DIR) $(1)/etc/peacockr/
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/resources/config.kdl $(1)/etc/peacockr/config.kdl
 endef
 
 #Build/Compile = $(call Build/Compile/Cargo,peacockr)
