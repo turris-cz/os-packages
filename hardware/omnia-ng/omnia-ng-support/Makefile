@@ -2,7 +2,7 @@ include $(TOPDIR)/rules.mk
 include $(INCLUDE_DIR)/kernel.mk
 
 PKG_NAME:=omnia-ng-support
-PKG_VERSION:=1.3
+PKG_VERSION:=1.4
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
@@ -43,9 +43,17 @@ define Package/omnia-ng-support/install
 	$(INSTALL_BIN) ./files/initial-setup "$(1)"/etc/init.d
 	$(INSTALL_BIN) ./files/minirainbow.init "$(1)"/etc/init.d/minirainbow
 	$(INSTALL_BIN) ./files/minirainbow-boot.init "$(1)"/etc/init.d/minirainbow-boot
-	$(INSTALL_BIN) ./files/wifi-checker.init "$(1)"/etc/init.d/wifi-checker
 	$(INSTALL_DIR) $(1)/usr/libexec
 	$(INSTALL_BIN) ./files/minirainbow.sh "$(1)"/usr/libexec
+endef
+
+define Package/omnia-ng-support/postinst
+#!/bin/sh
+[ -n "$$IPKG_INSTROOT" ] || {
+    if uci show wireless | grep -q VHT[0-9]; then
+        create_notification -s error 'Your Wi-Fi is set to Wi-Fi 5. Wi-Fi 7 should be stable now, you can try switching back to Wi-Fi 7 (802.11be).'
+    fi
+}
 endef
 
 $(eval $(call BuildPackage,omnia-ng-support))
