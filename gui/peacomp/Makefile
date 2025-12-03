@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=peacomp
 PKG_VERSION:=0.1.2
-PKG_RELEASE:=2025-11-05-01
+PKG_RELEASE:=2025-11-05-02
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/ekalouskova/peacomp.git
