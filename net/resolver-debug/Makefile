@@ -50,7 +50,7 @@ define Package/resolver-debug/postinst
 if [ -z "$$IPKG_INSTROOT" ]; then
 	/etc/resolver/resolver-debug.sh remove-btn
 	/etc/resolver/resolver-debug.sh add-btn
-	/etc/init.d/syslog-ng reload
+	/etc/init.d/syslog-ng reload 2>/dev/null || true
 fi
 endef
 
