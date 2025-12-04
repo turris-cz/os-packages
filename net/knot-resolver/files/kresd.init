@@ -31,6 +31,7 @@ print() {
 
 service_triggers() {
 	procd_add_reload_trigger "dhcp"
+	procd_add_reload_trigger "odhcpd"
 }
 
 add_listen_addr() {
@@ -42,18 +43,27 @@ add_listen_addr() {
 }
 
 init_header() {
-	echo "--Automatically generated file; DO NOT EDIT" > $CONFIGFILE
-	echo "modules = {" >> $CONFIGFILE
-	config_get_bool prefetch common prefetch 0
-	echo "    'hints > iterate'"  >> $CONFIGFILE
-	echo "  , 'policy'" >> $CONFIGFILE
-	if [ "$prefetch" \!= 0 ]; then
-		echo "  , 'stats'" >> $CONFIGFILE
-		echo "  , predict = { window = 0, period = 0 }" >> $CONFIGFILE
-	fi
-	echo "}" >> $CONFIGFILE
+	(
+		echo "--Automatically generated file; DO NOT EDIT"
+		echo "modules = {"
+		if [ "$DYNAMIC_DOMAINS" \!= 0 ]; then
+			echo "    'turris_hosts > hints > iterate'"
+		else
+			echo "    'hints > iterate'"
+		fi
 
-	echo "hints.use_nodata(true)" >> $CONFIGFILE
+		echo "  , 'policy'"
+
+		config_get_bool prefetch common prefetch 0
+		if [ "$prefetch" \!= 0 ]; then
+			echo "  , 'stats'"
+			echo "  , predict = { window = 0, period = 0 }"
+		fi
+
+		echo "}"
+
+		echo "hints.use_nodata(true)"
+	) > $CONFIGFILE
 
 	# clear hints file
 	echo "" > $HINTS_CONFIG
@@ -82,6 +92,14 @@ include_custom_config() {
 	else
 		[ -z "$custom_config_path" ] || echo "Warning! Kresd custom config file  $custom_config_path doesn't exist."
 	fi
+}
+
+load_uci_config_header() {
+	# enable static local domains
+	config_get_bool STATIC_DOMAINS common static_domains 1
+
+	# get dynamic domains
+	config_get_bool DYNAMIC_DOMAINS common dynamic_domains 1
 }
 
 load_uci_config_common() {
@@ -200,12 +218,6 @@ load_uci_config_common() {
 		fi
 	fi
 
-	# enable static local domains
-	config_get_bool STATIC_DOMAINS "$section" static_domains 1
-
-	# get dynamic domains
-	config_get_bool DYNAMIC_DOMAINS "$section" dynamic_domains 1
-
 	# include custom kresd config
 	include_custom_config
 }
@@ -292,6 +304,19 @@ load_uci_config_kresd() {
 
 	config_load resolver
 
+	# configure hosts module
+	(
+		if [ "$DYNAMIC_DOMAINS" \!= 0 ]; then
+			echo
+			echo "turris_hosts.config {"
+			echo "    suffix    = '$DOMAIN',"
+			echo "    ubus_path = '/run/ubus/ubus.sock',"
+			echo "}"
+			echo
+			echo "policy.add(policy.suffix(policy.PASS, policy.todnames({'d.f.ip6.arpa.'})))"
+		fi
+	) >> $CONFIGFILE
+
 	# load hints config
 	set_param_func "hints.config" "'$HINTS_CONFIG'"
 }
@@ -314,6 +339,7 @@ run_instance() {
 	procd_set_param nice '-5'
 	procd_set_param respawn
 	modify_rundir
+	load_uci_config_header
 	init_header
 	load_uci_config_kresd
 	load_uci_config_common

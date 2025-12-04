@@ -42,6 +42,7 @@ define Package/knot-resolver
     +lmdb \
     +luajit \
     +resolver-conf \
+	+kres-turris-hosts \
     PACKAGE_knot-resolver_dnstap:libfstrm \
     PACKAGE_knot-resolver_dnstap:libprotobuf-c
   PROVIDES:=dns-resolver

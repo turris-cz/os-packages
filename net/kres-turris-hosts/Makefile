@@ -13,7 +13,7 @@ PKG_RELEASE:=2025-12-03-01
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/ekalouskova/kres-turris-hosts.git
-PKG_SOURCE_VERSION:=2c0fc793d022b3a5d2eff422b16df17ee4b92b0d
+PKG_SOURCE_VERSION:=b75bf0562b42659c434ea9abc585c0b92a3106c2
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 PKG_LICENSE:=GPL-3.0-or-later
