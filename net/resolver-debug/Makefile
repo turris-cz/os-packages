@@ -42,7 +42,7 @@ define Package/resolver-debug/install
 	$(CP) ./files/syslog/resolver.conf $(1)/usr/share/syslog-ng/include/scl/resolver/
 
 	$(INSTALL_DIR) $(1)/etc/logrotate.d
-	$(CP) ./files/logrotate/resolver.conf $(1)/etc/logrotate.d/
+	$(INSTALL_DATA) ./files/logrotate/resolver.conf $(1)/etc/logrotate.d/
 endef
 
 define Package/resolver-debug/postinst
