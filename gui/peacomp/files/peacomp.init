@@ -13,6 +13,9 @@ start_service() {
 	procd_set_param command "/usr/bin/peacomp"
 	procd_set_param stdout  1
 	procd_set_param stderr  1
-	procd_set_param env PEACOMP_TEST_PROGRAM_PATH=/usr/libexec/ng-snek PEACOMP_BACKEND=linux XDG_RUNTIME_DIR="$XDG_RUNTIME_DIR" PEACOMP_WAYLAND_DISPLAY="path:${WAYLAND_DISPLAY}"
+	procd_set_param env PEACOMP_TEST_PROGRAM_PATH=/usr/libexec/ngsnek PEACOMP_BACKEND=linux XDG_RUNTIME_DIR="$XDG_RUNTIME_DIR" PEACOMP_WAYLAND_DISPLAY="path:${WAYLAND_DISPLAY}"
 	procd_close_instance
+	if /etc/init.d/peacockr enabled; then
+		/etc/init.d/peacockr restart
+	fi
 }

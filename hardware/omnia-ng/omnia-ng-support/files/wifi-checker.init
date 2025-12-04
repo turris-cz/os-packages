@@ -1,11 +1,4 @@
-#!/bin/sh /etc/rc.common
-START=99
-STOP=01
-USE_PROCD=1
-
-start_service() {
-    if uci show wireless | grep -q EHT[0-9]; then
-        create_notification -s error 'Your Wi-Fi is set to Wi-Fi 7. We are currently experiencing issues with the Wi-Fi 7 driver. If you encounter instabilities, try temporarily downgrading to Wi-Fi 5.'
-    fi
-}
-
+#!/bin/sh
+if uci show wireless | grep -q VHT[0-9]; then
+    create_notification -s error 'Your Wi-Fi is set to Wi-Fi 5. Wi-Fi 7 should be stable now again, you can try switching back to Wi-Fi 7 (802.11be).'
+fi
