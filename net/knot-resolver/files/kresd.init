@@ -304,9 +304,13 @@ load_uci_config_kresd() {
 
 	config_load resolver
 
-	# configure hosts module
-	(
-		if [ "$DYNAMIC_DOMAINS" \!= 0 ]; then
+	# load hints config
+	set_param_func "hints.config" "'$HINTS_CONFIG'"
+}
+
+setup_hosts_module() {
+	if [ "$DYNAMIC_DOMAINS" \!= 0 ]; then
+		(
 			echo
 			echo "turris_hosts.config {"
 			echo "    suffix    = '$DOMAIN',"
@@ -314,11 +318,14 @@ load_uci_config_kresd() {
 			echo "}"
 			echo
 			echo "policy.add(policy.suffix(policy.PASS, policy.todnames({'d.f.ip6.arpa.'})))"
-		fi
-	) >> $CONFIGFILE
 
-	# load hints config
-	set_param_func "hints.config" "'$HINTS_CONFIG'"
+			[ "$DOMAIN" = "home.arpa" ] && \
+				echo "policy.add(policy.suffix(policy.PASS, policy.todnames({'home.arpa.'})))"
+
+		) >> $CONFIGFILE
+
+		setfacl --modify "user:$USERNAME:x" /run
+	fi
 }
 
 test_ipv6() {
@@ -345,7 +352,8 @@ run_instance() {
 	load_uci_config_common
 
 	echo "user('$USERNAME','$GROUP')" >> $CONFIGFILE
-
+	setup_hosts_module
+	
 	procd_close_instance
 	[ \! -x "$(which at)" ] || echo "/etc/init.d/kresd test_ipv6" | at now+2min 2>&1 | fgrep -v 'warning: commands will be executed using /bin/sh'
 }
@@ -415,6 +423,10 @@ print_kresd_forward_config() {
 start_service() {
 	config_load resolver
 	run_instance
+}
+
+stop_service() {
+	setfacl --remove "user:$USERNAME" /run
 }
 
 reload_service()
