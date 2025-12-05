@@ -42,6 +42,9 @@ endef
 define Package/kres-turris-hosts/install
 	$(INSTALL_DIR) $(1)/usr/lib/knot-resolver/kres_modules
 	$(CP) $(PKG_BUILD_DIR)/target/$(RUSTC_TARGET_ARCH)/release/libturris_hosts.so $(1)/usr/lib/knot-resolver/kres_modules/turris_hosts.so
+
+	$(INSTALL_DIR) $(1)/usr/share/acl.d
+	$(CP) ./files/acl.json /usr/share/acl.d/kres-turris-hosts.json
 endef
 
 define Build/Compile

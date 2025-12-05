@@ -1,0 +1,12 @@
+{
+	"user": "kresd",
+	"access": {
+		"dhcp": {
+			"methods": ["ipv6leases", "ipv4leases"]
+		},
+		"dnsmasq": {
+			"methods": ["metrics"]
+		}
+	},
+	"subscribe": ["dhcp", "dnsmasq"]
+}
