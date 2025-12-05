@@ -5,4 +5,9 @@ export MACADDR
 export IPADDR
 export HOSTNAME
 
-python3 /etc/resolver/dhcp_host_domain_ng.py "$@"
+# This script is now deprecated in favor of turris_hosts module for Knot Resolver
+# If you happen to use Unbound (default on Turris 1.x) or other DNS resolver, it is still available
+# as a fallback.
+
+[ $(uci get resolver.common.prefered_resolver) \!= "kresd" ] && \
+	python3 /etc/resolver/dhcp_host_domain_ng.py "$@"
