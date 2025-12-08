@@ -52,6 +52,7 @@ define Package/schnapps/install
 	$(INSTALL_CONF) $(PKG_BUILD_DIR)/schnapps.uci $(1)/etc/config/schnapps
 	$(INSTALL_DIR) $(1)/etc/schnapps/rollback.d/
 	$(INSTALL_BIN) ./files/cert-backup_hook.sh $(1)/etc/schnapps/rollback.d/10_cert-backup.sh
+	$(INSTALL_BIN) ./files/approvals_purge.sh $(1)/etc/schnapps/rollback.d/20_approvals_purge.sh
 
 	$(INSTALL_DIR) $(1)/etc/cron.d
 	$(INSTALL_CONF) $(PKG_BUILD_DIR)/schnapps.cron $(1)/etc/cron.d/schnapps
