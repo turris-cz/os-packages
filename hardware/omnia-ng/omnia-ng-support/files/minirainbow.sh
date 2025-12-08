@@ -170,5 +170,5 @@ WAN_STATUS_PID="$!"
 WIFI_STATUS_PID="$!"
 
 
-trap "kill $WIFI_STATUS_PID; kill $WAN_STATUS_PID; kill $BRIGHTNESS_PID; wait" INT
+trap "kill $WIFI_STATUS_PID; kill $WAN_STATUS_PID; kill $BRIGHTNESS_PID; wait" 2 3 15
 wait
