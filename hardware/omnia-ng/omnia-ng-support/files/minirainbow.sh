@@ -148,6 +148,11 @@ uci show rainbow 2> /dev/null | grep -q 'rainbow.all.brightness' || {
 } &
 BRIGHTNESS_PID="$!"
 
+
+if ! uci show systemn 2> /dev/null | grep '^system.@led[0-9*].sysfs=.rgb:indicator.'; then
+    echo 0 0 0 > /sys/class/leds/rgb:indicator/multi_intensity
+fi
+
 {
     trap "wan_status;" HUP
     while true; do
