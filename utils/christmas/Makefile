@@ -38,7 +38,7 @@ define Package/christmas/install
 	$(INSTALL_BIN) ./files/christmas.sh $(1)/usr/bin/christmas
 
 	$(INSTALL_DIR) $(1)/etc/init.d
-	$(INSTALL_BIN) ./files/christmas.init $(1)/etc/init.d/christmas
+	$(INSTALL_BIN) ./files/christmas.init $(1)/etc/init.d/xmas
 
 	$(INSTALL_DIR) $(1)/etc/config
 	$(INSTALL_CONF) ./files/christmas.uci $(1)/etc/config/christmas
