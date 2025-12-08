@@ -8,7 +8,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=pkglists
-PKG_VERSION:=1.14
+PKG_VERSION:=1.15
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
@@ -33,6 +33,7 @@ define Package/pkglists/install
 	m4 \
 		$(if $(CONFIG_TARGET_mpc85xx),,-DGO) \
 		$(if $(CONFIG_TARGET_mvebu_cortexa9_DEVICE_cznic_turris-omnia),-DOMNIA,) \
+		$(if $(CONFIG_TARGET_ipq95xx_generic_DEVICE_cznic_turris-omnia-ng),-DOMNIANG,) \
 		./files/definitions.json > $(1)/usr/share/updater/pkglists.json
 	$(INSTALL_DATA) ./files/labels.json $(1)/usr/share/updater/pkglists-labels.json
 
