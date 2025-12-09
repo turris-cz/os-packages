@@ -59,6 +59,7 @@ wan_status() {
     fi
     BRIGHTNESS="$(uci get rainbow.all.brightness 2> /dev/null)"
     set_color "$status" "$WAN_LED"
+    set_val "$BRIGHTNESS" "$WAN_LED"/brightness
     if [ "$TRIGGERS" = yes ]; then
         set_trigger "netdev" "$WAN_LED"/trigger
         set_val "$(ifstatus wan | jsonfilter -e '@.device')" "$WAN_LED"/device_name
@@ -68,7 +69,6 @@ wan_status() {
     else
         set_trigger "default-on" "$WAN_LED"/trigger
     fi
-    set_val "$BRIGHTNESS" "$WAN_LED"/brightness
     [ "$status" = "$GREEN" ] || [ "$status" = "$CYAN" ]
     return $?
 }
@@ -91,6 +91,7 @@ wifi_status() {
     fi
     BRIGHTNESS="$(uci get rainbow.all.brightness 2> /dev/null)"
     set_color "$color" "$WIFI_LED"
+    set_val "$BRIGHTNESS" "$WAN_LED"/brightness
     if [ "$TRIGGERS" = yes ]; then
         set_trigger "netdev" "$WIFI_LED"/trigger
         set_val "$(ifstatus lan | jsonfilter -e '@.device')"  "$WIFI_LED"/device_name
@@ -100,7 +101,6 @@ wifi_status() {
     else
         set_trigger "default-on" "$WIFI_LED"/trigger
     fi
-    set_val "$BRIGHTNESS" "$WIFI_LED"/brightness
 }
 
 BRIGHTNESS="$(uci get rainbow.all.brightness 2> /dev/null)"
@@ -148,6 +148,11 @@ uci show rainbow 2> /dev/null | grep -q 'rainbow.all.brightness' || {
 } &
 BRIGHTNESS_PID="$!"
 
+
+if ! uci show systemn 2> /dev/null | grep '^system.@led[0-9*].sysfs=.rgb:indicator.'; then
+    echo 0 0 0 > /sys/class/leds/rgb:indicator/multi_intensity
+fi
+
 {
     trap "wan_status;" HUP
     while true; do
@@ -170,5 +175,5 @@ WAN_STATUS_PID="$!"
 WIFI_STATUS_PID="$!"
 
 
-trap "kill $WIFI_STATUS_PID; kill $WAN_STATUS_PID; kill $BRIGHTNESS_PID;" INT
+trap "kill $WIFI_STATUS_PID; kill $WAN_STATUS_PID; kill $BRIGHTNESS_PID; wait" 2 3 15
 wait

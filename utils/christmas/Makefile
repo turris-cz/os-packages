@@ -8,7 +8,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=christmas
-PKG_VERSION:=1.0.0
+PKG_VERSION:=1.1.0
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
@@ -20,7 +20,7 @@ include $(INCLUDE_DIR)/package.mk
 define Package/christmas
   TITLE:=Christmas
   DEPENDS:=+coreutils-sleep
-  DEPENDS+=@(TARGET_mvebu_cortexa9_DEVICE_cznic_turris-omnia||TARGET_mpc85xx_p2020_DEVICE_cznic_turris1x)
+  DEPENDS+=@(TARGET_mvebu_cortexa9_DEVICE_cznic_turris-omnia||TARGET_mpc85xx_p2020_DEVICE_cznic_turris1x||TARGET_ipq95xx_generic_DEVICE_cznic_turris-omnia-ng)
 endef
 
 define Package/christmas/description
@@ -38,7 +38,7 @@ define Package/christmas/install
 	$(INSTALL_BIN) ./files/christmas.sh $(1)/usr/bin/christmas
 
 	$(INSTALL_DIR) $(1)/etc/init.d
-	$(INSTALL_BIN) ./files/christmas.init $(1)/etc/init.d/christmas
+	$(INSTALL_BIN) ./files/christmas.init $(1)/etc/init.d/xmas
 
 	$(INSTALL_DIR) $(1)/etc/config
 	$(INSTALL_CONF) ./files/christmas.uci $(1)/etc/config/christmas
