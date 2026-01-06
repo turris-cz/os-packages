@@ -8,12 +8,13 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=peacockr
-PKG_VERSION:=0.1
-PKG_RELEASE:=2025-09-25-02
+PKG_VERSION:=0.3.0
+PKG_RELEASE:=1
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/peacockr.git
-PKG_SOURCE_VERSION:=4f1bc97f6bda457f7f42bb505de7ee1606c21870
+PKG_MIRROR_HASH:=f6fb0f5df5c093ecd9ea69b664bd247753b179e68e831b9f50f0dffa9ea589c8
+PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 PKG_LICENSE:=GPL-3.0-or-later
@@ -44,7 +45,7 @@ define Package/peacockr/description
 endef
 
 define Package/peacockr/conffiles
-/etc/config/peacockr
+/etc/peacockr/config.kdl
 endef
 
 define Package/peacockr/install
@@ -54,8 +55,8 @@ define Package/peacockr/install
 	$(INSTALL_DIR) $(1)/etc/init.d/
 	$(INSTALL_BIN) ./files/peacockr.init   $(1)/etc/init.d/peacockr
 
-	$(INSTALL_DIR) $(1)/etc/config/
-	$(INSTALL_BIN) ./files/peacockr.config $(1)/etc/config/peacockr
+	$(INSTALL_DIR) $(1)/etc/peacockr
+	$(INSTALL_DATA) $(PKG_BUILD_DIR)/resources/config.kdl $(1)/etc/peacockr/config.kdl
 endef
 
 #Build/Compile = $(call Build/Compile/Cargo,peacockr)
