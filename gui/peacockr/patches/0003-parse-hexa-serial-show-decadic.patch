@@ -1,0 +1,370 @@
+From bb8b88f5af16eb3b54ea90ba5ef693778ca04d70 Mon Sep 17 00:00:00 2001
+From: Erin <erin@erindesu.cz>
+Date: Tue, 16 Dec 2025 23:00:06 +0100
+Subject: [PATCH] fixup: parse serial number as hexadecimal
+
+---
+ src/environment.rs |   2 +-
+ src/utils2.rs      | 306 ---------------------------------------------
+ 2 files changed, 1 insertion(+), 307 deletions(-)
+ delete mode 100644 src/utils2.rs
+
+Index: peacockr-0.1/src/backend/sysinfo.rs
+===================================================================
+--- peacockr-0.1.orig/src/backend/sysinfo.rs
++++ peacockr-0.1/src/backend/sysinfo.rs
+@@ -74,7 +74,7 @@ pub struct Static {
+ 	/// Hostname
+ 	pub hostname:       Box<str>,
+ 	/// Serial number
+-	pub serial_number:  u32,
++	pub serial_number:  u64,
+ }
+ 
+ impl Debug for Static {
+Index: peacockr-0.1/src/environment.rs
+===================================================================
+--- peacockr-0.1.orig/src/environment.rs
++++ peacockr-0.1/src/environment.rs
+@@ -106,7 +106,7 @@ fn sysinfo_for_turris(authority: Ambient
+ 			);
+ 		}
+ 
+-		u32::from_str_radix(std::str::from_utf8(&process_out.stdout)?.trim(), 10)?
++		u64::from_str_radix(std::str::from_utf8(&process_out.stdout)?.trim(), 16)?
+ 	};
+ 
+ 	let mut model = String::new();
+@@ -136,7 +136,7 @@ fn sysinfo_for_dev(_authority: AmbientAu
+ 			build: semver::BuildMetadata::new("mock")?,
+ 		},
+ 		kernel_version,
+-		serial_number: u32::MAX,
++		serial_number: u64::MAX,
+ 		hostname,
+ 	})
+ }
+Index: peacockr-0.1/src/utils2.rs
+===================================================================
+--- peacockr-0.1.orig/src/utils2.rs
++++ /dev/null
+@@ -1,306 +0,0 @@
+-use crate::ui::{Bandwidth, Interface, Menu, MenuEntry, SystemInfo};
+-use anyhow::{Context, anyhow};
+-use default_env::default_env;
+-use qrcode::QrCode;
+-use qrcode::render::svg;
+-use slint::ModelRc;
+-use std::collections::HashMap;
+-use std::ffi::OsStr;
+-use std::fs::{read_dir, read_to_string};
+-use std::path::Path;
+-use std::process::Command;
+-use std::str::FromStr;
+-use std::sync::LazyLock;
+-use std::sync::Mutex;
+-use std::time::SystemTime;
+-use ucier::document::ConfigOption;
+-use ucier::syntax::Directive;
+-
+-const MENU_ROOT_PATH: &str = default_env!("MENU_ROOT_PATH", "./menu");
+-const MOCK_FS: &str = default_env!("MOCK_FS", "");
+-
+-static BANDWIDTH_CACHE: LazyLock<Mutex<HashMap<String, BandwidthCache>>> =
+-    LazyLock::new(|| Mutex::new(HashMap::new()));
+-
+-struct BandwidthCache {
+-    interface: String,
+-    rx: u128,
+-    tx: u128,
+-    ts: SystemTime,
+-}
+-
+-impl BandwidthCache {
+-    fn new(interface: String) -> Self {
+-        let rx = read_to_string(format!("/sys/class/net/{interface}/statistics/rx_bytes"))
+-            .ok()
+-            .and_then(|e| u128::from_str(e.trim()).ok())
+-            .unwrap_or(0);
+-
+-        let tx = read_to_string(format!("/sys/class/net/{interface}/statistics/tx_bytes"))
+-            .ok()
+-            .and_then(|e| u128::from_str(e.trim()).ok())
+-            .unwrap_or(0);
+-
+-        Self {
+-            interface,
+-            rx,
+-            tx,
+-            ts: SystemTime::now(),
+-        }
+-    }
+-
+-    fn make_bandwidth(&self, other: Option<&Self>) -> Bandwidth {
+-        if let Some(other) = other {
+-            let dt = self.ts.duration_since(other.ts).unwrap().as_millis();
+-            Bandwidth {
+-                rx: (self.rx - other.rx) as f32 / dt as f32,
+-                tx: (self.tx - other.tx) as f32 / dt as f32,
+-            }
+-        } else {
+-            Default::default()
+-        }
+-    }
+-}
+-
+-pub fn get_bandwidth(interface: String) -> Bandwidth {
+-    let val = BandwidthCache::new(interface.clone());
+-    eprintln!(
+-        "Read interface {} status {} / {}",
+-        val.interface, val.rx, val.tx
+-    );
+-    let ret = val.make_bandwidth(BANDWIDTH_CACHE.lock().unwrap().get(&interface));
+-    BANDWIDTH_CACHE.lock().unwrap().insert(interface, val);
+-    ret
+-}
+-
+-pub fn get_uptime() -> i32 {
+-    let (uptime, _) = lexical::parse_partial::<i32, _>(
+-        read_to_string(format!("{MOCK_FS}/proc/uptime")).unwrap_or_default(),
+-    )
+-    .unwrap_or((-1, 1));
+-    uptime
+-}
+-
+-pub fn get_hostname() -> slint::SharedString {
+-    read_to_string(format!("{MOCK_FS}/proc/sys/kernel/hostname"))
+-        .unwrap_or_default()
+-        .trim()
+-        .into()
+-}
+-
+-pub fn get_system_info() -> anyhow::Result<SystemInfo> {
+-    let model = read_to_string(format!("{MOCK_FS}/tmp/sysinfo/model"))
+-        .map_err(|_| anyhow!("Can't read model version"))?
+-        .trim()
+-        .into();
+-
+-    let serial = String::from_utf8_lossy(
+-        &Command::new("crypto-wrapper")
+-            .arg("serial")
+-            .output()
+-            .map_err(|_| anyhow!("Can't get serial number"))?
+-            .stdout,
+-    )
+-    .into_owned()
+-    .trim()
+-    .into();
+-
+-    let kernel_version = String::from_utf8_lossy(
+-        &Command::new("uname")
+-            .arg("-r")
+-            .output()
+-            .map_err(|_| anyhow!("Can't get kernel version"))?
+-            .stdout,
+-    )
+-    .into_owned()
+-    .trim()
+-    .into();
+-
+-    let os_version = read_to_string(format!("{MOCK_FS}/etc/turris-version"))
+-        .map_err(|_| anyhow!("Can't read Turris OS version"))?
+-        .trim()
+-        .into();
+-
+-    let branch_cmd = Command::new("uci")
+-        .arg("get")
+-        .arg("updater.turris.branch")
+-        .output();
+-    let branch = if let Ok(output) = branch_cmd {
+-        String::from_utf8_lossy(&output.stdout)
+-            .into_owned()
+-            .trim()
+-            .into()
+-    } else {
+-        "hbk".into()
+-    };
+-
+-    Ok(SystemInfo {
+-        model,
+-        serial,
+-        kernel_version,
+-        os_version,
+-        branch,
+-    })
+-}
+-
+-pub fn run_action(path: slint::SharedString) -> bool {
+-    eprintln!("Running {path}!");
+-    Command::new(path).status().is_ok_and(|x| x.success())
+-}
+-
+-pub fn load_menu_entry(path: std::path::PathBuf, submenu: bool) -> MenuEntry {
+-    let mut label_path = path.clone();
+-    label_path.set_extension("label");
+-    MenuEntry {
+-        action: path.to_str().unwrap().into(),
+-        label: read_to_string(label_path)
+-            .unwrap_or(path.file_stem().and_then(OsStr::to_str).unwrap().into())
+-            .trim()
+-            .into(),
+-        submenu,
+-    }
+-}
+-
+-pub fn make_menu(path: slint::SharedString) -> anyhow::Result<Menu> {
+-    let mut entries = Vec::new();
+-    let mut path = path;
+-
+-    if path == "/" {
+-        path = MENU_ROOT_PATH.into();
+-    }
+-
+-    let path = std::path::Path::new(path.as_str());
+-
+-    for entry in read_dir(path)? {
+-        let entry = entry?;
+-        if entry.file_type()?.is_dir() {
+-            entries.push(load_menu_entry(entry.path(), true));
+-        } else if entry.path().extension().unwrap_or_default() == "action" {
+-            entries.push(load_menu_entry(entry.path(), false));
+-        }
+-    }
+-
+-    let default_back_action = std::path::Path::new(MENU_ROOT_PATH);
+-    let back_action_str = if path == default_back_action {
+-        ""
+-    } else {
+-        path.parent()
+-            .filter(|e| e.starts_with(MENU_ROOT_PATH))
+-            .map(|e| e.to_str().unwrap_or("/"))
+-            .unwrap_or("")
+-    };
+-
+-    let label = read_to_string(path.with_extension("label")).unwrap_or(
+-        path.file_name()
+-            .and_then(OsStr::to_str)
+-            .unwrap_or("Menu")
+-            .into(),
+-    );
+-
+-    Ok(Menu {
+-        label: label.into(),
+-        entries: ModelRc::from(entries.as_slice()),
+-        back_action: back_action_str.into(),
+-    })
+-}
+-
+-pub fn get_qr_code<T1: std::fmt::Display, T2: std::fmt::Display>(
+-    ssid: T1,
+-    pass: T2,
+-) -> anyhow::Result<slint::Image> {
+-    let code = QrCode::new(format!("WIFI:T:WPA;S:{ssid};P:{pass};;"))
+-        .map_err(Into::<anyhow::Error>::into)?;
+-    slint::Image::load_from_svg_data(code.render::<svg::Color>().build().as_bytes())
+-        .map_err(Into::<anyhow::Error>::into)
+-}
+-
+-pub fn get_interfaces() -> anyhow::Result<Vec<Interface>> {
+-    let mut ret = Vec::new();
+-    for iface in read_dir("/sys/class/net/")? {
+-        let iface = iface?;
+-        let name = iface
+-            .file_name()
+-            .into_string()
+-            .map_err(|_| anyhow!("Failed to convert string"))?;
+-
+-        let net_path = iface.path();
+-        let up = read_to_string(net_path.join("carrier"))
+-            .unwrap_or("0".into())
+-            .trim()
+-            == "1";
+-
+-        let speed = read_to_string(net_path.join("speed"))
+-            .unwrap_or("-1".into())
+-            .trim()
+-            .parse::<i32>()
+-            .unwrap_or(-1);
+-
+-        eprintln!("Interface {name} (up: {up}, speed: {speed}) found!");
+-        ret.push(Interface {
+-            name: name.into(),
+-            up,
+-            speed,
+-        })
+-    }
+-    Ok(ret)
+-}
+-
+-/// Returns whether we are in initial setup or not
+-pub fn is_in_initial_setup() -> anyhow::Result<bool> {
+-    let file = load_uci_config_file("foris")?;
+-    let entry = file
+-        .lookup_by_name("wizard")
+-        .context("no config entry wizard found")?
+-        .get("finished");
+-
+-    match entry {
+-        Some(ConfigOption::Scalar(s)) if s == "1" => Ok(true),
+-        _ => Ok(false),
+-    }
+-}
+-
+-/// Load UCI config file
+-pub fn load_uci_config_file(file: &str) -> anyhow::Result<ucier::document::File> {
+-    let path = Path::new(crate::UCI_CONFIG_DIR).join(file);
+-    let content = std::fs::read_to_string(path)?;
+-    let mut content = &content[..];
+-
+-    let mut file = ucier::document::File::default();
+-    let mut importer = file.importer();
+-
+-    while let Some(directive) = Directive::next_from_str(&mut content)? {
+-        importer.import(directive)?;
+-    }
+-
+-    Ok(file)
+-}
+-
+-#[cfg(test)]
+-mod tests {
+-    use super::*;
+-
+-    #[test]
+-    fn test_system_info() {
+-        let sysinfo = get_system_info().unwrap();
+-        assert_eq!(sysinfo.model, "Turris Omnia");
+-        assert_eq!(sysinfo.serial, "0000000A0000DEAD");
+-        assert_eq!(sysinfo.os_version, "9.0.0");
+-        assert_eq!(sysinfo.kernel_version, "6.6.6");
+-        assert_eq!(sysinfo.branch, "hbk");
+-    }
+-
+-    #[test]
+-    fn test_hostname() {
+-        assert_eq!(get_hostname(), "turris");
+-    }
+-
+-    #[test]
+-    fn test_uptime() {
+-        assert_eq!(get_uptime(), 3296428);
+-    }
+-
+-    #[test]
+-    fn initial_setup_check() {
+-        assert!(is_in_initial_setup().unwrap());
+-    }
+-}
+Index: peacockr-0.1/src/relay/mod.rs
+===================================================================
+--- peacockr-0.1.orig/src/relay/mod.rs
++++ peacockr-0.1/src/relay/mod.rs
+@@ -77,7 +77,7 @@ async fn sysinfo_bind(
+ 	global.set_kernel_version(static_info.kernel_version.to_shared_string());
+ 	global.set_model(static_info.model.to_shared_string());
+ 	global.set_os_version(static_info.os_version.to_shared_string());
+-	global.set_serial(slint::format!("{:032}", static_info.serial_number));
++	global.set_serial(slint::format!("{}", static_info.serial_number));
+ 
+ 	app.global::<ui::Readouts>()
+ 		.set_hostname(static_info.hostname.to_shared_string());

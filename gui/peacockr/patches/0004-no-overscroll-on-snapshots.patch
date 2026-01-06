@@ -1,0 +1,26 @@
+From 869d045402f852c45f5a90650a5f1f3f0b9241bf Mon Sep 17 00:00:00 2001
+From: Erin <erin@erindesu.cz>
+Date: Thu, 18 Dec 2025 21:45:04 +0100
+Subject: [PATCH] fix: do not scroll to start on end of snapshots list
+
+---
+ ui/pages/schnapps.slint | 3 ---
+ 1 file changed, 3 deletions(-)
+
+diff --git a/ui/pages/schnapps.slint b/ui/pages/schnapps.slint
+index 1a65d3c..65f511b 100644
+--- a/ui/pages/schnapps.slint
++++ b/ui/pages/schnapps.slint
+@@ -147,9 +147,6 @@ export component Schnapps inherits Page {
+         if (index != SchnappsBackend.snapshots.length - 1) {
+             index += 1;
+             list.viewport-y -= shadow-item-top.height;
+-        } else {
+-            index = 0;
+-            list.viewport-y = 0;
+         }
+     }
+ 
+-- 
+GitLab
+
