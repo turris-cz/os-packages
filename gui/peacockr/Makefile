@@ -55,7 +55,7 @@ define Package/peacockr/install
 	$(INSTALL_BIN) ./files/peacockr.init   $(1)/etc/init.d/peacockr
 
 	$(INSTALL_DIR) $(1)/etc/peacockr
-	$(INSTALL_BIN) $(INSTALL_BIN) $(PKG_BUILD_DIR)/resources/config.kdl $(1)/etc/peacockr/config.kdl
+	$(INSTALL_DATA) $(PKG_BUILD_DIR)/resources/config.kdl $(1)/etc/peacockr/config.kdl
 endef
 
 #Build/Compile = $(call Build/Compile/Cargo,peacockr)
