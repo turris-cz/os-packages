@@ -31,7 +31,7 @@ set_val() {
 }
 
 set_brightness() {
-    [ -n "$BRIGHTNESS" ] || local BRIGHTNESS="$(uci get rainbow.all.brightness 2> /dev/null)"
+    [ -n "$BRIGHTNESS" ] || BRIGHTNESS="$(uci get rainbow.all.brightness 2> /dev/null)"
     for i in /sys/class/leds/*; do
         echo "$BRIGHTNESS" > "$i/brightness"
     done
@@ -121,6 +121,14 @@ uci show rainbow 2> /dev/null | grep -q 'rainbow.all.brightness' || {
 }
 
 {
+    trap "BRIGHTNESS=\"$(uci get rainbow.all.brightness 2> /dev/null)\"" HUP
+    while sleep 1; do
+        set_brightness
+    done
+} &
+BRIGHTNESS_VAL_PID="$!"
+
+{
     trap "set_brightness;" HUP
     set_brightness
     down="false"
@@ -143,6 +151,7 @@ uci show rainbow 2> /dev/null | grep -q 'rainbow.all.brightness' || {
                 uci set rainbow.all.brightness="$BRIGHTNESS"
                 uci commit rainbow
                 set_brightness
+                kill -HUP $BRIGHTNESS_VAL_PID
             fi
         fi
     done
@@ -174,11 +183,6 @@ WAN_STATUS_PID="$!"
     done
 } &
 WIFI_STATUS_PID="$!"
-
-while sleep 1; do
-    set_brightness
-done &
-BRIGHTNESS_VAL_PID="$!"
 
 trap "kill $WIFI_STATUS_PID; kill $WAN_STATUS_PID; kill $BRIGHTNESS_PID; kill $BRIGHTNESS_VAL_PID; wait" 2 3 15
 wait
