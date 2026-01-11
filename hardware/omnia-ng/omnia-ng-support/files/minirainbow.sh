@@ -174,6 +174,10 @@ WAN_STATUS_PID="$!"
 } &
 WIFI_STATUS_PID="$!"
 
+while sleep 1; do
+    set_brightness
+done &
+BRIGHTNESS_VAL_PID="$!"
 
-trap "kill $WIFI_STATUS_PID; kill $WAN_STATUS_PID; kill $BRIGHTNESS_PID; wait" 2 3 15
+trap "kill $WIFI_STATUS_PID; kill $WAN_STATUS_PID; kill $BRIGHTNESS_PID; kill $BRIGHTNESS_VAL_PID; wait" 2 3 15
 wait
