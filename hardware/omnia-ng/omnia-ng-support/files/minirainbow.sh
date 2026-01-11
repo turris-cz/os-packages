@@ -31,6 +31,7 @@ set_val() {
 }
 
 set_brightness() {
+    [ -n "$BRIGHTNESS" ] || local BRIGHTNESS="$(uci get rainbow.all.brightness 2> /dev/null)"
     for i in /sys/class/leds/*; do
         echo "$BRIGHTNESS" > "$i/brightness"
     done
