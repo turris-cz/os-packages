@@ -61,7 +61,14 @@ wan_status() {
     set_color "$status" "$WAN_LED"
     set_val "$BRIGHTNESS" "$WAN_LED"/brightness
 
-    if [ "$TRIGGERS" = yes ]; then
+    set_wan_triggers
+
+    [ "$status" = "$GREEN" ] || [ "$status" = "$CYAN" ]
+    return $?
+}
+
+set_wan_triggers() {
+    if [ "$TRIGGERS" = yes ] && [ "$BRIGHTNESS" -gt 0 ]; then
         set_trigger "netdev" "$WAN_LED"/trigger
         set_val "$(ifstatus wan | jsonfilter -e '@.device')" "$WAN_LED"/device_name
         set_val 1 "$WAN_LED"/link
@@ -70,9 +77,6 @@ wan_status() {
     else
         set_trigger "none" "$WAN_LED"/trigger
     fi
-
-    [ "$status" = "$GREEN" ] || [ "$status" = "$CYAN" ]
-    return $?
 }
 
 wifi_status() {
@@ -95,7 +99,11 @@ wifi_status() {
     set_color "$color" "$WIFI_LED"
     set_val "$BRIGHTNESS" "$WIFI_LED"/brightness
 
-    if [ "$TRIGGERS" = yes ]; then
+    set_wifi_triggers
+}
+
+set_wifi_triggers() {
+    if [ "$TRIGGERS" = yes ] && [ "$BRIGHTNESS" -gt 0 ]; then
         set_trigger "netdev" "$WIFI_LED"/trigger
         set_val "$(ifstatus lan | jsonfilter -e '@.device')"  "$WIFI_LED"/device_name
         set_val 1 "$WIFI_LED"/link
@@ -145,6 +153,12 @@ uci show rainbow 2> /dev/null | grep -q 'rainbow.all.brightness' || {
                 uci set rainbow.all.brightness="$BRIGHTNESS"
                 uci commit rainbow
                 set_brightness
+                if [ "$BRIGHTNESS" -eq 255 ]; then
+                    # Setting LED brightness to 0 will clear any triggers
+                    # so we have to set them again when we loop around to maximum brightness
+                    set_wan_triggers
+                    set_wifi_triggers
+                fi
             fi
         fi
     done
