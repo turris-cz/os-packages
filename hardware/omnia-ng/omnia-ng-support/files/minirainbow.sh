@@ -60,6 +60,7 @@ wan_status() {
     BRIGHTNESS="$(uci get rainbow.all.brightness 2> /dev/null)"
     set_color "$status" "$WAN_LED"
     set_val "$BRIGHTNESS" "$WAN_LED"/brightness
+
     if [ "$TRIGGERS" = yes ]; then
         set_trigger "netdev" "$WAN_LED"/trigger
         set_val "$(ifstatus wan | jsonfilter -e '@.device')" "$WAN_LED"/device_name
@@ -67,8 +68,9 @@ wan_status() {
         set_val 1 "$WAN_LED"/rx
         set_val 1 "$WAN_LED"/tx
     else
-        set_trigger "default-on" "$WAN_LED"/trigger
+        set_trigger "none" "$WAN_LED"/trigger
     fi
+
     [ "$status" = "$GREEN" ] || [ "$status" = "$CYAN" ]
     return $?
 }
@@ -99,7 +101,7 @@ wifi_status() {
         set_val 1 "$WIFI_LED"/rx
         set_val 1 "$WIFI_LED"/tx
     else
-        set_trigger "default-on" "$WIFI_LED"/trigger
+        set_trigger "none" "$WIFI_LED"/trigger
     fi
 }
 
@@ -107,7 +109,7 @@ BRIGHTNESS="$(uci get rainbow.all.brightness 2> /dev/null)"
 [ -n "$BRIGHTNESS" ] || BRIGHTNESS=255
 
 if ! uci show system 2> /dev/null | grep '^system.@led[0-9*].sysfs=.rgb:power.'; then
-    set_trigger "default-on" "$POWER_LED"/trigger
+    set_trigger "none" "$POWER_LED"/trigger
     set_color "$GREEN" "$POWER_LED"
     set_brightness
 fi
