@@ -13,7 +13,7 @@ PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/foris-controller/foris-controller-lte-module.git
-PKG_MIRROR_HASH:=bad4976f65b3df3da9c72f0a112bae1284507d1726ae542218b3e385cd57cb7b
+PKG_MIRROR_HASH:=83200fdcdaf89438cac6b90452e729194474863d80fdf3c33eca6b59e3b99613
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>

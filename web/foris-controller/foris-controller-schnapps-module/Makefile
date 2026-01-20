@@ -13,7 +13,7 @@ PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/foris-controller/foris-controller-schnapps-module.git
-PKG_MIRROR_HASH:=96db1e8d29f211b9943aecc9757e7c8fcdea9147f6ef2f6ea4548d6d6d4e4d91
+PKG_MIRROR_HASH:=99dd144e1ee675b6ea34b75eebedead98b7c0fdc512de0ccb3d8a34dfd75dcce
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
