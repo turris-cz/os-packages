@@ -8,8 +8,8 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=reforis
-PKG_VERSION:=3.9.1
-PKG_RELEASE:=1
+PKG_VERSION:=3.10.0
+PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/reforis/reforis
@@ -43,12 +43,12 @@ define Package/reforis
     +lighttpd-mod-fastcgi \
     +lighttpd-mod-redirect \
     +lighttpd-mod-setenv \
+    +lighttpd-mod-proxy \
     +turris-auth \
     +python3-blinker \
     +python3-flask \
     +python3-flask-babel \
     +python3-flask-seasurf \
-    +python3-flup \
     +python3-light \
     +python3-paho-mqtt \
     +turris-maintain
@@ -91,6 +91,9 @@ define Py3Package/reforis/install
 	$(INSTALL_DIR) $(1)/usr/share/foris/reforis-links
 	$(INSTALL_DATA) ./files/updater-internal-redirect.csv $(1)/usr/share/foris/reforis-links
 
+	$(INSTALL_DIR) $(1)/etc/init.d/
+	$(INSTALL_BIN) ./files/reforis.init $(1)/etc/init.d/reforis
+
 endef
 
 define Package/reforis/postinst
@@ -104,6 +107,21 @@ endef
 define Package/reforis/prerm
 #!/bin/sh
 [ -n "$$IPKG_INSTROOT" ] || /usr/bin/maintain-lighttpd-restart
+endef
+
+define Package/reforis-full
+  SECTION:=web
+  CATEGORY:=Web
+  SUBMENU:=reForis
+  TITLE:=reforis-full
+  URL:=https://gitlab.nic.cz/turris/reforis
+  DEPENDS:= \
+    +reforis \
+    +python3-eventlet
+endef
+
+define Package/reforis-full/description
+  Web administration interface for Turris router (meta package for production deployment).
 endef
 
 $(eval $(call Py3Package,reforis))
