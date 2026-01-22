@@ -8,7 +8,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=reforis
-PKG_VERSION:=3.8.0
+PKG_VERSION:=3.8.0  # TODO waiting for new reforis release
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
@@ -47,7 +47,6 @@ define Package/reforis
     +python3-flask \
     +python3-flask-babel \
     +python3-flask-seasurf \
-    +python3-flup \
     +python3-light \
     +python3-paho-mqtt \
     +turris-maintain
@@ -89,6 +88,9 @@ define Py3Package/reforis/install
 	$(INSTALL_DATA) ./files/updater-external-redirect.csv $(1)/usr/share/foris/external-links/
 	$(INSTALL_DIR) $(1)/usr/share/foris/reforis-links
 	$(INSTALL_DATA) ./files/updater-internal-redirect.csv $(1)/usr/share/foris/reforis-links
+
+	$(INSTALL_DIR) $(1)/etc/init.d/
+	$(INSTALL_BIN) ./files/reforis.init $(1)/etc/init.d/reforis
 
 endef
 

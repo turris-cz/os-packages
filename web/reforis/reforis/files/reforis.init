@@ -1,0 +1,54 @@
+#!/bin/sh /etc/rc.common
+
+#Copyright 2026, CZ.NIC z.s.p.o. (http://www.nic.cz/)
+#
+#This file is part of foris-ws configuration server.
+#
+#foris-ws is free software: you can redistribute it and/or modify
+#it under the terms of the GNU General Public License as published by
+#the Free Software Foundation, either version 3 of the License, or
+#(at your option) any later version.
+#
+#foris-ws is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#GNU General Public License for more details.
+#
+#You should have received a copy of the GNU General Public License
+#along with foris-ws.  If not, see <http://www.gnu.org/licenses/>.
+
+START=69
+STOP=31
+
+USE_PROCD=1
+PROG=/usr/bin/reforis
+
+start_service() {
+	config_load reforis
+	config_get SCRIPTNAME server scriptname "/reforis"
+	config_get_bool DEBUG server debug "0"
+	# config_get_bool NOAUTH auth noauth "0"
+	config_get SESSION_TIMEOUT auth session_timeout ""
+	config_get SENTRY_DSN sentry dsn ""
+
+	# get bus config
+	config_load foris-controller
+	config_get BUS_HOST mqtt host "localhost"
+	config_get BUS_PORT mqtt port "11883"
+	config_get CREDENTIALS_FILE mqtt credentials_file "/etc/fosquitto/credentials.plain"
+	CONTROLLER_ID=$(crypto-wrapper serial-number)
+
+	if [ "$DEBUG" == "1" ]; then
+		debug_arg="--debug"
+	fi
+
+	procd_open_instance
+	procd_set_param command "$PROG" ${debug_arg:-} --prefix "$SCRIPTNAME" --unix-socket /var/run/reforis.sock
+	56:	procd_set_param stdout 1 # forward stdout of the command to logd
+57:	procd_set_param stderr 1 # same for stderr
+	procd_set_param pidfile /var/run/reforid.pid
+	procd_set_param env CONTROLLER_ID="$CONTROLLER_ID" SENTRY_DSN="$SENTRY_DSN" SESSION_TIMEOUT="$SESSION_TIMEOUT" BUS_HOST="$BUS_HOST" BUS_PORT="$BUS_PORT" CREDENTIALS_FILE="$CREDENTIALS_FILE"
+
+	procd_close_instance
+
+}
