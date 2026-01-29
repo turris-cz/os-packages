@@ -4,7 +4,7 @@ START=40
 END=40
 
 generate_certificate() {
-    openssl req -new \
+    openssl req -new -newkey ec -pkeyopt ec_paramgen_curve:prime256v1 -sha256 \
             -x509 -out /etc/lighttpd-self-signed.pem \
             -nodes -keyout /etc/lighttpd-self-signed.pem \
             -days 7300 \
@@ -27,7 +27,7 @@ start() {
 
     # Always apply updated lighttpd configuration
     if pgrep lighttpd >/dev/null; then
-	/etc/init.d/lighttpd reload
+        /etc/init.d/lighttpd reload
     fi
 }
 
