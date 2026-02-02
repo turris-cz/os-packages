@@ -58,7 +58,7 @@ endef
 
 define Package/omnia-generic-support/install
 	$(INSTALL_DIR) $(1)/boot
-	$(INSTALL_DATA) $(LINUX_DIR)/arch/$(LINUX_KARCH)/boot/dts/marvell/armada-385-turris-omnia-*.dtb "$(1)"/boot
+	$(INSTALL_DATA) $(LINUX_DIR)/arch/$(LINUX_KARCH)/boot/dts/marvell/armada-385-turris-omnia*.dtb "$(1)"/boot
 	ln -s boot/boot.scr "$(1)"/boot.scr
 endef
 
