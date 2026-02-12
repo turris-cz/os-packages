@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2025 CZ.NIC, z. s. p. o. (https://www.nic.cz/)
+# Copyright (C) 2026 CZ.NIC, z. s. p. o. (https://www.nic.cz/)
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=sshoxy-haas
-PKG_VERSION:=0.2.2
+PKG_VERSION:=0.2.3
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://codeload.github.com/turris-cz/sshoxy/tar.gz/v$(PKG_VERSION)?
-PKG_HASH:=9d54a01b44b22feb1fbaab1149f54e6d325f50270a859afd4baf806a4403e0c0
+PKG_HASH:=f9bd54a7171b81c2b0915410b201d475089f704f41a9dd7f57342897b9307051
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 PKG_LICENSE:=GPL-3.0-or-later
