@@ -42,6 +42,7 @@ define Package/knot-resolver
     +lmdb \
     +luajit \
     +resolver-conf \
+    +libjemalloc \
     PACKAGE_knot-resolver_dnstap:libfstrm \
     PACKAGE_knot-resolver_dnstap:libprotobuf-c
   PROVIDES:=dns-resolver
