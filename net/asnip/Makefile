@@ -13,7 +13,7 @@ PKG_RELEASE:=2026-02-21
 
 PKG_SOURCE:=v$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://codeberg.org/1millibyte/asnip/archive/
-PKG_MIRROR_HASH:=5a17ab0c2c2cdcb4f9941f24b4129dd78899db69cbe3b269b3b762ded45b572a
+PKG_HASH:=5a17ab0c2c2cdcb4f9941f24b4129dd78899db69cbe3b269b3b762ded45b572a
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 PKG_LICENSE:=EUPL-1.2
