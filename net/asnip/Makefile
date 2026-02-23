@@ -29,28 +29,28 @@ include $(TOPDIR)/feeds/packages/lang/rust/rust-package.mk
 CARGO_PKG_PROFILE:=release
 
 define Package/asnip
-  SECTION:=net
-  CATEGORY:=Network
-  TITLE:=AAAA SNI Proxy
-  DEPENDS:=$(RUST_ARCH_DEPENDS)
-  URL:=https://codeberg.org/1millibyte/asnip
+	SECTION:=net
+	CATEGORY:=Network
+	TITLE:=AAAA SNI Proxy
+	DEPENDS:=$(RUST_ARCH_DEPENDS)
+	URL:=https://codeberg.org/1millibyte/asnip
 endef
 
 define Package/asnip/description
-  Simple TLS/TCP proxy and NAT removing the need for HTTP proxies and dual-stack for your service.
+	Simple TLS/TCP proxy and NAT removing the need for HTTP proxies and dual-stack for your service.
 endef
 
 define Package/asnip/install
-  $(INSTALL_DIR) $(1)/usr/bin/
-  $(INSTALL_BIN) $(PKG_BUILD_DIR)/target/$(RUSTC_TARGET_ARCH)/release/asnip $(1)/usr/bin/asnip
+	$(INSTALL_DIR) $(1)/usr/bin/
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/target/$(RUSTC_TARGET_ARCH)/release/asnip $(1)/usr/bin/asnip
 
-  $(INSTALL_DIR) $(1)/usr/share/doc/asnip/
-  $(CP) $(PKG_BUILD_DIR)/resources/example-config.toml $(1)/usr/share/doc/asnip/example-config.toml
+	$(INSTALL_DIR) $(1)/usr/share/doc/asnip/
+	$(CP) $(PKG_BUILD_DIR)/resources/example-config.toml $(1)/usr/share/doc/asnip/example-config.toml
 
-  $(INSTALL_DIR) $(1)/etc/init.d/
+	$(INSTALL_DIR) $(1)/etc/init.d/
 	$(INSTALL_BIN) ./files/asnip.init $(1)/etc/init.d/asnip
 
-  $(INSTALL_DIR) $(1)/etc/asnip/
+	$(INSTALL_DIR) $(1)/etc/asnip/
 endef
 
 $(eval $(call RustBinPackage,asnip))
