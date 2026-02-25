@@ -6,7 +6,7 @@ USE_PROCD=1
 start_service() {
 	. /etc/profile.d/peacomp-wayland-display.sh
 	procd_open_instance
-	procd_set_param command "/usr/bin/peacockr"
+	procd_set_param command /usr/bin/peacockr --config /etc/peacockr/config.kdl
 	procd_set_param respawn 120 1 10
 	procd_set_param env WAYLAND_DISPLAY="${WAYLAND_DISPLAY}"
 	procd_set_param stdout  1
