@@ -8,7 +8,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=peacockr
-PKG_VERSION:=0.3
+PKG_VERSION:=0.3.0
 PKG_RELEASE:=2026-02-25-01
 
 PKG_SOURCE_PROTO:=git
