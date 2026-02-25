@@ -23,10 +23,12 @@ PKG_BUILD_DEPENDS:=rust/host
 PKG_BUILD_DIR:=$(BUILD_DIR)/peacockr-$(PKG_VERSION)
 PKG_BUILD_PARALLEL:=1
 
+LOCALES:=cs
+
 include $(INCLUDE_DIR)/package.mk
 include $(TOPDIR)/feeds/packages/lang/rust/rust-package.mk
 
-CARGO_PKG_PROFILE:=release
+CARGO_PKG_PROFILE:=release-opt
 
 define Package/peacockr
   SECTION:=gui
@@ -57,7 +59,34 @@ define Package/peacockr/install
   $(INSTALL_CONF) $(PKG_BUILD_DIR)/frontend/resources/config.kdl $(1)/etc/peacockr/config.kdl
 endef
 
-#Build/Compile = $(call Build/Compile/Cargo,peacockr)
+define Build/Compile
+  pushd $(PKG_BUILD_DIR)
+  cargo build --verbose \
+    --package peacockr-frontend \
+    --profile $(CARGO_PKG_PROFILE) \
+    $(if $(strip $(RUST_PKG_FEATURES)),--features "$(strip $(RUST_PKG_FEATURES))") \
+    $(if $(filter --jobserver%,$(PKG_JOBS)),,-j1) \
+    $(CARGO_PKG_ARGS)
 
-$(eval $(call RustBinPackage,peacockr))
+  ./build-aux/compile-locales.sh
+endef
+
+# $(1): name of the package
+# $(2): translation name
+define TRANSLATION
+
+define Package/$(1)-l10n-$(2)
+  TITLE:=Translation for package $(1): $(2)
+  DEPENDS:=+$(1) +gettext-tools
+endef
+
+define Package/$(1)-l10n-$(2)/install
+  $(INSTALL_DIR) $(1)/usr/share/locales/cs/LC_MESSAGES/
+	$(INSTALL_DATA) \
+    $(PKG_BUILD_DIR)/target/locales/cs/LC_MESSAGES/peacockr-frontend.mo \
+    $(1)/usr/share/locales/cs/LC_MESSAGES/peacockr-frontend.mo
+endef
+
+$$(eval $$(call BuildPackage,$(1)-l10n-$(2)))
+
 $(eval $(call BuildPackage,peacockr))
