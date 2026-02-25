@@ -74,19 +74,19 @@ endef
 # $(1): name of the package
 # $(2): translation name
 define TRANSLATION
+  define Package/$(1)-l10n-$(2)
+    TITLE:=Translation for package $(1): $(2)
+    DEPENDS:=+$(1) +gettext-tools
+  endef
 
-define Package/$(1)-l10n-$(2)
-  TITLE:=Translation for package $(1): $(2)
-  DEPENDS:=+$(1) +gettext-tools
+  define Package/$(1)-l10n-$(2)/install
+    $(INSTALL_DIR) $(1)/usr/share/locales/$(2)/LC_MESSAGES/
+    $(INSTALL_DATA) \
+      $(PKG_BUILD_DIR)/target/locales/$(2)/LC_MESSAGES/peacockr-frontend.mo \
+      $(1)/usr/share/locales/$(2)/LC_MESSAGES/peacockr-frontend.mo
+  endef
+
+  $$(eval $$(call BuildPackage,$(1)-l10n-$(2)))
 endef
-
-define Package/$(1)-l10n-$(2)/install
-  $(INSTALL_DIR) $(1)/usr/share/locales/cs/LC_MESSAGES/
-	$(INSTALL_DATA) \
-    $(PKG_BUILD_DIR)/target/locales/cs/LC_MESSAGES/peacockr-frontend.mo \
-    $(1)/usr/share/locales/cs/LC_MESSAGES/peacockr-frontend.mo
-endef
-
-$$(eval $$(call BuildPackage,$(1)-l10n-$(2)))
 
 $(eval $(call BuildPackage,peacockr))
