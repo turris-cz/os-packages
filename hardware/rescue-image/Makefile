@@ -47,9 +47,12 @@ else
 DEVICE := unknown
 endif
 
+OMNIA_NG_PKGS:=kmod-qca-nss-phy kmod-qca-ssdk kmod-nat46 kmod-qca-nss-ppe kmod-qca-nss-dp kmod-qca-nss-drv-lite
+
 define Package/rescue-image
 	TITLE:=rescue-image
-	DEPENDS:=@(TARGET_mvebu_cortexa53_DEVICE_cznic_turris-mox||TARGET_mvebu_cortexa9_DEVICE_cznic_turris-omnia||TARGET_ipq95xx_generic_DEVICE_cznic_turris-omnia-ng)
+	DEPENDS:=@(TARGET_mvebu_cortexa53_DEVICE_cznic_turris-mox||TARGET_mvebu_cortexa9_DEVICE_cznic_turris-omnia||TARGET_ipq95xx_generic_DEVICE_cznic_turris-omnia-ng) \
+		 $(foreach pkg,$(OMNIA_NG_PKGS),+TARGET_ipq95xx_generic_DEVICE_cznic_turris-omnia-ng:$(pkg))
 endef
 
 define Build/Prepare
