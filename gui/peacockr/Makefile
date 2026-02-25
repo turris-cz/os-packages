@@ -27,7 +27,6 @@ include $(INCLUDE_DIR)/package.mk
 include $(TOPDIR)/feeds/packages/lang/rust/rust-package.mk
 
 CARGO_PKG_PROFILE:=release
-RUST_PKG_FEATURES:=target-turris
 
 define Package/peacockr
   SECTION:=gui
