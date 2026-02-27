@@ -118,9 +118,6 @@ define Package/knot-resolver6/install
 
 	$(INSTALL_DIR) $(1)/etc/knot-resolver
 	$(CP) $(PKG_INSTALL_DIR)/etc/knot-resolver/root.hints $(1)/etc/knot-resolver/
-
-	$(INSTALL_DIR) $(1)/var/run/knot-resolver
-	$(INSTALL_DIR) $(1)/var/cache/knot-resolver
 endef
 
 define Package/knot-resolver6-manager/install
