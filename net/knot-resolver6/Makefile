@@ -11,7 +11,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=knot-resolver6
 PKG_VERSION:=6.1.0
-PKG_RELEASE:=1
+PKG_RELEASE:=2
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/knot/knot-resolver.git
@@ -45,6 +45,7 @@ define Package/knot-resolver6
     +dnssec-rootkey \
     +knot-libs \
     +knot-libzscanner \
+    +knot-resolver6-manager \
     +libnghttp2 \
     +libstdcpp \
     +libuv \
@@ -73,13 +74,8 @@ define Package/knot-resolver6-manager
     +python3-yaml
 endef
 
-define Py3Package/knot-resolver6-manager/install
-	if [ -d $(PKG_INSTALL_DIR)/usr/bin ]; then \
-		$(INSTALL_DIR) $(1)/usr/bin ; \
-		$(CP) $(PKG_INSTALL_DIR)/usr/bin/* $(1)/usr/bin/ ; \
-	fi
-	$(INSTALL_DIR) $(1)/etc/knot-resolver
-	$(INSTALL_DATA) files/config.yaml $(1)/etc/knot-resolver
+define Package/knot-resolver6-manager/conffiles
+/etc/knot-resolver/config.yaml
 endef
 
 define Package/knot-resolver6-manager/description
@@ -132,6 +128,8 @@ define Package/knot-resolver6-manager/install
 		$(PYTHON3_PKG_INSTALL_VARS) \
 	)
 	sed -i 's|#!/.*/python3.*|#!/usr/bin/python3|' $(1)/usr/bin/*
+	$(INSTALL_DIR) $(1)/etc/knot-resolver
+	$(INSTALL_DATA) files/config.yaml $(1)/etc/knot-resolver
 endef
 
 define Build/Compile
