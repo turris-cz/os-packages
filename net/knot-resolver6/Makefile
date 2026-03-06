@@ -11,7 +11,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=knot-resolver6
 PKG_VERSION:=6.1.0
-PKG_RELEASE:=2
+PKG_RELEASE:=3
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/knot/knot-resolver.git
@@ -45,7 +45,6 @@ define Package/knot-resolver6
     +dnssec-rootkey \
     +knot-libs \
     +knot-libzscanner \
-    +knot-resolver6-manager \
     +libnghttp2 \
     +libstdcpp \
     +libuv \
@@ -54,7 +53,6 @@ define Package/knot-resolver6
     +resolver-conf \
     PACKAGE_knot-resolver_dnstap:libfstrm \
     PACKAGE_knot-resolver_dnstap:libprotobuf-c
-  PROVIDES:=dns-resolver
   USERID:=kresd=3536:kresd=3536
 endef
 
@@ -65,6 +63,7 @@ endef
 
 define Package/knot-resolver6-manager
   TITLE:=Knot DNS Resolver manager
+  PROVIDES:=dns-resolver
   DEPENDS:=\
     +knot-resolver6 \
     +python3-aiohttp \
@@ -109,8 +108,6 @@ define Package/knot-resolver6/install
 	$(CP) $(PKG_INSTALL_DIR)/usr/lib/knot-resolver/{*.lua,*.so} $(1)/usr/lib/knot-resolver/
 	$(INSTALL_DIR) $(1)/usr/lib/knot-resolver/kres_modules
 	$(CP) $(PKG_INSTALL_DIR)/usr/lib/knot-resolver/kres_modules/{*.lua,*.so} $(1)/usr/lib/knot-resolver/kres_modules/
-	$(INSTALL_DIR) $(1)/etc/init.d
-	$(INSTALL_BIN) ./files/kresd.init $(1)/etc/init.d/kresd
 
 	$(INSTALL_DIR) $(1)/etc/knot-resolver
 	$(CP) $(PKG_INSTALL_DIR)/etc/knot-resolver/root.hints $(1)/etc/knot-resolver/
@@ -130,6 +127,8 @@ define Package/knot-resolver6-manager/install
 	sed -i 's|#!/.*/python3.*|#!/usr/bin/python3|' $(1)/usr/bin/*
 	$(INSTALL_DIR) $(1)/etc/knot-resolver
 	$(INSTALL_DATA) files/config.yaml $(1)/etc/knot-resolver
+	$(INSTALL_DIR) $(1)/etc/init.d
+	$(INSTALL_BIN) ./files/kresd.init $(1)/etc/init.d/kresd
 endef
 
 define Build/Compile
