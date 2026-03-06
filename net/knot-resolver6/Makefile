@@ -61,6 +61,19 @@ define Package/knot-resolver6/description
   implementation, including both a resolver library and a daemon.
 endef
 
+define Package/knot-resolver6-managerless
+  TITLE:=Obsolete Knot DNS Resolver setup
+  PROVIDES:=dns-resolver
+  CONFLICTS:=knot-resolver6-manager
+  DEPENDS:=\
+    +knot-resolver6
+endef
+
+define Package/knot-resolver6-managerless/description
+  Obsolete setup of Knot Resolver without using Manager.
+  Do not use and do not report bugs against.
+endef
+
 define Package/knot-resolver6-manager
   TITLE:=Knot DNS Resolver manager
   PROVIDES:=dns-resolver
@@ -131,12 +144,17 @@ define Package/knot-resolver6-manager/install
 	$(INSTALL_BIN) ./files/kresd.init $(1)/etc/init.d/kresd
 endef
 
+define Package/knot-resolver6-managerless/install
+	$(INSTALL_DIR) $(1)/etc/init.d
+	$(INSTALL_BIN) ./files/kresd.init.old $(1)/etc/init.d/kresd
+endef
+
 define Build/Compile
 	$(call Build/Compile/Meson)
 	$(call Py3Build/Compile)
 endef
 
-define Package/knot-resolver6/postinst
+define Package/knot-resolver6-manager/postinst
 #!/bin/sh
 set -x
 if [ -z "$$IPKG_INSTROOT" ]; then
@@ -182,7 +200,11 @@ fi
 fi
 endef
 
-define Package/knot-resolver6/prerm
+define Package/knot-resolver6-managerless/postinst
+$(call Package/knot-resolver6-manager/postinst,$(1))
+endef
+
+define Package/knot-resolver6-manager/prerm
 #!/bin/sh
 set -ex
 if [ -z "$$IPKG_INSTROOT" ]; then
@@ -191,7 +213,23 @@ if [ -e /etc/init.d/kresd ] ; then /etc/init.d/kresd stop ; /etc/init.d/kresd di
 fi
 endef
 
-define Package/knot-resolver6/postrm
+define Package/knot-resolver6-manager/postrm
+#!/bin/sh
+if [ -z "$$IPKG_INSTROOT" ]; then
+[ \! -x /etc/init.d/resolver ] || /etc/init.d/resolver restart
+fi
+endef
+
+define Package/knot-resolver6-managerless/prerm
+#!/bin/sh
+set -ex
+if [ -z "$$IPKG_INSTROOT" ]; then
+# Remove the script if it is there.
+if [ -e /etc/init.d/kresd ] ; then /etc/init.d/kresd stop ; /etc/init.d/kresd disable ;  fi
+fi
+endef
+
+define Package/knot-resolver6-managerless/postrm
 #!/bin/sh
 if [ -z "$$IPKG_INSTROOT" ]; then
 [ \! -x /etc/init.d/resolver ] || /etc/init.d/resolver restart
@@ -201,3 +239,4 @@ endef
 $(eval $(call BuildPackage,knot-resolver6))
 $(eval $(call Py3Package,knot-resolver6-manager))
 $(eval $(call BuildPackage,knot-resolver6-manager))
+$(eval $(call BuildPackage,knot-resolver6-managerless))
