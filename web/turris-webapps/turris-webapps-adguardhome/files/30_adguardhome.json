@@ -1,0 +1,9 @@
+{
+  "id": "AdguardHome",
+  "title": "AdguardHome",
+  "url": "/adguardhome/",
+  "icon": "/icons/adguardhome-black.svg",
+  "description": {
+      "en": "Web access to management of AdguardHome."
+  }
+}
