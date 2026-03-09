@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=sshoxy-haas
 PKG_VERSION:=0.2.3
-PKG_RELEASE:=1
+PKG_RELEASE:=2
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://codeload.github.com/turris-cz/sshoxy/tar.gz/v$(PKG_VERSION)?
@@ -43,6 +43,9 @@ define Package/sshoxy-haas/description
 	More information on https://haas.nic.cz
 endef
 
+define Package/sshoxy-haas/conffiles
+/etc/config/haas
+endef
 
 define Package/sshoxy-haas/install
 	$(INSTALL_DIR) $(1)/usr/bin/
