@@ -32,18 +32,23 @@ start() {
     # Set password and enable all Wi-Fi networks
     i=0
     SSID="Turris-$(printf %d 0x$(crypto-wrapper serial | tail -c 4))"
+    DISABLED=1
+    if lspci | grep -q "Qualcomm Technologies, Inc QCN62xx/92xx Wireless Network Adapter"; then
+        DISABLED=0
+    fi
     while [ "$(uci get "wireless.@wifi-iface[$i]" 2> /dev/null)" = wifi-iface ]; do
         uci set "wireless.@wifi-iface[$i].ssid"="$SSID"
         uci set "wireless.@wifi-iface[$i].key"="$PASSWORD"
         if [ "$(uci get "wireless.$(uci get "wireless.@wifi-iface[$i].device").band")" = "6g" ]; then
             uci set "wireless.@wifi-iface[$i].encryption"="sae"
             uci set "wireless.@wifi-iface[$i].disabled"=1
+            uci set "wireless.$(uci get "wireless.@wifi-iface[$i].device").disabled"=1
         else
             uci set "wireless.@wifi-iface[$i].encryption"="sae-mixed"
-            uci set "wireless.@wifi-iface[$i].disabled"=0
+            uci set "wireless.@wifi-iface[$i].disabled"=$DISABLED
+            uci set "wireless.$(uci get "wireless.@wifi-iface[$i].device").disabled"=$DISABLED
         fi
         uci set "wireless.$(uci get "wireless.@wifi-iface[$i].device").channel"='auto'
-        uci set "wireless.$(uci get "wireless.@wifi-iface[$i].device").disabled"=0
         i=$((i + 1))
     done
     uci commit wireless
