@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=sentinel-dynfw-c-client
-PKG_VERSION:=1.3.1
+PKG_VERSION:=1.3.3
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_URL:=https://gitlab.com/miska/dynfw-c.git
-PKG_MIRROR_HASH:=339ca87529ec70a30561b187937f112b5f400a953fc9d0095c2012fe0c62bb3f
+PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/sentinel/dynfw-c.git
+PKG_MIRROR_HASH:=efacee02927eda76340fedfb52f6670b592fbab63125e26aaf61fcd070705024
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
