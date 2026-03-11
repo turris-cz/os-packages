@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=mox-pkcs11
 PKG_VERSION:=0.1
-PKG_RELEASE:=$(AUTORELEASE)
+PKG_RELEASE:=5
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/mox-pkcs11.git

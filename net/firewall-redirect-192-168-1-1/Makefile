@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=firewall-redirect-192_168_1_1
 PKG_VERSION:=0.1.1
-PKG_RELEASE:=$(AUTORELEASE)
+PKG_RELEASE:=3
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 

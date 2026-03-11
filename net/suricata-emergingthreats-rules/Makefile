@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=suricata-emergingthreats-rules
 PKG_VERSION:=4
-PKG_RELEASE:=$(AUTORELEASE)
+PKG_RELEASE:=8
 
 include $(INCLUDE_DIR)/package.mk
 

@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=resolver-conf
 PKG_VERSION:=0.0.6
-PKG_RELEASE:=$(AUTORELEASE)
+PKG_RELEASE:=54
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 PKG_LICENSE:=GPL-3.0-or-later

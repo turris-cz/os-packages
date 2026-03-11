@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=turris-1x-firmware
 PKG_VERSION:=1.0
-PKG_RELEASE:=$(AUTORELEASE)
+PKG_RELEASE:=5
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 

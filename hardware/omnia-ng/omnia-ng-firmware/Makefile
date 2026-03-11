@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=turris-omnia-ng-firmware
 PKG_VERSION:=1.0
-PKG_RELEASE:=$(AUTORELEASE)
+PKG_RELEASE:=2
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 

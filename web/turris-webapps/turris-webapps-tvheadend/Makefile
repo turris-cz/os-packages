@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=turris-webapps-tvheadend
 PKG_VERSION:=1.0
-PKG_RELEASE:=$(AUTORELEASE)
+PKG_RELEASE:=12
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 PKG_LICENSE:=GPL-3.0-or-later

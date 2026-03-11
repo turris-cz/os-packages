@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=follectd
 PKG_VERSION:=5
-PKG_RELEASE:=$(AUTORELEASE)
+PKG_RELEASE:=5
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 

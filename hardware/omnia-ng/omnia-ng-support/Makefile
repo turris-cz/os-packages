@@ -3,7 +3,7 @@ include $(INCLUDE_DIR)/kernel.mk
 
 PKG_NAME:=omnia-ng-support
 PKG_VERSION:=1.5
-PKG_RELEASE:=$(AUTORELEASE)
+PKG_RELEASE:=19
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 

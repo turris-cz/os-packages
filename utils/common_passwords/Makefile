@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=common_passwords
 PKG_VERSION:=20250430
-PKG_RELEASE:=$(AUTORELEASE)
+PKG_RELEASE:=11
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 PKG_LICENSE:=GPL-2.0

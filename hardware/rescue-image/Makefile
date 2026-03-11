@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=rescue-image
 PKG_VERSION:=3.6.1
-PKG_RELEASE:=$(AUTORELEASE)
+PKG_RELEASE:=51
 BB_VERSION:=1.33.2
 PKG_SOURCE:=busybox-$(BB_VERSION).tar.bz2
 PKG_SOURCE_URL:=https://www.busybox.net/downloads \

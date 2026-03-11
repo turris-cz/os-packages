@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=turris-cagen
 PKG_VERSION:=6
-PKG_RELEASE:=$(AUTORELEASE)
+PKG_RELEASE:=4
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 

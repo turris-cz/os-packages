@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=initial-config
 PKG_VERSION:=0.2.3
-PKG_RELEASE:=$(AUTORELEASE)
+PKG_RELEASE:=8
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 

@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=cert-backup
 PKG_VERSION:=15
-PKG_RELEASE:=$(AUTORELEASE)
+PKG_RELEASE:=9
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 PKG_LICENSE:=BSD-3-Clause

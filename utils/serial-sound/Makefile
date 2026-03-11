@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=serial-sound
 PKG_VERSION:=1.0.0
-PKG_RELEASE:=$(AUTORELEASE)
+PKG_RELEASE:=1
 
 PKG_LICENSE:=GPL-3.0-or-later
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>

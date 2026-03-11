@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=cznic-repo-keys
 PKG_VERSION:=4.2
-PKG_RELEASE:=$(AUTORELEASE)
+PKG_RELEASE:=5
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 

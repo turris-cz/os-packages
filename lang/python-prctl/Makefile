@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=python-prctl
 PKG_VERSION:=1.8.1
-PKG_RELEASE:=$(AUTORELEASE)
+PKG_RELEASE:=3
 
 PYPI_NAME:=python-prctl
 PKG_HASH:=b4ca9a25a7d4f1ace4fffd1f3a2e64ef5208fe05f929f3edd5e27081ca7e67ce

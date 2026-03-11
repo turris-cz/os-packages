@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=lighttpd-https-cert
 PKG_VERSION:=7.0
-PKG_RELEASE:=$(AUTORELEASE)
+PKG_RELEASE:=7
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 PKG_LICENSE:=GPL-3.0
