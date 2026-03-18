@@ -16,7 +16,7 @@ define Package/omnia-ng-support
   TITLE:=Turris Omnia essential generic support
   VERSION:=$(LINUX_VERSION)-$(LINUX_RELEASE)-$(LINUX_VERMAGIC)
   RELEASE:=$(PKG_VERSION)-$(PKG_RELEASE)
-  DEPENDS:=@TARGET_ipq95xx_generic_DEVICE_cznic_turris-omnia-ng
+  DEPENDS:=@TARGET_ipq95xx_generic_DEVICE_cznic_turris-omnia-ng +kmod-gpio-button-hotplug
 endef
 
 define Package/omnia-ng-support/description
