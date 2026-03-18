@@ -10,8 +10,14 @@ WAN_LED="/sys/class/leds/rgb:wan"
 WIFI_LED="/sys/class/leds/rgb:wlan"
 POWER_LED="/sys/class/leds/rgb:power"
 
+usage() {
+    echo "Usage:" >&2
+    echo "$0 [--oneshot]"
+    echo "  --oneshot   do not start daemons"
+}
+
 led_ignored() {
-    uci show system | grep led | grep "$1"
+    uci show system | grep -q led | grep "$1"
     [ "$?" = 1 ] && return 0
     return 1
 }
@@ -26,8 +32,10 @@ wan_status() {
     if led_ignored rgb:wan; then
         return 0;
     fi
-    local connectivity="$(check_connection)"
+
     local status="$RED"
+    set_color "$status" "$WAN_LED"
+    local connectivity="$(check_connection)"
 
     if echo "$connectivity" | grep "DNS: OK"; then
         if echo "$connectivity" | grep "IPv4: OK"; then
@@ -53,6 +61,8 @@ wifi_status() {
     if led_ignored rgb:wlan; then
         return 0;
     fi
+    local status="$BLACK"
+    set_color "$status" "$WIFI_LED"
     local bands="$(wifi status | jsonfilter -e '$.*.config.band' | sort -u | wc -l)"
     local up="$(wifi status | jsonfilter -e '$.*.up' | grep true | wc -l)"
     local color="$BLACK"
@@ -67,6 +77,26 @@ wifi_status() {
     fi
     set_color "$color" "$WIFI_LED"
 }
+
+while [ -n "$1" ]; do
+    case "$1" in
+        "--oneshot")
+            ONESHOT=1
+            ;;
+        *)
+            usage
+            exit 1
+            ;;
+    esac
+    shift
+done
+
+if [ "$ONESHOT" = 1 ]; then
+    wifi_status &
+    wan_status &
+    wait
+    exit 0
+fi
 
 {
     trap "wan_status;" HUP
