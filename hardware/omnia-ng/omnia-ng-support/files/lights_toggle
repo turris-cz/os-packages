@@ -1,72 +1,25 @@
 #!/bin/sh
 set -x
 
-. /lib/functions.sh
-
 [ "$ACTION" = "pressed" ] || exit 0
 
-load_led() {
-	local brightness
-        local sysfs
-	local led_name
+/usr/libexec/minirainbow/state_update.sh
 
-        config_get sysfs $1 sysfs
-	[ -z "$sysfs" ] && return 1
-	config_get brightness $1 brightness
-	[ -z "$brightness" ] && return 0
+DIM_STATE=$(uci get rainbow.state.dim)
+DIM_STATE=$((DIM_STATE+1))
 
-	set -x
-	echo "$1"
-	echo $sysfs
-	led_name=$(echo "$sysfs" | tr ':-' '_')
 
-	
-	uci set rainbow.${led_name}=led
-	uci set rainbow.${led_name}.brightness_default="$brightness"
-	uci commit
-	set +x
-}
+[ "$DIM_STATE" -ge 8 ] && DIM_STATE=0
 
-set_brightness() {
-	local sysfs
-	local brightness_default
-	local brightness
-
-        config_get sysfs $1 sysfs
-        config_get brightness_default $1 brightness_default
-	brightness=$((${brightness_default}/(2**${DIM_STATE})))
-	# [ "$brightness" -eq 0 ] && [ "$DIM_STATE" -ne 7 ] && brightness=1
-	echo "$brightness" > "/sys/class/leds/${sysfs}/brightness"
-}
-
-[ -f '/etc/config/rainbow' ] || touch /etc/config/rainbow
-
-for led in $(ls /sys/class/leds/); do
-	led_name=$(echo $led | tr ':-' '_')
-	uci set rainbow.${led_name}=led
-	uci set "rainbow.${led_name}.brightness_default=$(cat /sys/class/leds/${led}/max_brightness)"
-	uci set "rainbow.${led_name}.sysfs=${led}"
-done
+uci set rainbow.state.dim=$DIM_STATE
 uci commit rainbow
 
-if ! uci -q show rainbow.defaults.dim_state; then
-    touch /etc/config/rainbow
-    uci set rainbow.defaults=defaults
-    uci set rainbow.defaults.dim_state=0
-    uci commit rainbow
+
+if [ "$DIM_STATE" = 0 ]; then
+	# reset triggers (calls set_brightness.sh)
+	/etc/init.d/led restart
+	/usr/libexec/minirainbow.sh --oneshot &
+else
+	/usr/libexec/minirainbow/set_brightness.sh
 fi
 
-
-set +x
-config_load system
-config_foreach load_led led "$1"
-
-DIM_STATE=$(uci get rainbow.defaults.dim_state)
-DIM_STATE=$((DIM_STATE+1))
-[ "$DIM_STATE" -ge 8 ] && DIM_STATE=0
-uci set rainbow.defaults.dim_state=$DIM_STATE
-uci commit
-
-config_load rainbow
-config_foreach set_brightness led "$1"
-set -x

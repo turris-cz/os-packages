@@ -45,6 +45,9 @@ define Package/omnia-ng-support/install
 	$(INSTALL_BIN) ./files/minirainbow-boot.init "$(1)"/etc/init.d/minirainbow-boot
 	$(INSTALL_DIR) $(1)/usr/libexec
 	$(INSTALL_BIN) ./files/minirainbow.sh "$(1)"/usr/libexec
+	$(INSTALL_DIR) $(1)/usr/libexec/minirainbow
+	$(INSTALL_BIN) ./files/minirainbow_utils/state_update.sh "$(1)"/usr/libexec/minirainbow/
+	$(INSTALL_BIN) ./files/minirainbow_utils/set_brightness.sh "$(1)"/usr/libexec/minirainbow/
 	$(INSTALL_DIR) $(1)/etc/hotplug.d/button/
 	$(INSTALL_BIN) ./files/lights_toggle "$(1)"/etc/hotplug.d/button
 endef
