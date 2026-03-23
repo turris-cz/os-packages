@@ -1,0 +1,5 @@
+#!/bin/sh
+
+[ "$ACTION" = pressed ] || exit 0
+
+/usr/libexec/minirainbow/set_brightness.sh --increase-dim

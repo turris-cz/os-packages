@@ -16,7 +16,7 @@ define Package/omnia-ng-support
   TITLE:=Turris Omnia essential generic support
   VERSION:=$(LINUX_VERSION)-$(LINUX_RELEASE)-$(LINUX_VERMAGIC)
   RELEASE:=$(PKG_VERSION)-$(PKG_RELEASE)
-  DEPENDS:=@TARGET_ipq95xx_generic_DEVICE_cznic_turris-omnia-ng +kmod-gpio-button-hotplug
+  DEPENDS:=@TARGET_ipq95xx_generic_DEVICE_cznic_turris-omnia-ng
 endef
 
 define Package/omnia-ng-support/description
@@ -41,15 +41,15 @@ define Package/omnia-ng-support/install
 	ln -s boot/boot.scr "$(1)"/boot.scr
 	$(INSTALL_DIR) $(1)/etc/init.d
 	$(INSTALL_BIN) ./files/initial-setup "$(1)"/etc/init.d
-	$(INSTALL_BIN) ./files/minirainbow.init "$(1)"/etc/init.d/minirainbow
-	$(INSTALL_BIN) ./files/minirainbow-boot.init "$(1)"/etc/init.d/minirainbow-boot
-	$(INSTALL_DIR) $(1)/usr/libexec
-	$(INSTALL_BIN) ./files/minirainbow.sh "$(1)"/usr/libexec
+	$(INSTALL_BIN) ./files/minirainbow/minirainbow.init "$(1)"/etc/init.d/minirainbow
+	$(INSTALL_BIN) ./files/minirainbow/minirainbow-boot.init "$(1)"/etc/init.d/minirainbow-boot
 	$(INSTALL_DIR) $(1)/usr/libexec/minirainbow
-	$(INSTALL_BIN) ./files/minirainbow_utils/state_update.sh "$(1)"/usr/libexec/minirainbow/
-	$(INSTALL_BIN) ./files/minirainbow_utils/set_brightness.sh "$(1)"/usr/libexec/minirainbow/
+	$(INSTALL_BIN) ./files/minirainbow/minirainbow.sh "$(1)"/usr/libexec/minirainbow/
+	$(INSTALL_DIR) $(1)/usr/libexec/minirainbow
+	# $(INSTALL_BIN) ./files/minirainbow/state_update.sh "$(1)"/usr/libexec/minirainbow/
+	$(INSTALL_BIN) ./files/minirainbow/set_brightness.sh "$(1)"/usr/libexec/minirainbow/
 	$(INSTALL_DIR) $(1)/etc/hotplug.d/button/
-	$(INSTALL_BIN) ./files/lights_toggle "$(1)"/etc/hotplug.d/button
+	$(INSTALL_BIN) ./files/minirainbow/lights_toggle "$(1)"/etc/hotplug.d/button
 endef
 
 define Package/omnia-ng-support/postinst

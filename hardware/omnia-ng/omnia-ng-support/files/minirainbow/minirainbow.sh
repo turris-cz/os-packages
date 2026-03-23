@@ -34,7 +34,9 @@ wan_status() {
     fi
 
     local status="$RED"
-    set_color "$status" "$WAN_LED"
+    # [ "$BOOT" = 1 ] && {
+        set_color "$status" "$WAN_LED"
+    # }
     local connectivity="$(check_connection)"
 
     if echo "$connectivity" | grep "DNS: OK"; then
@@ -65,17 +67,17 @@ wifi_status() {
     set_color "$status" "$WIFI_LED"
     local bands="$(wifi status | jsonfilter -e '$.*.config.band' | sort -u | wc -l)"
     local up="$(wifi status | jsonfilter -e '$.*.up' | grep true | wc -l)"
-    local color="$BLACK"
+    local status="$BLACK"
     if [ "$bands" -eq "$up" ] && [ "$bands" -eq "3" ]; then
-        color="$CYAN"
+        status="$CYAN"
     elif [ "$up" -eq 0 ] && [ "$bands" -gt "1" ]; then
-        color="$RED"
+        status="$RED"
     elif [ "$((bands - up))" -lt 2 ]; then
-        color="$GREEN"
+        status="$GREEN"
     else
-        color="$ORANGE"
+        status="$ORANGE"
     fi
-    set_color "$color" "$WIFI_LED"
+    set_color "$status" "$WIFI_LED"
 }
 
 while [ -n "$1" ]; do
@@ -98,8 +100,8 @@ if [ "$ONESHOT" = 1 ]; then
     exit 0
 fi
 
+
 {
-    trap "wan_status;" HUP
     while true; do
         if wan_status; then
             sleep 300
@@ -111,7 +113,6 @@ fi
 WAN_STATUS_PID="$!"
 
 {
-    trap "wifi_status;" HUP
     while true; do
         wifi_status
         sleep 10
