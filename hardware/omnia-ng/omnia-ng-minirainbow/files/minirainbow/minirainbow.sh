@@ -34,11 +34,11 @@ wan_status() {
     fi
 
     local status="$RED"
-    # [ "$BOOT" = 1 ] && {
-        set_color "$status" "$WAN_LED"
-    # }
     local connectivity="$(check_connection)"
 
+    if led_ignored rgb:wan; then
+        return 0;
+    fi
     if echo "$connectivity" | grep "DNS: OK"; then
         if echo "$connectivity" | grep "IPv4: OK"; then
             status="$GREEN"
@@ -64,7 +64,6 @@ wifi_status() {
         return 0;
     fi
     local status="$BLACK"
-    set_color "$status" "$WIFI_LED"
     local bands="$(wifi status | jsonfilter -e '$.*.config.band' | sort -u | wc -l)"
     local up="$(wifi status | jsonfilter -e '$.*.up' | grep true | wc -l)"
     local status="$BLACK"
