@@ -6,7 +6,7 @@ boot() {
     if [ -z "$(uci show systemn | grep '^system.@led[0-9*].sysfs=.rgb:power.')" ]; then
         /usr/libexec/minirainbow/set_brightness.sh
         echo 255 255 0 > /sys/class/leds/rgb:power/multi_intensity
-        echo none > /sys/class/leds/rgb:power/trigger
+        echo default-on > /sys/class/leds/rgb:power/trigger
     fi
 }
 
