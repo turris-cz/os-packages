@@ -1,5 +1,4 @@
 #!/bin/sh
-set -x
 
 if ! uci -q show rainbow.state.dim; then
         touch /etc/config/rainbow
