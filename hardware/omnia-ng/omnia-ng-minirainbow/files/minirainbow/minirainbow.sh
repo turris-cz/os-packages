@@ -17,9 +17,7 @@ usage() {
 }
 
 led_ignored() {
-    uci show system | grep -q led | grep "$1"
-    [ "$?" = 1 ] && return 0
-    return 1
+    uci show system | grep led | grep "$1" | grep color
 }
 
 set_color() {
@@ -99,7 +97,6 @@ if [ "$ONESHOT" = 1 ]; then
     exit 0
 fi
 
-
 {
     while true; do
         if wan_status; then
@@ -119,6 +116,6 @@ WAN_STATUS_PID="$!"
 } &
 WIFI_STATUS_PID="$!"
 
-
 trap "kill $WIFI_STATUS_PID; kill $WAN_STATUS_PID; wait" 2 3 15
 wait
+
