@@ -98,20 +98,26 @@ if [ "$ONESHOT" = 1 ]; then
 fi
 
 {
+    trap "wan_status" HUP
     while true; do
         if wan_status; then
-            sleep 300
+            # background sleep so that trap works properly
+            sleep 300 &
+            wait
         else
-            sleep 10
+            sleep 10 &
+            wait
         fi
     done
 } &
 WAN_STATUS_PID="$!"
 
 {
+    trap "wifi_status" HUP
     while true; do
         wifi_status
-        sleep 10
+        sleep 10 &
+        wait
     done
 } &
 WIFI_STATUS_PID="$!"
