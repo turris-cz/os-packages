@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2023-2026 CZ.NIC z. s. p. o. (https://www.nic.cz/)
+# Copyright (C) 2026 CZ.NIC z. s. p. o. (https://www.nic.cz/)
 #
 # This is free software, licensed under the GNU General Public License v3.
 # See /LICENSE for more information.
@@ -8,7 +8,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=foris-controller-tailscale-module
-PKG_VERSION:=0.1.0
+PKG_VERSION:=0.1.1
 PKG_RELEASE:=1
 
 PKG_SOURCE_PROTO:=git
