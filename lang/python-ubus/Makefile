@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2018-2020 CZ.NIC, z. s. p. o. (https://www.nic.cz/)
+# Copyright (C) 2018-2026 CZ.NIC, z. s. p. o. (https://www.nic.cz/)
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -8,15 +8,15 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=python-ubus
-PKG_VERSION:=0.1.2
-PKG_RELEASE:=4
+PKG_VERSION:=0.1.3
+PKG_RELEASE:=1
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 PKG_LICENSE:=LGPLv2.1
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/python-ubus.git
-PKG_MIRROR_HASH:=36f00d016c4fedbb2d7ef1411cb38709f6567aa1fb67daa85752f4633bf205d0
+PKG_MIRROR_HASH:=be8e5b744496cd8b0824122bfb47bd021723fd98759afe4415511daaa2f748fb
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
 
