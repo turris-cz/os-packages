@@ -28,6 +28,7 @@ include $(INCLUDE_DIR)/package.mk
 include $(TOPDIR)/feeds/packages/lang/rust/rust-package.mk
 
 CARGO_PKG_PROFILE:=release-opt
+CARGO_RUSTFLAGS+=--cfg tokio_unstable
 
 define Package/peacockr
   SECTION:=gui
