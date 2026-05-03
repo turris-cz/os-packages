@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2023-2025 CZ.NIC z. s. p. o. (https://www.nic.cz/)
+# Copyright (C) 2023-2026 CZ.NIC z. s. p. o. (https://www.nic.cz/)
 #
 # This is free software, licensed under the GNU General Public License v3.
 # See /LICENSE for more information.
@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=foris-controller-librespeed-module
-PKG_VERSION:=1.1.0
-PKG_RELEASE:=3
+PKG_VERSION:=1.2.0
+PKG_RELEASE:=1
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/foris-controller/foris-controller-librespeed-module.git
-PKG_MIRROR_HASH:=03edeffc5263be21cd7185bb226ecccdf19e76f7cb68c25e976c579b6f20f838
+PKG_MIRROR_HASH:=209a009a2f393e8d9907e9512aa1ed527e3323408887ca03e7ed458f1994549e
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
