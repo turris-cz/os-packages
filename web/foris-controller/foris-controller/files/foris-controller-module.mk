@@ -7,8 +7,8 @@ define ForisControllerModule
 
  define Py3Package/$(1)/filespec
 +|$(PYTHON3_PKG_DIR)
--|$(PYTHON3_PKG_DIR)/foris_controller_modules/__init__.py
--|$(PYTHON3_PKG_DIR)/foris_controller_backends/__init__.py
+--|$(PYTHON3_PKG_DIR)/foris_controller_modules/__init__.py
+--|$(PYTHON3_PKG_DIR)/foris_controller_backends/__init__.py
  endef
 
  define Py3Package/$(1)/install
