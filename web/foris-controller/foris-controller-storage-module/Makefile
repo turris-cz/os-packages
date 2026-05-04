@@ -13,7 +13,7 @@ PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/foris-controller/foris-controller-storage-module.git
-PKG_MIRROR_HASH:=58ed644da1c86ee85673253ce10bf144d164b47259d202da6048728e8a6b5765
+PKG_MIRROR_HASH:=44edd8321bff95d9d3a98d89542b5c3d2080d10ca1ac8869d1423d864988dd46
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>

@@ -15,7 +15,7 @@ PKG_RELEASE:=1
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/knot/knot-resolver.git
-PKG_MIRROR_HASH:=c7dcc837073c856235f53caae5ae08bf8ede8274164c64af637696c9f3e43fde
+PKG_MIRROR_HASH:=91ae91bc80b8a8d10b0826a9210d183224fcf64d6d07cb0b28c85b1351a85627
 PKG_SOURCE_VERSION:=v${PKG_VERSION}
 
 PKG_MAINTAINER:=Knot Resolver <knot-resolver@labs.nic.cz>

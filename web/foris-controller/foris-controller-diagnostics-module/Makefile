@@ -13,7 +13,7 @@ PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/foris-controller/foris-controller-diagnostics-module.git
-PKG_MIRROR_HASH:=12c9544d85cca058f7ad34d2d31819e4bded67935946b5d5b322fdd4658e8624
+PKG_MIRROR_HASH:=da9928515d7586f63f9132aeb175fa9ddf1a849b44429945067109f9161a08fb
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
