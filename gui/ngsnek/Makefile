@@ -13,6 +13,7 @@ PKG_RELEASE:=2025-09-25-01
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/ekalouskova/ngsnek.git
+PKG_MIRROR_HASH:=32a19dc4ba39033ff89b559e63bfe65494707abddad908dfbcdd3fb524b0a1a4
 PKG_SOURCE_VERSION:=83340f11522ee46f4e7b423a04eb3273e08e2d1a
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>

@@ -13,7 +13,7 @@ PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/foris-controller/foris-controller-nextcloud-module.git
-PKG_MIRROR_HASH:=0f4a2e67f6f30521fca5587fa3619b5dcbc93f24bfb0701d63d358303c2a597e
+PKG_MIRROR_HASH:=827e04de37c5837e695b0f6ed9393f3031041ad2b920e4e7acfd648d42128461
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
