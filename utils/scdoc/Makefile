@@ -20,7 +20,7 @@ PKG_BUILD_DEPENDS:=scdoc/host
 include $(INCLUDE_DIR)/package.mk
 include $(INCLUDE_DIR)/host-build.mk
 
-MAKE_FLAGS+=HOST_SCDOC="$(STAGING_DIR_HOST)/usr/bin/scdoc"
+MAKE_FLAGS+=HOST_SCDOC="$(STAGING_DIR_HOST)/bin/scdoc"
 
 define Package/scdoc
 	SECTION:=utils
@@ -39,7 +39,7 @@ define Package/scdoc/install
 endef
 
 define Host/Install
-	$(MAKE) -C $(HOST_BUILD_DIR) PREFIX="/usr" DESTDIR="$(STAGING_DIR_HOST)" install
+	$(MAKE) -C $(HOST_BUILD_DIR) PREFIX="/" DESTDIR="$(STAGING_DIR_HOST)" install
 endef
 
 $(eval $(call HostBuild))
