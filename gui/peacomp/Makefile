@@ -26,16 +26,22 @@ PKG_BUILD_PARALLEL:=1
 
 include $(INCLUDE_DIR)/package.mk
 include $(TOPDIR)/feeds/packages/lang/rust/rust-package.mk
+include $(INCLUDE_DIR)/nls.mk
 
 CARGO_PKG_PROFILE:=release
 RUST_PKG_FEATURES:=backend-linux
 CARGO_PKG_ARGS += --no-default-features
 
+RUSTC_LDFLAGS += $(foreach arg,$(INTL_LDFLAGS),-C link-arg=$(arg))
+CARGO_RUSTFLAGS += -C link-args=-Wl,-rpath,$(STAGING_DIR)/usr/lib/libintl-full/lib
+RUSTC_LDFLAGS += $(foreach arg,$(ICONV_LDFLAGS),-C link-arg=$(arg))
+CARGO_RUSTFLAGS += -C link-args=-Wl,-rpath,$(STAGING_DIR)/usr/lib/libiconv-full/lib
+
 define Package/peacomp
   SECTION:=gui
   CATEGORY:=Wayland Compositors
   TITLE:=Minimal Wayland compositor for Turris Omnia NG
-  DEPENDS:=$(RUST_ARCH_DEPENDS) +libxkbcommon +libinput +pixman
+  DEPENDS:=$(RUST_ARCH_DEPENDS) +libxkbcommon +libinput +pixman $(INTL_DEPENDS) $(ICONV_DEPENDS)
   URL:=https://gitlab.nic.cz/turris/peacomp
 endef
 
