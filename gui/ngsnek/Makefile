@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2025 CZ.NIC, z.s.p.o. (https://www.nic.cz/)
+# Copyright (C) 2025-2026 CZ.NIC, z.s.p.o. (https://www.nic.cz/)
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -8,13 +8,13 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=ngsnek
-PKG_VERSION:=0.1
-PKG_RELEASE:=2025-09-25-01
+PKG_VERSION:=0.1.0
+PKG_RELEASE:=1
 
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_URL:=https://gitlab.nic.cz/ekalouskova/ngsnek.git
-PKG_MIRROR_HASH:=32a19dc4ba39033ff89b559e63bfe65494707abddad908dfbcdd3fb524b0a1a4
-PKG_SOURCE_VERSION:=83340f11522ee46f4e7b423a04eb3273e08e2d1a
+PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/ngsnek.git
+PKG_MIRROR_HASH:=5fd6ef8cfc75ab4d4c945cd35da7c9e1fd4db4717c25d537284564ff52311a2f
+PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 PKG_LICENSE:=GPL-3.0-or-later
@@ -34,7 +34,7 @@ define Package/ngsnek
   CATEGORY:=GUI Utilities
   TITLE:=Turris Omnia System NG Event Kontrol Program
   DEPENDS:=$(RUST_ARCH_DEPENDS) +libwayland +xkeyboard-config
-  URL:=https://gitlab.nic.cz/ekalouskova/ngsnek/
+  URL:=https://gitlab.nic.cz/turris/ngsnek/
 endef
 
 define Package/ngsnek/description

@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=suricata-bin
 PKG_VERSION:=8.0.1
-PKG_RELEASE=$(AUTORELEASE)
+PKG_RELEASE=9
 
 PKG_SOURCE:=suricata-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://www.openinfosecfoundation.org/download/

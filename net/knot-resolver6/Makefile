@@ -11,7 +11,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=knot-resolver6
 PKG_VERSION:=6.1.0
-PKG_RELEASE:=1
+PKG_RELEASE:=3
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/knot/knot-resolver.git
@@ -53,7 +53,6 @@ define Package/knot-resolver6
     +resolver-conf \
     PACKAGE_knot-resolver_dnstap:libfstrm \
     PACKAGE_knot-resolver_dnstap:libprotobuf-c
-  PROVIDES:=dns-resolver
   USERID:=kresd=3536:kresd=3536
 endef
 
@@ -62,8 +61,22 @@ define Package/knot-resolver6/description
   implementation, including both a resolver library and a daemon.
 endef
 
+define Package/knot-resolver6-managerless
+  TITLE:=Obsolete Knot DNS Resolver setup
+  PROVIDES:=dns-resolver
+  CONFLICTS:=knot-resolver6-manager
+  DEPENDS:=\
+    +knot-resolver6
+endef
+
+define Package/knot-resolver6-managerless/description
+  Obsolete setup of Knot Resolver without using Manager.
+  Do not use and do not report bugs against.
+endef
+
 define Package/knot-resolver6-manager
   TITLE:=Knot DNS Resolver manager
+  PROVIDES:=dns-resolver
   DEPENDS:=\
     +knot-resolver6 \
     +python3-aiohttp \
@@ -73,13 +86,8 @@ define Package/knot-resolver6-manager
     +python3-yaml
 endef
 
-define Py3Package/knot-resolver6-manager/install
-	if [ -d $(PKG_INSTALL_DIR)/usr/bin ]; then \
-		$(INSTALL_DIR) $(1)/usr/bin ; \
-		$(CP) $(PKG_INSTALL_DIR)/usr/bin/* $(1)/usr/bin/ ; \
-	fi
-	$(INSTALL_DIR) $(1)/etc/knot-resolver
-	$(INSTALL_DATA) files/config.yaml $(1)/etc/knot-resolver
+define Package/knot-resolver6-manager/conffiles
+/etc/knot-resolver/config.yaml
 endef
 
 define Package/knot-resolver6-manager/description
@@ -113,13 +121,9 @@ define Package/knot-resolver6/install
 	$(CP) $(PKG_INSTALL_DIR)/usr/lib/knot-resolver/{*.lua,*.so} $(1)/usr/lib/knot-resolver/
 	$(INSTALL_DIR) $(1)/usr/lib/knot-resolver/kres_modules
 	$(CP) $(PKG_INSTALL_DIR)/usr/lib/knot-resolver/kres_modules/{*.lua,*.so} $(1)/usr/lib/knot-resolver/kres_modules/
-	$(INSTALL_DIR) $(1)/etc/init.d
-	$(INSTALL_BIN) ./files/kresd.init $(1)/etc/init.d/kresd
 
 	$(INSTALL_DIR) $(1)/etc/knot-resolver
 	$(CP) $(PKG_INSTALL_DIR)/etc/knot-resolver/root.hints $(1)/etc/knot-resolver/
-
-	$(INSTALL_DIR) $(1)/etc/kresd
 endef
 
 define Package/knot-resolver6-manager/install
@@ -134,6 +138,15 @@ define Package/knot-resolver6-manager/install
 		$(PYTHON3_PKG_INSTALL_VARS) \
 	)
 	sed -i 's|#!/.*/python3.*|#!/usr/bin/python3|' $(1)/usr/bin/*
+	$(INSTALL_DIR) $(1)/etc/knot-resolver
+	$(INSTALL_DATA) files/config.yaml $(1)/etc/knot-resolver
+	$(INSTALL_DIR) $(1)/etc/init.d
+	$(INSTALL_BIN) ./files/kresd.init $(1)/etc/init.d/kresd
+endef
+
+define Package/knot-resolver6-managerless/install
+	$(INSTALL_DIR) $(1)/etc/init.d
+	$(INSTALL_BIN) ./files/kresd.init.old $(1)/etc/init.d/kresd
 endef
 
 define Build/Compile
@@ -141,7 +154,7 @@ define Build/Compile
 	$(call Py3Build/Compile)
 endef
 
-define Package/knot-resolver6/postinst
+define Package/knot-resolver6-manager/postinst
 #!/bin/sh
 set -x
 if [ -z "$$IPKG_INSTROOT" ]; then
@@ -187,7 +200,11 @@ fi
 fi
 endef
 
-define Package/knot-resolver6/prerm
+define Package/knot-resolver6-managerless/postinst
+$(call Package/knot-resolver6-manager/postinst,$(1))
+endef
+
+define Package/knot-resolver6-manager/prerm
 #!/bin/sh
 set -ex
 if [ -z "$$IPKG_INSTROOT" ]; then
@@ -196,7 +213,23 @@ if [ -e /etc/init.d/kresd ] ; then /etc/init.d/kresd stop ; /etc/init.d/kresd di
 fi
 endef
 
-define Package/knot-resolver6/postrm
+define Package/knot-resolver6-manager/postrm
+#!/bin/sh
+if [ -z "$$IPKG_INSTROOT" ]; then
+[ \! -x /etc/init.d/resolver ] || /etc/init.d/resolver restart
+fi
+endef
+
+define Package/knot-resolver6-managerless/prerm
+#!/bin/sh
+set -ex
+if [ -z "$$IPKG_INSTROOT" ]; then
+# Remove the script if it is there.
+if [ -e /etc/init.d/kresd ] ; then /etc/init.d/kresd stop ; /etc/init.d/kresd disable ;  fi
+fi
+endef
+
+define Package/knot-resolver6-managerless/postrm
 #!/bin/sh
 if [ -z "$$IPKG_INSTROOT" ]; then
 [ \! -x /etc/init.d/resolver ] || /etc/init.d/resolver restart
@@ -206,3 +239,4 @@ endef
 $(eval $(call BuildPackage,knot-resolver6))
 $(eval $(call Py3Package,knot-resolver6-manager))
 $(eval $(call BuildPackage,knot-resolver6-manager))
+$(eval $(call BuildPackage,knot-resolver6-managerless))

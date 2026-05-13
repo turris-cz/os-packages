@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2025 CZ.NIC, z.s.p.o. (https://www.nic.cz/)
+# Copyright (C) 2025-2026 CZ.NIC, z.s.p.o. (https://www.nic.cz/)
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -8,13 +8,13 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=peacomp
-PKG_VERSION:=0.1.2
-PKG_RELEASE:=2025-11-05-02
+PKG_VERSION:=0.1.3
+PKG_RELEASE:=1
 
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_URL:=https://gitlab.nic.cz/ekalouskova/peacomp.git
-PKG_MIRROR_HASH:=16c1149d1ea327bac95b9d3bc433614465b7cbd0848ae466e4f9752863b8c37b
-PKG_SOURCE_VERSION:=dff01056083d7b17c2bdc31d1c10417b532417ac
+PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/peacomp.git
+PKG_MIRROR_HASH:=e2d1d8867c27026506fd8426c2bea9e54c6fbbe8f1a7a2d49d8bf738c64458f0
+PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 PKG_LICENSE:=GPL-3.0-or-later
@@ -36,13 +36,13 @@ define Package/peacomp
   CATEGORY:=Wayland Compositors
   TITLE:=Minimal Wayland compositor for Turris Omnia NG
   DEPENDS:=$(RUST_ARCH_DEPENDS) +libxkbcommon +libinput +pixman
-  URL:=https://gitlab.nic.cz/ekalouskova/peacomp
+  URL:=https://gitlab.nic.cz/turris/peacomp
 endef
 
 define Package/peacomp/description
         Minimal Wayland compositor for Turris Omnia NG with DRM+LibInput+UDev backend and Pixman software rendering
 
-        More information on https://gitlab.nic.cz/ekalouskova/peacomp
+        More information on https://gitlab.nic.cz/turris/peacomp
 endef
 
 define Package/peacomp/install

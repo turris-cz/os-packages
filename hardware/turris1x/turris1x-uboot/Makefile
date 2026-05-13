@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=turris1x-uboot
 PKG_VERSION:=$(if $(DUMP),x,$(shell sed -ne 's#PKG_VERSION:=##p' $(TOPDIR)/package/boot/uboot-mpc85xx/Makefile))
-PKG_RELEASE:=$(AUTORELEASE)
+PKG_RELEASE:=13
 
 PKG_BUILD_DEPENDS:=uboot-mpc85xx
 

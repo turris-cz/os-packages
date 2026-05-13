@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=updater-opkg-wrapper
 PKG_VERSION:=0.2.0
-PKG_RELEASE:=$(AUTORELEASE)
+PKG_RELEASE:=9
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/updater/opkg-wrapper.git

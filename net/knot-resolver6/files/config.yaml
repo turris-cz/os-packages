@@ -2,10 +2,5 @@ rundir: /var/run/knot-resolver
 workers: 2
 cache:
   storage: /var/cache/knot-resolver
-logging:
-  level: info
-network:
-  listen:
-    - interface: 127.0.0.1@53
 management:
   unix-socket: /var/run/knot-resolver/manager.sock

@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=sentinel-dynfw-client
 PKG_VERSION:=1.4.0
-PKG_RELEASE:=$(AUTORELEASE)
+PKG_RELEASE:=20
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/sentinel/dynfw-client.git

@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=l10n-supported
 PKG_VERSION:=1.4.0
-PKG_RELEASE:=$(AUTORELEASE)
+PKG_RELEASE:=9
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 

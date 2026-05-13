@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=omnia-uboot
 PKG_VERSION:=$(if $(DUMP),x,$(shell sed -ne 's#PKG_VERSION:=##p' $(TOPDIR)/package/boot/uboot-mvebu/Makefile))
-PKG_RELEASE:=$(AUTORELEASE)
+PKG_RELEASE:=5
 
 PKG_BUILD_DEPENDS:=uboot-mvebu
 

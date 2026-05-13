@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2025 CZ.NIC z.s.p.o. (https://www.nic.cz/)
+# Copyright (C) 2019-2026 CZ.NIC z.s.p.o. (https://www.nic.cz/)
 #
 # This is free software, licensed under the GNU General Public License v3.
 # See /LICENSE for more information.
@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=reforis
-PKG_VERSION:=3.8.0
-PKG_RELEASE:=$(AUTORELEASE)
+PKG_VERSION:=3.9.1
+PKG_RELEASE:=1
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/reforis/reforis
-PKG_MIRROR_HASH:=5e3a629975c6eb075528de0cae2a11441d5736b33abe687e39bc6391af0d319f
+PKG_MIRROR_HASH:=4ec0ad67eddecc519a248720151471aa15b04652fe27fe067ad3d704fa41d899
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
@@ -44,6 +44,7 @@ define Package/reforis
     +lighttpd-mod-redirect \
     +lighttpd-mod-setenv \
     +turris-auth \
+    +python3-blinker \
     +python3-flask \
     +python3-flask-babel \
     +python3-flask-seasurf \

@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=sentinel-firewall
 PKG_VERSION:=0.1.5
-PKG_RELEASE:=$(AUTORELEASE)
+PKG_RELEASE:=34
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 

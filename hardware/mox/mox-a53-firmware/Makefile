@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=mox-a53-firmware
 PKG_VERSION:=2.10
-PKG_RELEASE:=$(AUTORELEASE)
+PKG_RELEASE:=1
 
 PKG_SOURCE:=trusted-firmware-a-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://git.trustedfirmware.org/TF-A/trusted-firmware-a.git/snapshot

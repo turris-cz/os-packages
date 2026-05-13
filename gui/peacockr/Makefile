@@ -8,13 +8,13 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=peacockr
-PKG_VERSION:=0.1
-PKG_RELEASE:=2025-09-25-02
+PKG_VERSION:=0.3.1
+PKG_RELEASE:=1
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/peacockr.git
-PKG_MIRROR_HASH:=47249ae27a3f490d430fcf384723e58ce213c698040f8dd7ce60b8ac82ca4d1c
-PKG_SOURCE_VERSION:=4f1bc97f6bda457f7f42bb505de7ee1606c21870
+PKG_MIRROR_HASH:=31bb9454b4b45f7a14b8e4529c949724341f5f66095e984fcf2ae5a73d3fe70d
+PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 PKG_LICENSE:=GPL-3.0-or-later
@@ -27,8 +27,8 @@ PKG_BUILD_PARALLEL:=1
 include $(INCLUDE_DIR)/package.mk
 include $(TOPDIR)/feeds/packages/lang/rust/rust-package.mk
 
-CARGO_PKG_PROFILE:=release
-RUST_PKG_FEATURES:=target-turris
+CARGO_PKG_PROFILE:=release-opt
+CARGO_RUSTFLAGS+=--cfg tokio_unstable
 
 define Package/peacockr
   SECTION:=gui
@@ -45,21 +45,21 @@ define Package/peacockr/description
 endef
 
 define Package/peacockr/conffiles
-/etc/config/peacockr
+/etc/peacockr/config.kdl
 endef
 
 define Package/peacockr/install
 	$(INSTALL_DIR) $(1)/usr/bin/
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/target/$(RUSTC_TARGET_ARCH)/release/peacockr $(1)/usr/bin/peacockr
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/target/$(RUSTC_TARGET_ARCH)/release-opt/peacockr $(1)/usr/bin/peacockr
 
 	$(INSTALL_DIR) $(1)/etc/init.d/
-	$(INSTALL_BIN) ./files/peacockr.init   $(1)/etc/init.d/peacockr
+	$(INSTALL_BIN) ./files/peacockr.init $(1)/etc/init.d/peacockr
 
-	$(INSTALL_DIR) $(1)/etc/config/
-	$(INSTALL_BIN) ./files/peacockr.config $(1)/etc/config/peacockr
+	$(INSTALL_DIR) $(1)/etc/peacockr
+	$(INSTALL_DATA) $(PKG_BUILD_DIR)/dist/config.kdl $(1)/etc/peacockr/config.kdl
 endef
 
-#Build/Compile = $(call Build/Compile/Cargo,peacockr)
+Build/Compile = $(call Build/Compile/Cargo,frontend)
 
 $(eval $(call RustBinPackage,peacockr))
 $(eval $(call BuildPackage,peacockr))

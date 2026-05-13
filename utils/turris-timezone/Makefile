@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=turris-timezone
 PKG_VERSION:=0.3.1
-PKG_RELEASE:=$(AUTORELEASE)
+PKG_RELEASE:=7
 
 PKG_SOURCE:=$(PKG_NAME)-v$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/foris-controller/$(PKG_NAME)/-/archive/v$(PKG_VERSION)/

@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=mox-support
 PKG_VERSION:=2.3.0
-PKG_RELEASE:=$(AUTORELEASE)
+PKG_RELEASE:=51
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 
 include $(INCLUDE_DIR)/package.mk

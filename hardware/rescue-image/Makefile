@@ -1,5 +1,5 @@
 #
-## Copyright (C) 2025 CZ.NIC z.s.p.o. (http://www.nic.cz/)
+## Copyright (C) 2025-2026 CZ.NIC z.s.p.o. (http://www.nic.cz/)
 #
 ## This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=rescue-image
 PKG_VERSION:=3.6.1
-PKG_RELEASE:=$(AUTORELEASE)
+PKG_RELEASE:=52
 BB_VERSION:=1.33.2
 PKG_SOURCE:=busybox-$(BB_VERSION).tar.bz2
 PKG_SOURCE_URL:=https://www.busybox.net/downloads \
@@ -47,9 +47,12 @@ else
 DEVICE := unknown
 endif
 
+OMNIA_NG_PKGS:=kmod-qca-nss-phy kmod-qca-ssdk kmod-nat46 kmod-qca-nss-ppe kmod-qca-nss-dp kmod-qca-nss-drv-lite
+
 define Package/rescue-image
 	TITLE:=rescue-image
-	DEPENDS:=@(TARGET_mvebu_cortexa53_DEVICE_cznic_turris-mox||TARGET_mvebu_cortexa9_DEVICE_cznic_turris-omnia||TARGET_ipq95xx_generic_DEVICE_cznic_turris-omnia-ng)
+	DEPENDS:=@(TARGET_mvebu_cortexa53_DEVICE_cznic_turris-mox||TARGET_mvebu_cortexa9_DEVICE_cznic_turris-omnia||TARGET_ipq95xx_generic_DEVICE_cznic_turris-omnia-ng) \
+		 $(foreach pkg,$(OMNIA_NG_PKGS),+TARGET_ipq95xx_generic_DEVICE_cznic_turris-omnia-ng:$(pkg))
 endef
 
 define Build/Prepare
