@@ -50,6 +50,7 @@ define Package/knot-resolver6
     +libuv \
     +lmdb \
     +luajit \
+    +libjemalloc \
     +resolver-conf \
     PACKAGE_knot-resolver_dnstap:libfstrm \
     PACKAGE_knot-resolver_dnstap:libprotobuf-c
