@@ -8,7 +8,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=turris-auth-rs
-PKG_VERSION:=0.1.0
+PKG_VERSION:=0.1.1
 PKG_RELEASE:=1
 
 PKG_SOURCE_PROTO:=git
@@ -51,7 +51,7 @@ define Package/turris-auth-rs/description
 endef
 
 
-define Package/sshoxy-haas/install
+define Package/turris-auth-rs/install
     $(INSTALL_DIR) $(1)/usr/bin/
     $(INSTALL_BIN) $(PKG_BUILD_DIR)/target/$(RUSTC_TARGET_ARCH)/release/turris-auth-rs $(1)/usr/bin/turris-auth-rs
 
