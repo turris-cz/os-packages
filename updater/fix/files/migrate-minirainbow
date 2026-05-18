@@ -1,0 +1,18 @@
+#!/bin/sh
+
+# Needed for detecting dim button
+mv /etc/board.json /etc/board.json.old
+board_detect
+
+# Regenerate LED config from /etc/board.d/ if not user-modified
+if ! grep -q 'config led' /etc/config/system; then
+	mv /etc/config/system /etc/config/system.bak
+	config_generate
+	cat /etc/config/system | sed -n '/config led/,$p' >> /etc/config/system.bak
+	mv /etc/config/system.bak /etc/config/system
+	/etc/init.d/led restart
+fi
+
+# Remove old version
+rm -f /usr/libexec/minirainbow.sh
+rm -f /etc/config/minirainbow
