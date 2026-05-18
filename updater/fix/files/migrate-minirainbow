@@ -1,0 +1,14 @@
+#!/bin/sh
+
+mv /etc/board.json /etc/board.json.old
+board_detect
+
+if ! grep -q 'config led' /etc/config/system; then
+	mv /etc/config/system /etc/config/system.bak
+	config_generate
+	cat /etc/config/system | sed -n '/config led/,$p' >> /etc/config/system.bak
+	mv /etc/config/system.bak /etc/config/system
+	/etc/init.d/led restart
+fi
+
+rm /usr/libexec/minirainbow.sh
