@@ -1,0 +1,88 @@
+From da0a9affbcf068a66a53e75a41295c05d61490f0 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Erin=20Kalouskov=C3=A1?= <erin.kalouskova@nic.cz>
+Date: Mon, 18 May 2026 15:07:23 +0200
+Subject: [PATCH] fixup: fix hangs on display sleep
+
+---
+ Cargo.lock                    | 27 ++++++++++++++++++++++++---
+ slint-lswl-backend/Cargo.toml |  7 ++++++-
+ 2 files changed, 30 insertions(+), 4 deletions(-)
+
+diff --git a/Cargo.lock b/Cargo.lock
+index 616d291..40b7565 100644
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -2225,7 +2225,7 @@ dependencies = [
+  "rgb",
+  "scoped-tls-hkt",
+  "scopeguard",
+- "softbuffer",
++ "softbuffer 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
+  "strum",
+  "vtable",
+  "wasm-bindgen",
+@@ -2363,7 +2363,7 @@ dependencies = [
+  "read-fonts 0.35.0",
+  "scoped-tls-hkt",
+  "skia-safe",
+- "softbuffer",
++ "softbuffer 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
+  "unicode-segmentation",
+  "vtable",
+  "windows 0.62.2",
+@@ -5210,7 +5210,7 @@ dependencies = [
+  "i-slint-common",
+  "i-slint-core",
+  "i-slint-renderer-software",
+- "softbuffer",
++ "softbuffer 0.4.8 (git+https://gitlab.nic.cz/ekalouskova/softbuffer.git?branch=hack-no-block)",
+  "winit",
+ ]
+ 
+@@ -5321,6 +5321,27 @@ name = "softbuffer"
+ version = "0.4.8"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "aac18da81ebbf05109ab275b157c22a653bb3c12cf884450179942f81bcbf6c3"
++dependencies = [
++ "bytemuck",
++ "js-sys",
++ "ndk",
++ "objc2 0.6.4",
++ "objc2-core-foundation",
++ "objc2-core-graphics",
++ "objc2-foundation 0.3.2",
++ "objc2-quartz-core 0.3.2",
++ "raw-window-handle",
++ "redox_syscall 0.5.18",
++ "tracing",
++ "wasm-bindgen",
++ "web-sys",
++ "windows-sys 0.61.2",
++]
++
++[[package]]
++name = "softbuffer"
++version = "0.4.8"
++source = "git+https://gitlab.nic.cz/ekalouskova/softbuffer.git?branch=hack-no-block#57024a45d6fda0fd7f2d2ec6f1051abe85e72345"
+ dependencies = [
+  "bytemuck",
+  "fastrand",
+diff --git a/slint-lswl-backend/Cargo.toml b/slint-lswl-backend/Cargo.toml
+index ed3111d..a0d989d 100644
+--- a/slint-lswl-backend/Cargo.toml
++++ b/slint-lswl-backend/Cargo.toml
+@@ -8,5 +8,10 @@ edition = "2024"
+ i-slint-common = "=1.15.1"
+ i-slint-core   = { version = "=1.15.1", features = ["std"] }
+ i-slint-renderer-software = "=1.15.1"
+-softbuffer     = { version = "0.4"    , default-features = false, features = ["wayland"] }
+ winit          = { version = "0.30"   , default-features = false, features = ["wayland", "rwh_06"] }
++
++[dependencies.softbuffer]
++git = "https://gitlab.nic.cz/ekalouskova/softbuffer.git"
++branch = "hack-no-block"
++default-features = false
++features = ["wayland"]
+-- 
+2.54.0
+
