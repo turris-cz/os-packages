@@ -1,0 +1,1569 @@
+From 046081d627d2f96722bcfb6c4088726f6acfed4c Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Erin=20Kalouskov=C3=A1?= <erin.kalouskova@nic.cz>
+Date: Tue, 12 May 2026 14:12:18 +0200
+Subject: [PATCH] fix: add loading screen on snapshot rollback
+
+---
+ frontend/po/cs.po                 | 298 ++++++++++++++++--------------
+ frontend/po/de.po                 | 286 +++++++++++++++-------------
+ frontend/po/peacockr-frontend.pot | 235 +++++++++++------------
+ frontend/src/schnapps.rs          |  66 ++++---
+ frontend/ui/pages/loading.slint   |   4 +-
+ frontend/ui/pages/schnapps.slint  |   6 +-
+ 6 files changed, 473 insertions(+), 422 deletions(-)
+
+diff --git a/frontend/po/cs.po b/frontend/po/cs.po
+index 9a7bcd4..d40d903 100644
+--- a/frontend/po/cs.po
++++ b/frontend/po/cs.po
+@@ -4,18 +4,18 @@
+ msgid ""
+ msgstr ""
+ "Project-Id-Version: PeacockR Frontend\n"
+-"POT-Creation-Date: 2026-01-02 00:26+0000\n"
+-"PO-Revision-Date: 2026-01-02 02:00+0100\n"
++"POT-Creation-Date: 2026-05-12 12:02+0000\n"
++"PO-Revision-Date: 2026-05-12 14:06+0200\n"
+ "Last-Translator: Erin Kalousková <erin.kalouskova@nic.cz>\n"
+-"Language-Team: Čeština\n"
++"Language-Team: Czech\n"
+ "Language: cs\n"
+ "MIME-Version: 1.0\n"
+ "Content-Type: text/plain; charset=UTF-8\n"
+ "Content-Transfer-Encoding: 8bit\n"
+ "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
+-"X-Generator: Gtranslator 49.0\n"
++"X-Generator: Gtranslator 50.0\n"
+ 
+-#: ui/global/utils.slint:4
++#: ui/global/utils.slint:25
+ msgctxt "Utils"
+ msgid "1 day"
+ msgid_plural "{n} days"
+@@ -23,7 +23,7 @@ msgstr[0] "1 den"
+ msgstr[1] "{n} dny"
+ msgstr[2] "{n} dní"
+ 
+-#: ui/global/utils.slint:6
++#: ui/global/utils.slint:27
+ msgctxt "Utils"
+ msgid "1 hour"
+ msgid_plural "{n} hours"
+@@ -31,7 +31,7 @@ msgstr[0] "1 hodina"
+ msgstr[1] "{n} hodiny"
+ msgstr[2] "{n} hodin"
+ 
+-#: ui/global/utils.slint:8
++#: ui/global/utils.slint:29
+ msgctxt "Utils"
+ msgid "1 minute"
+ msgid_plural "{n} minutes"
+@@ -39,294 +39,308 @@ msgstr[0] "1 minuta"
+ msgstr[1] "{n} minuty"
+ msgstr[2] "{n} minut"
+ 
+-#: ui/pages/notifications/common.slint:49
++#: ui/pages/notifications/common.slint:70
+ msgctxt "Notification"
+ msgid "Errors"
+ msgstr "Chyby"
+ 
+-#: ui/pages/notifications/common.slint:57
++#: ui/pages/notifications/common.slint:78
+ msgctxt "Notification"
+ msgid "News"
+ msgstr "Novinky"
+ 
+-#: ui/pages/notifications/common.slint:65
++#: ui/pages/notifications/common.slint:86
+ msgctxt "Notification"
+ msgid "Restart"
+ msgstr "Restart"
+ 
+-#: ui/pages/notifications/common.slint:73
++#: ui/pages/notifications/common.slint:94
+ msgctxt "Notification"
+ msgid "Test"
+ msgstr "Test"
+ 
+-#: ui/pages/notifications/common.slint:81
++#: ui/pages/notifications/common.slint:102
+ msgctxt "Notification"
+ msgid "Updates"
+ msgstr "Aktualizace"
+ 
+-#: ui/pages/notifications/list.slint:65
++#: ui/pages/notifications/list.slint:78
+ msgctxt "ListEntry"
+ msgid "No notifications in this category."
+ msgstr "Žádná upozornění v této kategorii."
+ 
+-#: ui/pages/notifications/list.slint:171
++#: ui/pages/notifications/list.slint:184
+ msgctxt "NotificationsList"
+ msgid "Notifications"
+ msgstr "Oznámení"
+ 
+-#: ui/pages/bandwidth.slint:69
++#: ui/pages/bandwidth.slint:82
+ msgctxt "Bandwidth"
+ msgid "Bandwidth"
+ msgstr "Šířka pásma"
+ 
+-#: ui/pages/bandwidth.slint:94
++#: ui/pages/bandwidth.slint:107
+ msgctxt "Bandwidth"
+ msgid "Download speed"
+ msgstr "Rychlost stahování"
+ 
+-#: ui/pages/bandwidth.slint:129
++#: ui/pages/bandwidth.slint:142
+ msgctxt "Bandwidth"
+ msgid "Total data received"
+ msgstr "Celkem staženo"
+ 
+-#: ui/pages/bandwidth.slint:178
++#: ui/pages/bandwidth.slint:191
+ msgctxt "Bandwidth"
+ msgid "Upload speed"
+ msgstr "Rychlost odesílání"
+ 
+-#: ui/pages/bandwidth.slint:213
++#: ui/pages/bandwidth.slint:226
+ msgctxt "Bandwidth"
+ msgid "Total data sent"
+ msgstr "Celkem odesláno"
+ 
+-#: ui/pages/connected_clients.slint:61
+-msgctxt "ConnectedClients"
+-msgid "Hostname"
+-msgstr "Název hostitele"
+-
+-#: ui/pages/connected_clients.slint:66
+-msgctxt "ConnectedClients"
+-msgid "MAC address"
+-msgstr "MAC adresa"
+-
+-#: ui/pages/connected_clients.slint:71
+-msgctxt "ConnectedClients"
+-msgid "Link speed"
+-msgstr "Rychlost spojení"
+-
+-#: ui/pages/connected_clients.slint:76
+-msgctxt "ConnectedClients"
+-msgid "Signal"
+-msgstr "Signál"
+-
+-#: ui/pages/dashboard.slint:92
+-msgctxt "Dashboard"
+-msgid "Dashboard"
+-msgstr "Přehled"
+-
+-#: ui/pages/dashboard.slint:101
+-msgctxt "Dashboard"
+-msgid "Uptime:"
+-msgstr "Doba běhu:"
+-
+-#: ui/pages/dashboard.slint:182
+-msgctxt "Dashboard"
+-msgid "IP Addresses"
+-msgstr "IP adresy"
+-
+-#: ui/pages/dashboard.slint:201
+-msgctxt "Dashboard"
+-msgid "LAN:"
+-msgstr "LAN:"
+-
+-#: ui/pages/dashboard.slint:216
+-msgctxt "Dashboard"
+-msgid "WAN:"
+-msgstr "WAN:"
+-
+-#: ui/pages/dashboard.slint:237
+-msgctxt "Dashboard"
+-msgid "Notifications"
+-msgstr "Oznámení"
+-
+-#: ui/pages/interfaces.slint:66
++#: ui/pages/interfaces.slint:79
+ msgctxt "Interfaces"
+ msgid "Interfaces"
+ msgstr "Rozhraní"
+ 
+-#: ui/pages/menu.slint:69
++#: ui/pages/menu.slint:94
+ msgctxt "Menu"
+ msgid "Menu"
+ msgstr "Nabídka"
+ 
+-#: ui/pages/network.slint:70
++#: ui/pages/network.slint:83
+ msgctxt "Network"
+ msgid "Network"
+ msgstr "Síť"
+ 
+-#: ui/pages/network.slint:92
++#: ui/pages/network.slint:105
+ msgctxt "Network"
+ msgid "Hostname"
+ msgstr "Název hostitele"
+ 
+-#: ui/pages/network.slint:97
++#: ui/pages/network.slint:110
+ msgctxt "Network"
+ msgid "LAN IP address"
+ msgstr "LAN IPv4 adresa"
+ 
+-#: ui/pages/network.slint:102
++#: ui/pages/network.slint:115
+ msgctxt "Network"
+ msgid "WAN IP address"
+ msgstr "WAN IPv4 adresa"
+ 
+-#: ui/pages/network.slint:107
++#: ui/pages/network.slint:120
+ msgctxt "Network"
+ msgid "LAN IPv6 address"
+ msgstr "LAN IPv6 adresy"
+ 
+-#: ui/pages/network.slint:112
++#: ui/pages/network.slint:125
+ msgctxt "Network"
+ msgid "WAN IPv6 address"
+ msgstr "WAN IPv6 adresy"
+ 
+-#: ui/pages/qr_details.slint:29
++#: ui/pages/qr_details.slint:42
+ msgctxt "QRDetails"
+ msgid "Guest Wi-Fi"
+ msgstr "Wi-Fi pro hosty"
+ 
+-#: ui/pages/qr_details.slint:29
++#: ui/pages/qr_details.slint:42
+ msgctxt "QRDetails"
+ msgid "LAN Wi-Fi"
+ msgstr "LAN Wi-Fi"
+ 
+-#: ui/pages/qr_details.slint:46
++#: ui/pages/qr_details.slint:59
+ msgctxt "QRDetails"
+ msgid "SSID"
+ msgstr "SSID"
+ 
+-#: ui/pages/qr_details.slint:52
++#: ui/pages/qr_details.slint:65
+ msgctxt "QRDetails"
+ msgid "Password"
+ msgstr "Heslo"
+ 
+-#: ui/pages/schnapps.slint:181 ui/pages/schnapps.slint:218
+-msgctxt "Schnapps"
+-msgid "Snapshots"
+-msgstr "Zachycené stavy"
+-
+-#: ui/pages/system.slint:82
++#: ui/pages/system.slint:95
+ msgctxt "System"
+ msgid "System Status"
+ msgstr "Stav systému"
+ 
+-#: ui/pages/system.slint:104
++#: ui/pages/system.slint:117
+ msgctxt "System"
+ msgid "Hostname"
+ msgstr "Název hostitele"
+ 
+-#: ui/pages/system.slint:109
++#: ui/pages/system.slint:122
+ msgctxt "System"
+ msgid "Device"
+ msgstr "Zařízení"
+ 
+-#: ui/pages/system.slint:114
++#: ui/pages/system.slint:127
+ msgctxt "System"
+ msgid "Uptime"
+ msgstr "Doba běhu"
+ 
+-#: ui/pages/system.slint:119
++#: ui/pages/system.slint:132
+ msgctxt "System"
+ msgid "Serial Number"
+ msgstr "Sériové číslo"
+ 
+-#: ui/pages/system.slint:124
++#: ui/pages/system.slint:137
+ msgctxt "System"
+ msgid "OS Version"
+ msgstr "Verze systému"
+ 
+-#: ui/pages/system.slint:129
++#: ui/pages/system.slint:142
+ msgctxt "System"
+ msgid "Turris OS Branch"
+ msgstr "Větev Turris OS"
+ 
+-#: ui/pages/system.slint:134
++#: ui/pages/system.slint:147
+ msgctxt "System"
+ msgid "Kernel Version"
+ msgstr "Verze jádra"
+ 
+-#: ui/pages/wifi.slint:93
++#: ui/pages/dashboard.slint:121
++msgctxt "Dashboard"
++msgid "Dashboard"
++msgstr "Přehled"
++
++#: ui/pages/dashboard.slint:130
++msgctxt "Dashboard"
++msgid "Uptime:"
++msgstr "Doba běhu:"
++
++#: ui/pages/dashboard.slint:211
++msgctxt "Dashboard"
++msgid "IP Addresses"
++msgstr "IP adresy"
++
++#: ui/pages/dashboard.slint:222
++msgctxt "Dashboard"
++msgid "LAN:"
++msgstr "LAN:"
++
++#: ui/pages/dashboard.slint:238
++msgctxt "Dashboard"
++msgid "WAN:"
++msgstr "WAN:"
++
++#: ui/pages/dashboard.slint:260
++msgctxt "Dashboard"
++msgid "Notifications"
++msgstr "Oznámení"
++
++#: ui/pages/failure.slint:58
++msgctxt "Failure"
++msgid "An error has occured"
++msgstr "Udála se chyba"
++
++#: ui/pages/failure.slint:114
++msgctxt "Failure"
++msgid "Close"
++msgstr "Zavřít"
++
++#: ui/pages/connected_clients.slint:113
++msgctxt "ConnectedClients"
++msgid "Hostname"
++msgstr "Název hostitele"
++
++#: ui/pages/connected_clients.slint:118
++msgctxt "ConnectedClients"
++msgid "MAC address"
++msgstr "MAC adresa"
++
++#: ui/pages/connected_clients.slint:123
++msgctxt "ConnectedClients"
++msgid "Link speed"
++msgstr "Rychlost spojení"
++
++#: ui/pages/connected_clients.slint:128
++msgctxt "ConnectedClients"
++msgid "Signal"
++msgstr "Signál"
++
++#: ui/pages/wifi.slint:120
+ msgctxt "WiFi"
+ msgid "Wi-Fi"
+ msgstr "Wi-Fi"
+ 
+-#: ui/pages/wifi.slint:126
++#: ui/pages/wifi.slint:153
+ msgctxt "WiFi"
+ msgid "Wi-Fi status"
+ msgstr "Stav Wi-Fi"
+ 
+-#: ui/pages/wifi.slint:131 ui/pages/wifi.slint:196
++#: ui/pages/wifi.slint:158 ui/pages/wifi.slint:223
+ msgctxt "Wi-Fi"
+ msgid "Active"
+ msgstr "Aktivní"
+ 
+-#: ui/pages/wifi.slint:132 ui/pages/wifi.slint:197
++#: ui/pages/wifi.slint:159 ui/pages/wifi.slint:224
+ msgctxt "Wi-Fi"
+ msgid "Inactive"
+ msgstr "Neaktivní"
+ 
+-#: ui/pages/wifi.slint:145 ui/pages/wifi.slint:211
++#: ui/pages/wifi.slint:172 ui/pages/wifi.slint:238
+ msgctxt "WiFi"
+ msgid "Connected Clients"
+ msgstr "Připojená zařízení"
+ 
+-#: ui/pages/wifi.slint:191
++#: ui/pages/wifi.slint:218
+ msgctxt "WiFi"
+ msgid "Guest Wi-Fi Status"
+ msgstr "Stav Wi-Fi pro hosty"
+ 
+-#: resources/config.kdl:5
+-msgctxt "Menu"
+-msgid "System Information"
+-msgstr "O systému"
+-
+-#: resources/config.kdl:10
+-msgctxt "Menu"
++#: ui/pages/schnapps.slint:196 ui/pages/schnapps.slint:233
++msgctxt "Schnapps"
+ msgid "Snapshots"
+ msgstr "Zachycené stavy"
+ 
+-#: resources/config.kdl:15
+-msgctxt "Menu"
+-msgid "Root Shell"
+-msgstr "Rootovský shell"
+-
+-#: src/cli.rs:53
+-msgid ""
+-"You are running build targetting development systems.\n"
+-"Data will be mostly mocked. Do not run in production.\n"
+-"\n"
+-msgstr ""
+-"Toto je sestavení určené pro vývoj.\n"
+-"Data budou falšována. Nepoužívejte v produkci.\n"
+-"\n"
+-
+-#: src/cli.rs:62
+-msgid "Commit"
+-msgstr "Revize"
++#: ui/pages/schnapps.slint:264
++msgctxt "Schnapps"
++msgid "Rolling back…"
++msgstr "Vracení změn…"
+ 
+-#: src/cli.rs:63
+-msgid ""
+-"License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/"
+-"gpl.html>.\n"
+-"This is free software: you are free to change and redistribute it.\n"
+-"There is NO WARRANTY, to the extent permitted by law.\n"
+-"\n"
+-"Made by Aleksandr Gumroian, Erin Kalousková, Michal Hrušecký and Štěpán "
+-"Henek."
+-msgstr ""
+-"Licence GPLv3+: GNU GPL verze 3 či novější <https://gnu.org/licenses/"
+-"gpl.html>.\n"
+-"Toto je svobodný software: mužete ho svobodně upravovat a šířit.\n"
+-"Na program se, v rozmezí zákona, NEVZTAHUJE ŽÁDNÁ ZÁRUKA.\n"
+-"\n"
+-"Vytvořili: Aleksandr Gumroian, Erin Kalousková, Michal Hrušecky a Štěpán "
+-"Henek."
++#: ui/pages/schnapps.slint:264
++msgctxt "Schnapps"
++msgid "Loading…"
++msgstr "Načítání…"
++
++#~ msgctxt "Menu"
++#~ msgid "System Information"
++#~ msgstr "O systému"
++
++#~ msgctxt "Menu"
++#~ msgid "Snapshots"
++#~ msgstr "Zachycené stavy"
++
++#~ msgctxt "Menu"
++#~ msgid "Root Shell"
++#~ msgstr "Rootovský shell"
++
++#~ msgid ""
++#~ "You are running build targetting development systems.\n"
++#~ "Data will be mostly mocked. Do not run in production.\n"
++#~ "\n"
++#~ msgstr ""
++#~ "Toto je sestavení určené pro vývoj.\n"
++#~ "Data budou falšována. Nepoužívejte v produkci.\n"
++#~ "\n"
++
++#~ msgid "Commit"
++#~ msgstr "Revize"
++
++#~ msgid ""
++#~ "License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/"
++#~ "gpl.html>.\n"
++#~ "This is free software: you are free to change and redistribute it.\n"
++#~ "There is NO WARRANTY, to the extent permitted by law.\n"
++#~ "\n"
++#~ "Made by Aleksandr Gumroian, Erin Kalousková, Michal Hrušecký and Štěpán "
++#~ "Henek."
++#~ msgstr ""
++#~ "Licence GPLv3+: GNU GPL verze 3 či novější <https://gnu.org/licenses/"
++#~ "gpl.html>.\n"
++#~ "Toto je svobodný software: mužete ho svobodně upravovat a šířit.\n"
++#~ "Na program se, v rozmezí zákona, NEVZTAHUJE ŽÁDNÁ ZÁRUKA.\n"
++#~ "\n"
++#~ "Vytvořili: Aleksandr Gumroian, Erin Kalousková, Michal Hrušecky a Štěpán "
++#~ "Henek."
+diff --git a/frontend/po/de.po b/frontend/po/de.po
+index 5cbb6c6..904aaf1 100644
+--- a/frontend/po/de.po
++++ b/frontend/po/de.po
+@@ -1,7 +1,7 @@
+ msgid ""
+ msgstr ""
+ "Project-Id-Version: PACKAGE VERSION\n"
+-"POT-Creation-Date: 2026-01-02 00:26+0000\n"
++"POT-Creation-Date: 2026-05-12 12:02+0000\n"
+ "PO-Revision-Date: 2026-02-26 20:09+0000\n"
+ "Last-Translator: Erik Pfannenstein <debianignatz@gmx.de>\n"
+ "Language-Team: German <https://hosted.weblate.org/projects/turris/peacockr/"
+@@ -13,312 +13,332 @@ msgstr ""
+ "Plural-Forms: nplurals=2; plural=n != 1;\n"
+ "X-Generator: Weblate 5.16.1-dev\n"
+ 
+-#: ui/global/utils.slint:4
++#: ui/global/utils.slint:25
+ msgctxt "Utils"
+ msgid "1 day"
+ msgid_plural "{n} days"
+ msgstr[0] "1 Tag"
+ msgstr[1] "{n} Tage"
+ 
+-#: ui/global/utils.slint:6
++#: ui/global/utils.slint:27
+ msgctxt "Utils"
+ msgid "1 hour"
+ msgid_plural "{n} hours"
+ msgstr[0] "1 Stunde"
+ msgstr[1] "{n} Stunden"
+ 
+-#: ui/global/utils.slint:8
++#: ui/global/utils.slint:29
+ msgctxt "Utils"
+ msgid "1 minute"
+ msgid_plural "{n} minutes"
+ msgstr[0] "1 Minute"
+ msgstr[1] "{n} Minuten"
+ 
+-#: ui/pages/notifications/common.slint:49
++#: ui/pages/notifications/common.slint:70
+ msgctxt "Notification"
+ msgid "Errors"
+ msgstr "Fehler"
+ 
+-#: ui/pages/notifications/common.slint:57
++#: ui/pages/notifications/common.slint:78
+ msgctxt "Notification"
+ msgid "News"
+ msgstr "Neuigkeiten"
+ 
+-#: ui/pages/notifications/common.slint:65
++#: ui/pages/notifications/common.slint:86
+ #, fuzzy
+ msgctxt "Notification"
+ msgid "Restart"
+ msgstr "Neustart"
+ 
+-#: ui/pages/notifications/common.slint:73
++#: ui/pages/notifications/common.slint:94
+ msgctxt "Notification"
+ msgid "Test"
+ msgstr ""
+ 
+-#: ui/pages/notifications/common.slint:81
++#: ui/pages/notifications/common.slint:102
+ msgctxt "Notification"
+ msgid "Updates"
+ msgstr "Aktualisierungen"
+ 
+-#: ui/pages/notifications/list.slint:65
++#: ui/pages/notifications/list.slint:78
+ msgctxt "ListEntry"
+ msgid "No notifications in this category."
+ msgstr "Keine Benachrichtigungen in dieser Kategorie."
+ 
+-#: ui/pages/notifications/list.slint:171
++#: ui/pages/notifications/list.slint:184
+ msgctxt "NotificationsList"
+ msgid "Notifications"
+ msgstr "Benachrichtigungen"
+ 
+-#: ui/pages/bandwidth.slint:69
++#: ui/pages/bandwidth.slint:82
+ msgctxt "Bandwidth"
+ msgid "Bandwidth"
+ msgstr "Bandbreite"
+ 
+-#: ui/pages/bandwidth.slint:94
++#: ui/pages/bandwidth.slint:107
+ msgctxt "Bandwidth"
+ msgid "Download speed"
+ msgstr "Herunterladegeschwindigkeit"
+ 
+-#: ui/pages/bandwidth.slint:129
++#: ui/pages/bandwidth.slint:142
+ msgctxt "Bandwidth"
+ msgid "Total data received"
+ msgstr "Daten insgesamt empfangen"
+ 
+-#: ui/pages/bandwidth.slint:178
++#: ui/pages/bandwidth.slint:191
+ msgctxt "Bandwidth"
+ msgid "Upload speed"
+ msgstr "Hochladegeschwindigkeit"
+ 
+-#: ui/pages/bandwidth.slint:213
++#: ui/pages/bandwidth.slint:226
+ msgctxt "Bandwidth"
+ msgid "Total data sent"
+ msgstr "Daten insgesamt gesendet"
+ 
+-#: ui/pages/connected_clients.slint:61
+-msgctxt "ConnectedClients"
+-msgid "Hostname"
+-msgstr "Hostname"
+-
+-#: ui/pages/connected_clients.slint:66
+-msgctxt "ConnectedClients"
+-msgid "MAC address"
+-msgstr "MAC-Adresse"
+-
+-#: ui/pages/connected_clients.slint:71
+-msgctxt "ConnectedClients"
+-msgid "Link speed"
+-msgstr "Verbindungsgeschwindigkeit"
+-
+-#: ui/pages/connected_clients.slint:76
+-#, fuzzy
+-msgctxt "ConnectedClients"
+-msgid "Signal"
+-msgstr "Signalstärke"
+-
+-#: ui/pages/dashboard.slint:92
+-msgctxt "Dashboard"
+-msgid "Dashboard"
+-msgstr "Übersichtsseite"
+-
+-#: ui/pages/dashboard.slint:101
+-msgctxt "Dashboard"
+-msgid "Uptime:"
+-msgstr "Betriebszeit:"
+-
+-#: ui/pages/dashboard.slint:182
+-msgctxt "Dashboard"
+-msgid "IP Addresses"
+-msgstr "IP-Adressen"
+-
+-#: ui/pages/dashboard.slint:201
+-msgctxt "Dashboard"
+-msgid "LAN:"
+-msgstr "LAN:"
+-
+-#: ui/pages/dashboard.slint:216
+-msgctxt "Dashboard"
+-msgid "WAN:"
+-msgstr "WAN:"
+-
+-#: ui/pages/dashboard.slint:237
+-msgctxt "Dashboard"
+-msgid "Notifications"
+-msgstr "Benachrichtigungen"
+-
+-#: ui/pages/interfaces.slint:66
++#: ui/pages/interfaces.slint:79
+ msgctxt "Interfaces"
+ msgid "Interfaces"
+ msgstr "Schnittstellen"
+ 
+-#: ui/pages/menu.slint:69
++#: ui/pages/menu.slint:94
+ msgctxt "Menu"
+ msgid "Menu"
+ msgstr "Menü"
+ 
+-#: ui/pages/network.slint:70
++#: ui/pages/network.slint:83
+ msgctxt "Network"
+ msgid "Network"
+ msgstr "Netzwerk"
+ 
+-#: ui/pages/network.slint:92
++#: ui/pages/network.slint:105
+ msgctxt "Network"
+ msgid "Hostname"
+ msgstr "Hostname"
+ 
+-#: ui/pages/network.slint:97
++#: ui/pages/network.slint:110
+ msgctxt "Network"
+ msgid "LAN IP address"
+ msgstr "LAN-IP-Adresse"
+ 
+-#: ui/pages/network.slint:102
++#: ui/pages/network.slint:115
+ msgctxt "Network"
+ msgid "WAN IP address"
+ msgstr "WAN-IP-Adresse"
+ 
+-#: ui/pages/network.slint:107
++#: ui/pages/network.slint:120
+ msgctxt "Network"
+ msgid "LAN IPv6 address"
+ msgstr "LAN-IPv6-Adresse"
+ 
+-#: ui/pages/network.slint:112
++#: ui/pages/network.slint:125
+ msgctxt "Network"
+ msgid "WAN IPv6 address"
+ msgstr "WAN-IPv6-Adresse"
+ 
+-#: ui/pages/qr_details.slint:29
++#: ui/pages/qr_details.slint:42
+ msgctxt "QRDetails"
+ msgid "Guest Wi-Fi"
+ msgstr "Gäste-WLAN"
+ 
+-#: ui/pages/qr_details.slint:29
++#: ui/pages/qr_details.slint:42
+ msgctxt "QRDetails"
+ msgid "LAN Wi-Fi"
+ msgstr "LAN-WLAN"
+ 
+-#: ui/pages/qr_details.slint:46
++#: ui/pages/qr_details.slint:59
+ msgctxt "QRDetails"
+ msgid "SSID"
+ msgstr "SSID"
+ 
+-#: ui/pages/qr_details.slint:52
++#: ui/pages/qr_details.slint:65
+ msgctxt "QRDetails"
+ msgid "Password"
+ msgstr "Passwort"
+ 
+-#: ui/pages/schnapps.slint:181 ui/pages/schnapps.slint:218
+-msgctxt "Schnapps"
+-msgid "Snapshots"
+-msgstr "Schnappschüsse"
+-
+-#: ui/pages/system.slint:82
++#: ui/pages/system.slint:95
+ msgctxt "System"
+ msgid "System Status"
+ msgstr "Systemzustand"
+ 
+-#: ui/pages/system.slint:104
++#: ui/pages/system.slint:117
+ msgctxt "System"
+ msgid "Hostname"
+ msgstr "Hostname"
+ 
+-#: ui/pages/system.slint:109
++#: ui/pages/system.slint:122
+ msgctxt "System"
+ msgid "Device"
+ msgstr "Gerät"
+ 
+-#: ui/pages/system.slint:114
++#: ui/pages/system.slint:127
+ msgctxt "System"
+ msgid "Uptime"
+ msgstr "Betriebszeit"
+ 
+-#: ui/pages/system.slint:119
++#: ui/pages/system.slint:132
+ msgctxt "System"
+ msgid "Serial Number"
+ msgstr "Seriennummer"
+ 
+-#: ui/pages/system.slint:124
++#: ui/pages/system.slint:137
+ msgctxt "System"
+ msgid "OS Version"
+ msgstr "BS-Version"
+ 
+-#: ui/pages/system.slint:129
++#: ui/pages/system.slint:142
+ msgctxt "System"
+ msgid "Turris OS Branch"
+ msgstr "Turris-OS-Branch"
+ 
+-#: ui/pages/system.slint:134
++#: ui/pages/system.slint:147
+ msgctxt "System"
+ msgid "Kernel Version"
+ msgstr "Kernel-Version"
+ 
+-#: ui/pages/wifi.slint:93
++#: ui/pages/dashboard.slint:121
++msgctxt "Dashboard"
++msgid "Dashboard"
++msgstr "Übersichtsseite"
++
++#: ui/pages/dashboard.slint:130
++msgctxt "Dashboard"
++msgid "Uptime:"
++msgstr "Betriebszeit:"
++
++#: ui/pages/dashboard.slint:211
++msgctxt "Dashboard"
++msgid "IP Addresses"
++msgstr "IP-Adressen"
++
++#: ui/pages/dashboard.slint:222
++msgctxt "Dashboard"
++msgid "LAN:"
++msgstr "LAN:"
++
++#: ui/pages/dashboard.slint:238
++msgctxt "Dashboard"
++msgid "WAN:"
++msgstr "WAN:"
++
++#: ui/pages/dashboard.slint:260
++msgctxt "Dashboard"
++msgid "Notifications"
++msgstr "Benachrichtigungen"
++
++#: ui/pages/failure.slint:58
++msgctxt "Failure"
++msgid "An error has occured"
++msgstr ""
++
++#: ui/pages/failure.slint:114
++msgctxt "Failure"
++msgid "Close"
++msgstr ""
++
++#: ui/pages/connected_clients.slint:113
++msgctxt "ConnectedClients"
++msgid "Hostname"
++msgstr "Hostname"
++
++#: ui/pages/connected_clients.slint:118
++msgctxt "ConnectedClients"
++msgid "MAC address"
++msgstr "MAC-Adresse"
++
++#: ui/pages/connected_clients.slint:123
++msgctxt "ConnectedClients"
++msgid "Link speed"
++msgstr "Verbindungsgeschwindigkeit"
++
++#: ui/pages/connected_clients.slint:128
++#, fuzzy
++msgctxt "ConnectedClients"
++msgid "Signal"
++msgstr "Signalstärke"
++
++#: ui/pages/wifi.slint:120
+ msgctxt "WiFi"
+ msgid "Wi-Fi"
+ msgstr "WLAN"
+ 
+-#: ui/pages/wifi.slint:126
++#: ui/pages/wifi.slint:153
+ msgctxt "WiFi"
+ msgid "Wi-Fi status"
+ msgstr "WLAN-Status"
+ 
+-#: ui/pages/wifi.slint:131 ui/pages/wifi.slint:196
++#: ui/pages/wifi.slint:158 ui/pages/wifi.slint:223
+ msgctxt "Wi-Fi"
+ msgid "Active"
+ msgstr "Aktiv"
+ 
+-#: ui/pages/wifi.slint:132 ui/pages/wifi.slint:197
++#: ui/pages/wifi.slint:159 ui/pages/wifi.slint:224
+ msgctxt "Wi-Fi"
+ msgid "Inactive"
+ msgstr "Inaktiv"
+ 
+-#: ui/pages/wifi.slint:145 ui/pages/wifi.slint:211
++#: ui/pages/wifi.slint:172 ui/pages/wifi.slint:238
+ msgctxt "WiFi"
+ msgid "Connected Clients"
+ msgstr "Verbundene Clients"
+ 
+-#: ui/pages/wifi.slint:191
++#: ui/pages/wifi.slint:218
+ msgctxt "WiFi"
+ msgid "Guest Wi-Fi Status"
+ msgstr "Gäste-WLAN-Status"
+ 
+-#: resources/config.kdl:5
+-msgctxt "Menu"
+-msgid "System Information"
+-msgstr "System-Informationen"
+-
+-#: resources/config.kdl:10
+-msgctxt "Menu"
++#: ui/pages/schnapps.slint:196 ui/pages/schnapps.slint:233
++msgctxt "Schnapps"
+ msgid "Snapshots"
+ msgstr "Schnappschüsse"
+ 
+-#: resources/config.kdl:15
+-msgctxt "Menu"
+-msgid "Root Shell"
+-msgstr "Root-Shell"
+-
+-#: src/cli.rs:53
+-msgid "You are running build targetting development systems.\nData will be mostly mocked. Do not run in production.\n\n"
++#: ui/pages/schnapps.slint:264
++msgctxt "Schnapps"
++msgid "Rolling back…"
+ msgstr ""
+-"Bei Ihnen laufen Entwicklungssysteme zu Kompilierungszwecken.\n"
+-"Die Daten sind größtenteils Blinddaten. Nicht produktiv betreiben.\n"
+-"\n"
+-
+-#: src/cli.rs:62
+-msgid "Commit"
+-msgstr "Einreichen"
+ 
+-#: src/cli.rs:63
+-msgid ""
+-"License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.\n"
+-"This is free software: you are free to change and redistribute it.\n"
+-"There is NO WARRANTY, to the extent permitted by law.\n\n"
+-"Made by Aleksandr Gumroian, Erin Kalousková, Michal Hrušecký and Štěpán Henek."
++#: ui/pages/schnapps.slint:264
++msgctxt "Schnapps"
++msgid "Loading…"
+ msgstr ""
+-"License GPLv3+: GNU GPL Version 3 oder höher <https://gnu.org/licenses/"
+-"gpl.html>.\n"
+-"Dies ist freie Software: Sie haben die Freiheit sie anzupassen oder "
+-"weiterzuverteilen.\n"
+-"Soweit das Gesetz es zulässt, gibt es KEINE GEWÄHRLEISTUNG.\n"
+-"\n"
+-"Kreiert von Aleksandr Gumroian, Erin Kalousková, Michal Hrušecký und Štěpán "
+-"Henek."
++
++#~ msgctxt "Menu"
++#~ msgid "System Information"
++#~ msgstr "System-Informationen"
++
++#~ msgctxt "Menu"
++#~ msgid "Snapshots"
++#~ msgstr "Schnappschüsse"
++
++#~ msgctxt "Menu"
++#~ msgid "Root Shell"
++#~ msgstr "Root-Shell"
++
++#~ msgid ""
++#~ "You are running build targetting development systems.\n"
++#~ "Data will be mostly mocked. Do not run in production.\n"
++#~ "\n"
++#~ msgstr ""
++#~ "Bei Ihnen laufen Entwicklungssysteme zu Kompilierungszwecken.\n"
++#~ "Die Daten sind größtenteils Blinddaten. Nicht produktiv betreiben.\n"
++#~ "\n"
++
++#~ msgid "Commit"
++#~ msgstr "Einreichen"
++
++#~ msgid ""
++#~ "License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/"
++#~ "gpl.html>.\n"
++#~ "This is free software: you are free to change and redistribute it.\n"
++#~ "There is NO WARRANTY, to the extent permitted by law.\n"
++#~ "\n"
++#~ "Made by Aleksandr Gumroian, Erin Kalousková, Michal Hrušecký and Štěpán "
++#~ "Henek."
++#~ msgstr ""
++#~ "License GPLv3+: GNU GPL Version 3 oder höher <https://gnu.org/licenses/"
++#~ "gpl.html>.\n"
++#~ "Dies ist freie Software: Sie haben die Freiheit sie anzupassen oder "
++#~ "weiterzuverteilen.\n"
++#~ "Soweit das Gesetz es zulässt, gibt es KEINE GEWÄHRLEISTUNG.\n"
++#~ "\n"
++#~ "Kreiert von Aleksandr Gumroian, Erin Kalousková, Michal Hrušecký und "
++#~ "Štěpán Henek."
+diff --git a/frontend/po/peacockr-frontend.pot b/frontend/po/peacockr-frontend.pot
+index 8f55f1f..219216f 100644
+--- a/frontend/po/peacockr-frontend.pot
++++ b/frontend/po/peacockr-frontend.pot
+@@ -1,310 +1,299 @@
+-
++#
+ msgid ""
+ msgstr ""
+ "Project-Id-Version: PACKAGE VERSION\n"
+-"POT-Creation-Date: 2026-01-02 00:26+0000\n"
++"POT-Creation-Date: 2026-05-12 12:02+0000\n"
+ "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+ "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+ "Language-Team: LANGUAGE <LL@li.org>\n"
++"Language: \n"
+ "MIME-Version: 1.0\n"
+ "Content-Type: text/plain; charset=UTF-8\n"
+ "Content-Transfer-Encoding: 8bit\n"
+-"Language: \n"
+ "Plural-Forms: nplurals=1; plural=0;\n"
+ 
+-#: ui/global/utils.slint:4
++#: ui/global/utils.slint:25
+ msgctxt "Utils"
+ msgid "1 day"
+ msgid_plural "{n} days"
+ msgstr[0] ""
+ msgstr[1] ""
+ 
+-#: ui/global/utils.slint:6
++#: ui/global/utils.slint:27
+ msgctxt "Utils"
+ msgid "1 hour"
+ msgid_plural "{n} hours"
+ msgstr[0] ""
+ msgstr[1] ""
+ 
+-#: ui/global/utils.slint:8
++#: ui/global/utils.slint:29
+ msgctxt "Utils"
+ msgid "1 minute"
+ msgid_plural "{n} minutes"
+ msgstr[0] ""
+ msgstr[1] ""
+ 
+-#: ui/pages/notifications/common.slint:49
++#: ui/pages/notifications/common.slint:70
+ msgctxt "Notification"
+ msgid "Errors"
+ msgstr ""
+ 
+-#: ui/pages/notifications/common.slint:57
++#: ui/pages/notifications/common.slint:78
+ msgctxt "Notification"
+ msgid "News"
+ msgstr ""
+ 
+-#: ui/pages/notifications/common.slint:65
++#: ui/pages/notifications/common.slint:86
+ msgctxt "Notification"
+ msgid "Restart"
+ msgstr ""
+ 
+-#: ui/pages/notifications/common.slint:73
++#: ui/pages/notifications/common.slint:94
+ msgctxt "Notification"
+ msgid "Test"
+ msgstr ""
+ 
+-#: ui/pages/notifications/common.slint:81
++#: ui/pages/notifications/common.slint:102
+ msgctxt "Notification"
+ msgid "Updates"
+ msgstr ""
+ 
+-#: ui/pages/notifications/list.slint:65
++#: ui/pages/notifications/list.slint:78
+ msgctxt "ListEntry"
+ msgid "No notifications in this category."
+ msgstr ""
+ 
+-#: ui/pages/notifications/list.slint:171
++#: ui/pages/notifications/list.slint:184
+ msgctxt "NotificationsList"
+ msgid "Notifications"
+ msgstr ""
+ 
+-#: ui/pages/bandwidth.slint:69
++#: ui/pages/bandwidth.slint:82
+ msgctxt "Bandwidth"
+ msgid "Bandwidth"
+ msgstr ""
+ 
+-#: ui/pages/bandwidth.slint:94
++#: ui/pages/bandwidth.slint:107
+ msgctxt "Bandwidth"
+ msgid "Download speed"
+ msgstr ""
+ 
+-#: ui/pages/bandwidth.slint:129
++#: ui/pages/bandwidth.slint:142
+ msgctxt "Bandwidth"
+ msgid "Total data received"
+ msgstr ""
+ 
+-#: ui/pages/bandwidth.slint:178
++#: ui/pages/bandwidth.slint:191
+ msgctxt "Bandwidth"
+ msgid "Upload speed"
+ msgstr ""
+ 
+-#: ui/pages/bandwidth.slint:213
++#: ui/pages/bandwidth.slint:226
+ msgctxt "Bandwidth"
+ msgid "Total data sent"
+ msgstr ""
+ 
+-#: ui/pages/connected_clients.slint:61
+-msgctxt "ConnectedClients"
+-msgid "Hostname"
+-msgstr ""
+-
+-#: ui/pages/connected_clients.slint:66
+-msgctxt "ConnectedClients"
+-msgid "MAC address"
+-msgstr ""
+-
+-#: ui/pages/connected_clients.slint:71
+-msgctxt "ConnectedClients"
+-msgid "Link speed"
+-msgstr ""
+-
+-#: ui/pages/connected_clients.slint:76
+-msgctxt "ConnectedClients"
+-msgid "Signal"
+-msgstr ""
+-
+-#: ui/pages/dashboard.slint:92
+-msgctxt "Dashboard"
+-msgid "Dashboard"
+-msgstr ""
+-
+-#: ui/pages/dashboard.slint:101
+-msgctxt "Dashboard"
+-msgid "Uptime:"
+-msgstr ""
+-
+-#: ui/pages/dashboard.slint:182
+-msgctxt "Dashboard"
+-msgid "IP Addresses"
+-msgstr ""
+-
+-#: ui/pages/dashboard.slint:201
+-msgctxt "Dashboard"
+-msgid "LAN:"
+-msgstr ""
+-
+-#: ui/pages/dashboard.slint:216
+-msgctxt "Dashboard"
+-msgid "WAN:"
+-msgstr ""
+-
+-#: ui/pages/dashboard.slint:237
+-msgctxt "Dashboard"
+-msgid "Notifications"
+-msgstr ""
+-
+-#: ui/pages/interfaces.slint:66
++#: ui/pages/interfaces.slint:79
+ msgctxt "Interfaces"
+ msgid "Interfaces"
+ msgstr ""
+ 
+-#: ui/pages/menu.slint:69
++#: ui/pages/menu.slint:94
+ msgctxt "Menu"
+ msgid "Menu"
+ msgstr ""
+ 
+-#: ui/pages/network.slint:70
++#: ui/pages/network.slint:83
+ msgctxt "Network"
+ msgid "Network"
+ msgstr ""
+ 
+-#: ui/pages/network.slint:92
++#: ui/pages/network.slint:105
+ msgctxt "Network"
+ msgid "Hostname"
+ msgstr ""
+ 
+-#: ui/pages/network.slint:97
++#: ui/pages/network.slint:110
+ msgctxt "Network"
+ msgid "LAN IP address"
+ msgstr ""
+ 
+-#: ui/pages/network.slint:102
++#: ui/pages/network.slint:115
+ msgctxt "Network"
+ msgid "WAN IP address"
+ msgstr ""
+ 
+-#: ui/pages/network.slint:107
++#: ui/pages/network.slint:120
+ msgctxt "Network"
+ msgid "LAN IPv6 address"
+ msgstr ""
+ 
+-#: ui/pages/network.slint:112
++#: ui/pages/network.slint:125
+ msgctxt "Network"
+ msgid "WAN IPv6 address"
+ msgstr ""
+ 
+-#: ui/pages/qr_details.slint:29
++#: ui/pages/qr_details.slint:42
+ msgctxt "QRDetails"
+ msgid "Guest Wi-Fi"
+ msgstr ""
+ 
+-#: ui/pages/qr_details.slint:29
++#: ui/pages/qr_details.slint:42
+ msgctxt "QRDetails"
+ msgid "LAN Wi-Fi"
+ msgstr ""
+ 
+-#: ui/pages/qr_details.slint:46
++#: ui/pages/qr_details.slint:59
+ msgctxt "QRDetails"
+ msgid "SSID"
+ msgstr ""
+ 
+-#: ui/pages/qr_details.slint:52
++#: ui/pages/qr_details.slint:65
+ msgctxt "QRDetails"
+ msgid "Password"
+ msgstr ""
+ 
+-#: ui/pages/schnapps.slint:181 ui/pages/schnapps.slint:218
+-msgctxt "Schnapps"
+-msgid "Snapshots"
+-msgstr ""
+-
+-#: ui/pages/system.slint:82
++#: ui/pages/system.slint:95
+ msgctxt "System"
+ msgid "System Status"
+ msgstr ""
+ 
+-#: ui/pages/system.slint:104
++#: ui/pages/system.slint:117
+ msgctxt "System"
+ msgid "Hostname"
+ msgstr ""
+ 
+-#: ui/pages/system.slint:109
++#: ui/pages/system.slint:122
+ msgctxt "System"
+ msgid "Device"
+ msgstr ""
+ 
+-#: ui/pages/system.slint:114
++#: ui/pages/system.slint:127
+ msgctxt "System"
+ msgid "Uptime"
+ msgstr ""
+ 
+-#: ui/pages/system.slint:119
++#: ui/pages/system.slint:132
+ msgctxt "System"
+ msgid "Serial Number"
+ msgstr ""
+ 
+-#: ui/pages/system.slint:124
++#: ui/pages/system.slint:137
+ msgctxt "System"
+ msgid "OS Version"
+ msgstr ""
+ 
+-#: ui/pages/system.slint:129
++#: ui/pages/system.slint:142
+ msgctxt "System"
+ msgid "Turris OS Branch"
+ msgstr ""
+ 
+-#: ui/pages/system.slint:134
++#: ui/pages/system.slint:147
+ msgctxt "System"
+ msgid "Kernel Version"
+ msgstr ""
+ 
+-#: ui/pages/wifi.slint:93
++#: ui/pages/dashboard.slint:121
++msgctxt "Dashboard"
++msgid "Dashboard"
++msgstr ""
++
++#: ui/pages/dashboard.slint:130
++msgctxt "Dashboard"
++msgid "Uptime:"
++msgstr ""
++
++#: ui/pages/dashboard.slint:211
++msgctxt "Dashboard"
++msgid "IP Addresses"
++msgstr ""
++
++#: ui/pages/dashboard.slint:222
++msgctxt "Dashboard"
++msgid "LAN:"
++msgstr ""
++
++#: ui/pages/dashboard.slint:238
++msgctxt "Dashboard"
++msgid "WAN:"
++msgstr ""
++
++#: ui/pages/dashboard.slint:260
++msgctxt "Dashboard"
++msgid "Notifications"
++msgstr ""
++
++#: ui/pages/failure.slint:58
++msgctxt "Failure"
++msgid "An error has occured"
++msgstr ""
++
++#: ui/pages/failure.slint:114
++msgctxt "Failure"
++msgid "Close"
++msgstr ""
++
++#: ui/pages/connected_clients.slint:113
++msgctxt "ConnectedClients"
++msgid "Hostname"
++msgstr ""
++
++#: ui/pages/connected_clients.slint:118
++msgctxt "ConnectedClients"
++msgid "MAC address"
++msgstr ""
++
++#: ui/pages/connected_clients.slint:123
++msgctxt "ConnectedClients"
++msgid "Link speed"
++msgstr ""
++
++#: ui/pages/connected_clients.slint:128
++msgctxt "ConnectedClients"
++msgid "Signal"
++msgstr ""
++
++#: ui/pages/wifi.slint:120
+ msgctxt "WiFi"
+ msgid "Wi-Fi"
+ msgstr ""
+ 
+-#: ui/pages/wifi.slint:126
++#: ui/pages/wifi.slint:153
+ msgctxt "WiFi"
+ msgid "Wi-Fi status"
+ msgstr ""
+ 
+-#: ui/pages/wifi.slint:131 ui/pages/wifi.slint:196
++#: ui/pages/wifi.slint:158 ui/pages/wifi.slint:223
+ msgctxt "Wi-Fi"
+ msgid "Active"
+ msgstr ""
+ 
+-#: ui/pages/wifi.slint:132 ui/pages/wifi.slint:197
++#: ui/pages/wifi.slint:159 ui/pages/wifi.slint:224
+ msgctxt "Wi-Fi"
+ msgid "Inactive"
+ msgstr ""
+ 
+-#: ui/pages/wifi.slint:145 ui/pages/wifi.slint:211
++#: ui/pages/wifi.slint:172 ui/pages/wifi.slint:238
+ msgctxt "WiFi"
+ msgid "Connected Clients"
+ msgstr ""
+ 
+-#: ui/pages/wifi.slint:191
++#: ui/pages/wifi.slint:218
+ msgctxt "WiFi"
+ msgid "Guest Wi-Fi Status"
+ msgstr ""
+ 
+-#: resources/config.kdl:5
+-msgctxt "Menu"
+-msgid "System Information"
+-msgstr ""
+-
+-#: resources/config.kdl:10
+-msgctxt "Menu"
++#: ui/pages/schnapps.slint:196 ui/pages/schnapps.slint:233
++msgctxt "Schnapps"
+ msgid "Snapshots"
+ msgstr ""
+ 
+-#: resources/config.kdl:15
+-msgctxt "Menu"
+-msgid "Root Shell"
+-msgstr ""
+-
+-#: src/cli.rs:53
+-msgid "You are running build targetting development systems.\nData will be mostly mocked. Do not run in production.\n\n"
+-msgstr ""
+-
+-#: src/cli.rs:62
+-msgid "Commit"
++#: ui/pages/schnapps.slint:264
++msgctxt "Schnapps"
++msgid "Rolling back…"
+ msgstr ""
+ 
+-#: src/cli.rs:63
+-msgid ""
+-"License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.\n"
+-"This is free software: you are free to change and redistribute it.\n"
+-"There is NO WARRANTY, to the extent permitted by law.\n\n"
+-"Made by Aleksandr Gumroian, Erin Kalousková, Michal Hrušecký and Štěpán Henek."
++#: ui/pages/schnapps.slint:264
++msgctxt "Schnapps"
++msgid "Loading…"
+ msgstr ""
+diff --git a/frontend/src/schnapps.rs b/frontend/src/schnapps.rs
+index e1a3002..8cee92f 100644
+--- a/frontend/src/schnapps.rs
++++ b/frontend/src/schnapps.rs
+@@ -22,12 +22,13 @@
+ //! Schnappshot listing and management
+ 
+ use std::rc::Rc;
++use std::time::Duration;
+ 
+ use futures_util::StreamExt as _;
+ use peacockr_backend::schnapps;
+ use slint::{ComponentHandle as _, ModelRc, ToSharedString as _, VecModel};
+ 
+-use crate::ui;
++use crate::ui::{self, App};
+ 
+ pub fn bind(app: &ui::App, authority: schnapps::SchnappsAuthority) {
+ 	let global = app.global::<ui::SchnappsBackend>();
+@@ -36,32 +37,13 @@ pub fn bind(app: &ui::App, authority: schnapps::SchnappsAuthority) {
+ 	global.set_snapshots(ModelRc::from(Rc::clone(&model)));
+ 	global.on_list({
+ 		let app = ui::App::clone_strong(app);
++		let model = Rc::clone(&model);
+ 		move || {
+ 			let model = Rc::clone(&model);
+ 			let app = ui::App::clone_strong(&app);
+ 
+ 			slint::spawn_local(async move {
+-				model.clear();
+-				let result = schnapps::enumerate_snapshots(authority).await;
+-				let mut stream = match result {
+-					Ok(s) => s,
+-					Err(error) => {
+-						tracing::error!(?error, "Schnapps enumeration failed");
+-						return;
+-					}
+-				};
+-
+-				while let Some(item) = stream.next().await {
+-					match item {
+-						Ok(item) => {
+-							model.push(backend_snapshot_to_ui(item));
+-						}
+-						Err(error) => {
+-							tracing::warn!(?error, "failed to parse snapshot record");
+-						}
+-					}
+-				}
+-
++				reload_snapshots(&model, authority).await;
+ 				app.global::<ui::SchnappsBackend>()
+ 					.set_loading_state(ui::LoadingState::Loaded);
+ 			})
+@@ -69,19 +51,59 @@ pub fn bind(app: &ui::App, authority: schnapps::SchnappsAuthority) {
+ 		}
+ 	});
+ 
++	let app = app.clone_strong();
+ 	global.on_rollback(move |id| {
++		let model = Rc::clone(&model);
++		let app = app.clone_strong();
+ 		slint::spawn_local(async move {
++			let time = tokio::time::Instant::now();
++
++			app.global::<ui::SchnappsBackend>()
++				.set_loading_state(ui::LoadingState::Rollback);
++
+ 			let id = u64::from(id.cast_unsigned());
+ 			let result = schnapps::rollback(id, authority).await;
+ 
+ 			if let Err(error) = result {
+ 				tracing::error!(%error, "failed to roll-back snapshot");
+ 			}
++
++			reload_snapshots(&model, authority).await;
++
++			// Wait a bit so user can notice the rollback
++			let remaining_time = Duration::from_secs(1).saturating_sub(time.elapsed());
++			tokio::time::sleep(remaining_time).await;
++
++			app.global::<ui::SchnappsBackend>()
++				.set_loading_state(ui::LoadingState::Loaded);
+ 		})
+ 		.expect("failed to spawn rollback task");
+ 	});
+ }
+ 
++async fn reload_snapshots(model: &VecModel<ui::Snapshot>, authority: schnapps::SchnappsAuthority) {
++	model.clear();
++	let result = schnapps::enumerate_snapshots(authority).await;
++	let mut stream = match result {
++		Ok(s) => s,
++		Err(error) => {
++			tracing::error!(?error, "Schnapps enumeration failed");
++			return;
++		}
++	};
++
++	while let Some(item) = stream.next().await {
++		match item {
++			Ok(item) => {
++				model.push(backend_snapshot_to_ui(item));
++			}
++			Err(error) => {
++				tracing::warn!(?error, "failed to parse snapshot record");
++			}
++		}
++	}
++}
++
+ fn backend_snapshot_to_ui(snapshot: schnapps::Snapshot) -> ui::Snapshot {
+ 	ui::Snapshot {
+ 		number:      snapshot.index as _,
+diff --git a/frontend/ui/pages/loading.slint b/frontend/ui/pages/loading.slint
+index 0b2982b..34a5809 100644
+--- a/frontend/ui/pages/loading.slint
++++ b/frontend/ui/pages/loading.slint
+@@ -29,13 +29,15 @@ import { Page } from "../components/page.slint";
+ export component Loading inherits Page {
+     background-color: Theme.glassy-gray;
+ 
++    in property <string> text: "Loading…";
++
+     VerticalLayout {
+         padding: 8px;
+         spacing: 12px;
+         alignment: center;
+ 
+         Text {
+-            text: "Loading...";
++            text: root.text;
+             color: Theme.foreground;
+             font-size: Theme.font-size-large;
+             font-weight: 600;
+diff --git a/frontend/ui/pages/schnapps.slint b/frontend/ui/pages/schnapps.slint
+index 1b3320b..8f16fc2 100644
+--- a/frontend/ui/pages/schnapps.slint
++++ b/frontend/ui/pages/schnapps.slint
+@@ -43,6 +43,7 @@ enum LoadingState {
+     Not,
+     Loading,
+     Loaded,
++    Rollback,
+ }
+ 
+ struct Snapshot {
+@@ -259,5 +260,8 @@ export component Schnapps inherits Page {
+         }
+     }
+ 
+-    Loading { visible: SchnappsBackend.loading-state != LoadingState.Loaded; }
++    Loading {
++        text: SchnappsBackend.loading-state == LoadingState.Rollback ? @tr("Rolling back…") : @tr("Loading…");
++        visible: SchnappsBackend.loading-state != LoadingState.Loaded;
++    }
+ }
+-- 
+2.54.0
+
