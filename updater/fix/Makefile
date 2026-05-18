@@ -266,6 +266,11 @@ define Package/fix-luci-wireguard-app-to-proto/description
 	so that the users do not have to reinstall this manually.
 endef
 
+define Package/fix-migrate-minirainbow/description
+  Minirainbow on Turris Omnia NG was reworked. This regenerates /etc/board.json and
+  /etc/config/system (if LEDs not used-configured) so that the LEDs continue working.
+endef
+
 $(eval $(call FIX,sentinel-remove-invalid-firewall-rules,+firewall +uci))
 $(eval $(call FIX,samba-migrate-to-samba4,+samba4-server +uci))
 $(eval $(call FIX,updater-v65.0-alternatives-update,+updater-ng +uci,prerm))
@@ -302,3 +307,5 @@ $(eval $(call FIX,preserve-librespeed-config))
 $(eval $(call FIX,leds-wlan-to-phy))
 $(eval $(call FIX,wifi7-6ghz))
 $(eval $(call FIX,luci-wireguard-app-to-proto))
+$(eval $(call FIX,migrate-minirainbow))
+
