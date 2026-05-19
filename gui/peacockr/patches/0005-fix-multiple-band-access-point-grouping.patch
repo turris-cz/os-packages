@@ -1,0 +1,2407 @@
+From ac76ff5564c136e8f314d1015bc90295fd8cf08d Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Erin=20Kalouskov=C3=A1?= <erin.kalouskova@nic.cz>
+Date: Tue, 5 May 2026 18:12:25 +0200
+Subject: [PATCH] fix: multiple band access point grouping
+
+Toggle access points (and detect their current state) by the network they
+are member of.
+
+Now in the configuration, switching will happen to all member APs.
+---
+ .cargo/config.toml                    |   2 +-
+ Cargo.lock                            | 449 +++++++++++++-------------
+ backend/Cargo.toml                    |   3 +-
+ backend/src/uci.rs                    |   1 +
+ backend/src/wifi/assoc.rs             |  87 -----
+ backend/src/wifi/config.rs            |  46 ++-
+ backend/src/wifi/group.rs             | 143 ++++++++
+ backend/src/wifi/mod.rs               |   5 +-
+ backend/test-data/uci-config/wireless |  33 +-
+ frontend/src/wifi/associations.rs     | 361 +++++++++++++++++++++
+ frontend/src/wifi/mod.rs              |  33 +-
+ frontend/test-data/config.kdl         |   4 -
+ frontend/ui/app.slint                 |   4 +-
+ frontend/ui/pages/wifi.slint          |  17 +-
+ 14 files changed, 834 insertions(+), 354 deletions(-)
+ delete mode 100644 backend/src/wifi/assoc.rs
+ create mode 100644 backend/src/wifi/group.rs
+ create mode 100644 frontend/src/wifi/associations.rs
+
+diff --git a/.cargo/config.toml b/.cargo/config.toml
+index 3cb6f62..cde5810 100644
+--- a/.cargo/config.toml
++++ b/.cargo/config.toml
+@@ -1,4 +1,4 @@
+-[build]
++[target."cfg(all())"]
+ rustflags = ["--cfg", "tokio_unstable", "-Cforce-frame-pointers"]
+ 
+ [alias]
+diff --git a/Cargo.lock b/Cargo.lock
+index 40b7565..a28a896 100644
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -73,7 +73,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "0f2a1bb052857d5dd49572219344a7332b31b76405648eabac5bc68978251bcd"
+ dependencies = [
+  "android-properties",
+- "bitflags 2.11.0",
++ "bitflags 2.11.1",
+  "cc",
+  "jni",
+  "libc",
+@@ -102,9 +102,9 @@ dependencies = [
+ 
+ [[package]]
+ name = "annotate-snippets"
+-version = "0.12.15"
++version = "0.12.16"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "92570a3f9c98e7e84df84b71d0965ac99b1871fcd75a3773a3bd1bad13f64cf7"
++checksum = "f211a51805bc641f3ad5b7664c77d2547af685cc33b4cd8d31964027a46f13f1"
+ dependencies = [
+  "anstyle",
+  "memchr",
+@@ -433,18 +433,18 @@ dependencies = [
+ 
+ [[package]]
+ name = "avif-serialize"
+-version = "0.8.8"
++version = "0.8.9"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "375082f007bd67184fb9c0374614b29f9aaa604ec301635f72338bb65386a53d"
++checksum = "e7178fe5f7d460b13895ebb9dcb28a3a6216d2df2574a0806cb51b555d297f38"
+ dependencies = [
+  "arrayvec",
+ ]
+ 
+ [[package]]
+ name = "axum"
+-version = "0.8.8"
++version = "0.8.9"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "8b52af3cb4058c895d37317bb27508dccc8e5f2d39454016b297bf4a400597b8"
++checksum = "31b698c5f9a010f6573133b09e0de5408834d0c82f8d7475a89fc1867a71cd90"
+ dependencies = [
+  "axum-core",
+  "bytes",
+@@ -517,7 +517,7 @@ version = "0.72.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "993776b509cfb49c750f11b8f07a46fa23e0a1386ffc01fb1e7d343efc387895"
+ dependencies = [
+- "bitflags 2.11.0",
++ "bitflags 2.11.1",
+  "cexpr",
+  "clang-sys",
+  "itertools 0.13.0",
+@@ -560,20 +560,20 @@ checksum = "bef38d45163c2f1dde094a7dfd33ccf595c92905c8f8f4fdc18d06fb1037718a"
+ 
+ [[package]]
+ name = "bitflags"
+-version = "2.11.0"
++version = "2.11.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "843867be96c8daad0d758b57df9392b6d8d271134fce549de6ce169ff98a92af"
++checksum = "c4512299f36f043ab09a583e57bceb5a5aab7a73db1805848e8fef3c9e8c78b3"
+ dependencies = [
+  "serde_core",
+ ]
+ 
+ [[package]]
+ name = "bitstream-io"
+-version = "4.9.0"
++version = "4.10.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "60d4bd9d1db2c6bdf285e223a7fa369d5ce98ec767dec949c6ca62863ce61757"
++checksum = "7eff00be299a18769011411c9def0d827e8f2d7bf0c3dbf53633147a8867fd1f"
+ dependencies = [
+- "core2",
++ "no_std_io2",
+ ]
+ 
+ [[package]]
+@@ -704,7 +704,7 @@ version = "0.13.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "b99da2f8558ca23c71f4fd15dc57c906239752dd27ff3c00a1d56b685b7cbfec"
+ dependencies = [
+- "bitflags 2.11.0",
++ "bitflags 2.11.1",
+  "log",
+  "polling",
+  "rustix 0.38.44",
+@@ -718,7 +718,7 @@ version = "0.14.4"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "4dbf9978365bac10f54d1d4b04f7ce4427e51f71d61f2fe15e3fed5166474df7"
+ dependencies = [
+- "bitflags 2.11.0",
++ "bitflags 2.11.1",
+  "polling",
+  "rustix 1.1.4",
+  "slab",
+@@ -807,9 +807,9 @@ dependencies = [
+ 
+ [[package]]
+ name = "cc"
+-version = "1.2.59"
++version = "1.2.62"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "b7a4d3ec6524d28a329fc53654bbadc9bdd7b0431f5d65f1a56ffb28a1ee5283"
++checksum = "a1dce859f0832a7d088c4f1119888ab94ef4b5d6795d1ce05afb7fe159d79f98"
+ dependencies = [
+  "find-msvc-tools",
+  "jobserver",
+@@ -1059,15 +1059,6 @@ dependencies = [
+  "libc",
+ ]
+ 
+-[[package]]
+-name = "core2"
+-version = "0.4.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "b49ba7ef1ad6107f8824dbe97de947cbaac53c44e7f9756a1fba0d37c1eec505"
+-dependencies = [
+- "memchr",
+-]
+-
+ [[package]]
+ name = "core_maths"
+ version = "0.1.1"
+@@ -1237,7 +1228,7 @@ version = "0.3.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "1e0e367e4e7da84520dedcac1901e4da967309406d1e51017ae1abfb97adbd38"
+ dependencies = [
+- "bitflags 2.11.0",
++ "bitflags 2.11.1",
+  "objc2 0.6.4",
+ ]
+ 
+@@ -1279,7 +1270,7 @@ version = "0.14.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "80bc8c5c6c2941f70a55c15f8d9f00f9710ebda3ffda98075f996a0e6c92756f"
+ dependencies = [
+- "bitflags 2.11.0",
++ "bitflags 2.11.1",
+  "bytemuck",
+  "drm-ffi",
+  "drm-fourcc",
+@@ -1447,23 +1438,9 @@ checksum = "9f1f227452a390804cdb637b74a86990f2a7d7ba4b7d5693aac9b4dd6defd8d6"
+ 
+ [[package]]
+ name = "fax"
+-version = "0.2.6"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "f05de7d48f37cd6730705cbca900770cab77a89f413d23e100ad7fad7795a0ab"
+-dependencies = [
+- "fax_derive",
+-]
+-
+-[[package]]
+-name = "fax_derive"
+-version = "0.2.0"
++version = "0.2.7"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "a0aca10fb742cb43f9e7bb8467c91aa9bcb8e3ffbc6a6f7389bb93ffc920577d"
+-dependencies = [
+- "proc-macro2",
+- "quote",
+- "syn",
+-]
++checksum = "caf1079563223d5d59d83c85886a56e586cfd5c1a26292e971a0fa266531ac5a"
+ 
+ [[package]]
+ name = "fdeflate"
+@@ -1486,13 +1463,12 @@ dependencies = [
+ 
+ [[package]]
+ name = "filetime"
+-version = "0.2.27"
++version = "0.2.29"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "f98844151eee8917efc50bd9e8318cb963ae8b297431495d3f758616ea5c57db"
++checksum = "5c287a33c7f0a620c38e641e7f60827713987b3c0f26e8ddc9462cc69cf75759"
+ dependencies = [
+  "cfg-if",
+  "libc",
+- "libredox",
+ ]
+ 
+ [[package]]
+@@ -1546,9 +1522,9 @@ dependencies = [
+ 
+ [[package]]
+ name = "font-types"
+-version = "0.11.2"
++version = "0.11.3"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "2d9237c6d82152100c691fb77ea18037b402bcc7257d2c876a4ffac81bc22a1c"
++checksum = "5b38ad915f6dadd993ced50848a8291a543bd41ca62bc10740d5e64e2ab4cfd7"
+ dependencies = [
+  "bytemuck",
+ ]
+@@ -1732,9 +1708,9 @@ checksum = "037711b3d59c33004d3856fbdc83b99d4ff37a24768fa1be9ce3538a1cde4393"
+ 
+ [[package]]
+ name = "futures-time"
+-version = "3.0.1"
++version = "3.1.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "17f4f4272ec2be25287f1e184066c249b1f6b6d4d982d7c2f56f424096ae64e2"
++checksum = "24076708e74fbd55fb36079acbba19988175140026cc67a878b91b0c3751220b"
+ dependencies = [
+  "async-channel 1.9.0",
+  "async-io",
+@@ -1825,9 +1801,9 @@ dependencies = [
+ 
+ [[package]]
+ name = "gif"
+-version = "0.14.1"
++version = "0.14.2"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "f5df2ba84018d80c213569363bdcd0c64e6933c67fe4c1d60ecf822971a3c35e"
++checksum = "ee8cfcc411d9adbbaba82fb72661cc1bcca13e8bba98b364e62b2dba8f960159"
+ dependencies = [
+  "color_quant",
+  "weezl",
+@@ -1839,7 +1815,7 @@ version = "0.20.4"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "7b88256088d75a56f8ecfa070513a775dd9107f6530ef14919dac831af9cfe2b"
+ dependencies = [
+- "bitflags 2.11.0",
++ "bitflags 2.11.1",
+  "libc",
+  "libgit2-sys",
+  "log",
+@@ -1881,7 +1857,7 @@ version = "0.32.3"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "12124de845cacfebedff80e877bb37b5b75c34c5a4c89e47e1cdd67fb6041325"
+ dependencies = [
+- "bitflags 2.11.0",
++ "bitflags 2.11.1",
+  "cfg_aliases",
+  "cgl",
+  "dispatch2",
+@@ -1918,9 +1894,9 @@ dependencies = [
+ 
+ [[package]]
+ name = "h2"
+-version = "0.4.13"
++version = "0.4.14"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "2f44da3a8150a6703ed5d34e164b875fd14c2cdab9af1252a9a1020bde2bdc54"
++checksum = "171fefbc92fe4a4de27e0698d6a5b392d6a0e333506bc49133760b3bcf948733"
+ dependencies = [
+  "atomic-waker",
+  "bytes",
+@@ -1962,7 +1938,7 @@ version = "0.3.2"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "92c020db12c71d8a12a3fe7607873cade3a01a6287e29d540c8723276221b9d8"
+ dependencies = [
+- "bitflags 2.11.0",
++ "bitflags 2.11.1",
+  "bytemuck",
+  "core_maths",
+  "read-fonts 0.35.0",
+@@ -2002,6 +1978,12 @@ dependencies = [
+  "foldhash 0.2.0",
+ ]
+ 
++[[package]]
++name = "hashbrown"
++version = "0.17.1"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "ed5909b6e89a2db4456e54cd5f673791d7eca6732202bbf2a9cc504fe2f9b84a"
++
+ [[package]]
+ name = "hdrhistogram"
+ version = "7.5.4"
+@@ -2281,7 +2263,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "a95591ff85f8e2ff11c8d26ea8429768c2b77866e0c7e7fd49348f23ad108b5c"
+ dependencies = [
+  "auto_enums",
+- "bitflags 2.11.0",
++ "bitflags 2.11.1",
+  "cfg-if",
+  "chrono",
+  "clru",
+@@ -2524,9 +2506,9 @@ dependencies = [
+ 
+ [[package]]
+ name = "idna_adapter"
+-version = "1.2.1"
++version = "1.2.2"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "3acae9609540aa318d1bc588455225fb2085b9ed0c4f6bd0d9d5bcd86f1a0344"
++checksum = "cb68373c0d6620ef8105e855e7745e18b0d00d3bdb07fb532e434244cdb9a714"
+ dependencies = [
+  "icu_normalizer",
+  "icu_properties",
+@@ -2574,18 +2556,18 @@ checksum = "09e54e57b4c48b40f7aec75635392b12b3421fa26fe8b4332e63138ed278459c"
+ 
+ [[package]]
+ name = "imgref"
+-version = "1.12.0"
++version = "1.12.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "e7c5cedc30da3a610cac6b4ba17597bdf7152cf974e8aab3afb3d54455e371c8"
++checksum = "40fac9d56ed6437b198fddba683305e8e2d651aa42647f00f5ae542e7f5c94a2"
+ 
+ [[package]]
+ name = "indexmap"
+-version = "2.13.1"
++version = "2.14.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "45a8a2b9cb3e0b0c1803dbb0758ffac5de2f425b23c28f518faabd9d805342ff"
++checksum = "d466e9454f08e4a911e14806c24e16fba1b4c121d1ea474396f396069cf949d9"
+ dependencies = [
+  "equivalent",
+- "hashbrown 0.16.1",
++ "hashbrown 0.17.1",
+  "serde",
+  "serde_core",
+ ]
+@@ -2596,7 +2578,7 @@ version = "0.11.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "bd5b3eaf1a28b758ac0faa5a4254e8ab2705605496f1b1f3fbbc3988ad73d199"
+ dependencies = [
+- "bitflags 2.11.0",
++ "bitflags 2.11.1",
+  "futures-core",
+  "inotify-sys",
+  "libc",
+@@ -2618,7 +2600,7 @@ version = "0.9.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "fbdc09524a91f9cacd26f16734ff63d7dc650daffadd2b6f84d17a285bd875a9"
+ dependencies = [
+- "bitflags 2.11.0",
++ "bitflags 2.11.1",
+  "input-sys",
+  "libc",
+  "log",
+@@ -2696,11 +2678,11 @@ checksum = "2f0fb0570afe1fed943c5c3d4102d5358592d8625fda6a0007fdbe65a92fba96"
+ 
+ [[package]]
+ name = "io-uring"
+-version = "0.7.11"
++version = "0.7.12"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "fdd7bddefd0a8833b88a4b68f90dae22c7450d11b354198baee3874fd811b344"
++checksum = "4d09b98f7eace8982db770e4408e7470b028ce513ac28fecdc6bf4c30fe92b62"
+ dependencies = [
+- "bitflags 2.11.0",
++ "bitflags 2.11.1",
+  "cfg-if",
+  "libc",
+ ]
+@@ -2805,9 +2787,9 @@ dependencies = [
+ 
+ [[package]]
+ name = "js-sys"
+-version = "0.3.94"
++version = "0.3.98"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "2e04e2ef80ce82e13552136fabeef8a5ed1f985a96805761cbb9a2c34e7664d9"
++checksum = "67df7112613f8bfd9150013a0314e196f4800d3201ae742489d999db2f979f08"
+ dependencies = [
+  "cfg-if",
+  "futures-util",
+@@ -2832,7 +2814,7 @@ version = "0.7.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "b750dcadc39a09dbadd74e118f6dd6598df77fa01df0cfcdc52c28dece74528a"
+ dependencies = [
+- "bitflags 2.11.0",
++ "bitflags 2.11.1",
+  "serde",
+  "unicode-segmentation",
+ ]
+@@ -2856,12 +2838,13 @@ dependencies = [
+ 
+ [[package]]
+ name = "kurbo"
+-version = "0.13.0"
++version = "0.13.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "7564e90fe3c0d5771e1f0bc95322b21baaeaa0d9213fa6a0b61c99f8b17b3bfb"
++checksum = "4b60dfc32f652b926df6192e55525b16d186c69d47876c3ead4da5cc9f8450e2"
+ dependencies = [
+  "arrayvec",
+  "euclid",
++ "polycool",
+  "smallvec",
+ ]
+ 
+@@ -2895,9 +2878,9 @@ checksum = "7a79a3332a6609480d7d0c9eab957bca6b455b91bb84e66d19f5ff66294b85b8"
+ 
+ [[package]]
+ name = "libc"
+-version = "0.2.184"
++version = "0.2.186"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "48f5d2a454e16a5ea0f4ced81bd44e4cfc7bd3a507b61887c99fd3538b28e4af"
++checksum = "68ab91017fe16c622486840e4c83c9a37afeff978bd239b5293d61ece587de66"
+ 
+ [[package]]
+ name = "libfuzzer-sys"
+@@ -2911,9 +2894,9 @@ dependencies = [
+ 
+ [[package]]
+ name = "libgit2-sys"
+-version = "0.18.3+1.9.2"
++version = "0.18.4+1.9.3"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "c9b3acc4b91781bb0b3386669d325163746af5f6e4f73e6d2d630e09a35f3487"
++checksum = "9b26f66f35e1871b22efcf7191564123d2a446ca0538cde63c23adfefa9b15b7"
+ dependencies = [
+  "cc",
+  "libc",
+@@ -2939,14 +2922,14 @@ checksum = "b6d2cec3eae94f9f509c767b45932f1ada8350c4bdb85af2fcab4a3c14807981"
+ 
+ [[package]]
+ name = "libredox"
+-version = "0.1.15"
++version = "0.1.16"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "7ddbf48fd451246b1f8c2610bd3b4ac0cc6e149d89832867093ab69a17194f08"
++checksum = "e02f3bb43d335493c96bf3fd3a321600bf6bd07ed34bc64118e9293bdffea46c"
+ dependencies = [
+- "bitflags 2.11.0",
++ "bitflags 2.11.1",
+  "libc",
+  "plain",
+- "redox_syscall 0.7.3",
++ "redox_syscall 0.7.5",
+ ]
+ 
+ [[package]]
+@@ -3080,9 +3063,9 @@ dependencies = [
+ 
+ [[package]]
+ name = "lyon_algorithms"
+-version = "1.0.19"
++version = "1.0.20"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "9815fac08e6fd96733a11dce4f9d15a3f338e96a2e2311ee21e1b738efc2bc0f"
++checksum = "8575c0d003ae459399623c4def180c63b77f343b1a7fee64f249b349e7699a31"
+ dependencies = [
+  "lyon_path",
+  "num-traits",
+@@ -3226,18 +3209,18 @@ checksum = "6877bb514081ee2a7ff5ef9de3281f14a4dd4bceac4c09388074a6b5df8a139a"
+ 
+ [[package]]
+ name = "minicbor"
+-version = "2.2.1"
++version = "2.2.2"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "e70eae6d4f18f7d76877fe7b13f0bc21f7c2b7239d2041c338335f7b388d0dd7"
++checksum = "1b7a5041e12946f8b7d3f5a9d96383a19d694b9335457c522be7815b9abafb02"
+ dependencies = [
+  "minicbor-derive",
+ ]
+ 
+ [[package]]
+ name = "minicbor-derive"
+-version = "0.19.3"
++version = "0.19.4"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "294f0a0c161c510e9746adf546b8b044fbb0b00677d7dfc9a2452f9fdf63439b"
++checksum = "7c9303a7d70578b101a21b3043ade4ab825c59063bbcd89af1066729399b79c6"
+ dependencies = [
+  "proc-macro2",
+  "quote",
+@@ -3312,7 +3295,7 @@ version = "0.9.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "c3f42e7bbe13d351b6bead8286a43aac9534b82bd3cc43e47037f012ebfd62d4"
+ dependencies = [
+- "bitflags 2.11.0",
++ "bitflags 2.11.1",
+  "jni-sys 0.3.1",
+  "log",
+  "ndk-sys",
+@@ -3351,7 +3334,7 @@ version = "0.28.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "4ce3636fa715e988114552619582b530481fd5ef176a1e5c1bf024077c2c9445"
+ dependencies = [
+- "bitflags 2.11.0",
++ "bitflags 2.11.1",
+  "libc",
+  "log",
+  "netlink-packet-core",
+@@ -3402,12 +3385,21 @@ version = "0.30.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "74523f3a35e05aba87a1d978330aef40f67b0304ac79c1c00b294c9830543db6"
+ dependencies = [
+- "bitflags 2.11.0",
++ "bitflags 2.11.1",
+  "cfg-if",
+  "cfg_aliases",
+  "libc",
+ ]
+ 
++[[package]]
++name = "no_std_io2"
++version = "0.9.4"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "418abd1b6d34fbf6cae440dc874771b0525a604428704c76e48b29a5e67b8003"
++dependencies = [
++ "memchr",
++]
++
+ [[package]]
+ name = "nom"
+ version = "7.1.3"
+@@ -3566,7 +3558,7 @@ version = "0.2.2"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "e4e89ad9e3d7d297152b17d39ed92cd50ca8063a89a9fa569046d41568891eff"
+ dependencies = [
+- "bitflags 2.11.0",
++ "bitflags 2.11.1",
+  "block2 0.5.1",
+  "libc",
+  "objc2 0.5.2",
+@@ -3582,7 +3574,7 @@ version = "0.3.2"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "d49e936b501e5c5bf01fda3a9452ff86dc3ea98ad5f283e1455153142d97518c"
+ dependencies = [
+- "bitflags 2.11.0",
++ "bitflags 2.11.1",
+  "block2 0.6.2",
+  "libc",
+  "objc2 0.6.4",
+@@ -3603,7 +3595,7 @@ version = "0.2.2"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "74dd3b56391c7a0596a295029734d3c1c5e7e510a4cb30245f8221ccea96b009"
+ dependencies = [
+- "bitflags 2.11.0",
++ "bitflags 2.11.1",
+  "block2 0.5.1",
+  "objc2 0.5.2",
+  "objc2-core-location",
+@@ -3616,7 +3608,7 @@ version = "0.3.2"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "73ad74d880bb43877038da939b7427bba67e9dd42004a18b809ba7d87cee241c"
+ dependencies = [
+- "bitflags 2.11.0",
++ "bitflags 2.11.1",
+  "objc2 0.6.4",
+  "objc2-foundation 0.3.2",
+ ]
+@@ -3638,7 +3630,7 @@ version = "0.2.2"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "617fbf49e071c178c0b24c080767db52958f716d9eabdf0890523aeae54773ef"
+ dependencies = [
+- "bitflags 2.11.0",
++ "bitflags 2.11.1",
+  "block2 0.5.1",
+  "objc2 0.5.2",
+  "objc2-foundation 0.2.2",
+@@ -3650,7 +3642,7 @@ version = "0.3.2"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "0b402a653efbb5e82ce4df10683b6b28027616a2715e90009947d50b8dd298fa"
+ dependencies = [
+- "bitflags 2.11.0",
++ "bitflags 2.11.1",
+  "objc2 0.6.4",
+  "objc2-foundation 0.3.2",
+ ]
+@@ -3661,7 +3653,7 @@ version = "0.3.2"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "2a180dd8642fa45cdb7dd721cd4c11b1cadd4929ce112ebd8b9f5803cc79d536"
+ dependencies = [
+- "bitflags 2.11.0",
++ "bitflags 2.11.1",
+  "dispatch2",
+  "objc2 0.6.4",
+ ]
+@@ -3672,7 +3664,7 @@ version = "0.3.2"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "e022c9d066895efa1345f8e33e584b9f958da2fd4cd116792e15e07e4720a807"
+ dependencies = [
+- "bitflags 2.11.0",
++ "bitflags 2.11.1",
+  "dispatch2",
+  "objc2 0.6.4",
+  "objc2-core-foundation",
+@@ -3719,7 +3711,7 @@ version = "0.3.2"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "0cde0dfb48d25d2b4862161a4d5fcc0e3c24367869ad306b0c9ec0073bfed92d"
+ dependencies = [
+- "bitflags 2.11.0",
++ "bitflags 2.11.1",
+  "objc2 0.6.4",
+  "objc2-core-foundation",
+  "objc2-core-graphics",
+@@ -3731,7 +3723,7 @@ version = "0.3.2"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "d425caf1df73233f29fd8a5c3e5edbc30d2d4307870f802d18f00d83dc5141a6"
+ dependencies = [
+- "bitflags 2.11.0",
++ "bitflags 2.11.1",
+  "objc2 0.6.4",
+  "objc2-core-foundation",
+  "objc2-core-graphics",
+@@ -3750,7 +3742,7 @@ version = "0.2.2"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "0ee638a5da3799329310ad4cfa62fbf045d5f56e3ef5ba4149e7452dcf89d5a8"
+ dependencies = [
+- "bitflags 2.11.0",
++ "bitflags 2.11.1",
+  "block2 0.5.1",
+  "dispatch",
+  "libc",
+@@ -3763,7 +3755,7 @@ version = "0.3.2"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "e3e0adef53c21f888deb4fa59fc59f7eb17404926ee8a6f59f5df0fd7f9f3272"
+ dependencies = [
+- "bitflags 2.11.0",
++ "bitflags 2.11.1",
+  "block2 0.6.2",
+  "objc2 0.6.4",
+  "objc2-core-foundation",
+@@ -3775,7 +3767,7 @@ version = "0.3.2"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "180788110936d59bab6bd83b6060ffdfffb3b922ba1396b312ae795e1de9d81d"
+ dependencies = [
+- "bitflags 2.11.0",
++ "bitflags 2.11.1",
+  "objc2 0.6.4",
+  "objc2-core-foundation",
+ ]
+@@ -3798,7 +3790,7 @@ version = "0.2.2"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "dd0cba1276f6023976a406a14ffa85e1fdd19df6b0f737b063b95f6c8c7aadd6"
+ dependencies = [
+- "bitflags 2.11.0",
++ "bitflags 2.11.1",
+  "block2 0.5.1",
+  "objc2 0.5.2",
+  "objc2-foundation 0.2.2",
+@@ -3810,7 +3802,7 @@ version = "0.3.2"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "a0125f776a10d00af4152d74616409f0d4a2053a6f57fa5b7d6aa2854ac04794"
+ dependencies = [
+- "bitflags 2.11.0",
++ "bitflags 2.11.1",
+  "objc2 0.6.4",
+  "objc2-foundation 0.3.2",
+ ]
+@@ -3821,7 +3813,7 @@ version = "0.2.2"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "e42bee7bff906b14b167da2bac5efe6b6a07e6f7c0a21a7308d40c960242dc7a"
+ dependencies = [
+- "bitflags 2.11.0",
++ "bitflags 2.11.1",
+  "block2 0.5.1",
+  "objc2 0.5.2",
+  "objc2-foundation 0.2.2",
+@@ -3834,7 +3826,7 @@ version = "0.3.2"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "96c1358452b371bf9f104e21ec536d37a650eb10f7ee379fff67d2e08d537f1f"
+ dependencies = [
+- "bitflags 2.11.0",
++ "bitflags 2.11.1",
+  "objc2 0.6.4",
+  "objc2-core-foundation",
+  "objc2-foundation 0.3.2",
+@@ -3857,7 +3849,7 @@ version = "0.2.2"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "b8bb46798b20cd6b91cbd113524c490f1686f4c4e8f49502431415f3512e2b6f"
+ dependencies = [
+- "bitflags 2.11.0",
++ "bitflags 2.11.1",
+  "block2 0.5.1",
+  "objc2 0.5.2",
+  "objc2-cloud-kit 0.2.2",
+@@ -3878,7 +3870,7 @@ version = "0.3.2"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "d87d638e33c06f577498cbcc50491496a3ed4246998a7fbba7ccb98b1e7eab22"
+ dependencies = [
+- "bitflags 2.11.0",
++ "bitflags 2.11.1",
+  "block2 0.6.2",
+  "objc2 0.6.4",
+  "objc2-core-foundation",
+@@ -3903,7 +3895,7 @@ version = "0.2.2"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "76cfcbf642358e8689af64cee815d139339f3ed8ad05103ed5eaf73db8d84cb3"
+ dependencies = [
+- "bitflags 2.11.0",
++ "bitflags 2.11.1",
+  "block2 0.5.1",
+  "objc2 0.5.2",
+  "objc2-core-location",
+@@ -3931,9 +3923,9 @@ dependencies = [
+ 
+ [[package]]
+ name = "orbclient"
+-version = "0.3.51"
++version = "0.3.54"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "59aed3b33578edcfa1bc96a321d590d31832b6ad55a26f0313362ce687e9abd6"
++checksum = "a570f6bca41d29acb2139229a7c873ec99bc9a313bd10804081d89bfac8ff329"
+ dependencies = [
+  "libc",
+  "libredox",
+@@ -4017,6 +4009,7 @@ dependencies = [
+  "pin-project-lite",
+  "procfs",
+  "proptest",
++ "ptmpfs",
+  "qrcode",
+  "rootcause",
+  "rtnetlink",
+@@ -4100,18 +4093,18 @@ checksum = "5be167a7af36ee22fe3115051bc51f6e6c7054c9348e28deb4f49bd6f705a315"
+ 
+ [[package]]
+ name = "pin-project"
+-version = "1.1.11"
++version = "1.1.13"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "f1749c7ed4bcaf4c3d0a3efc28538844fb29bcdd7d2b67b2be7e20ba861ff517"
++checksum = "2466b2336ed02bcdca6b294417127b90ec92038d1d5c4fbeac971a922e0e0924"
+ dependencies = [
+  "pin-project-internal",
+ ]
+ 
+ [[package]]
+ name = "pin-project-internal"
+-version = "1.1.11"
++version = "1.1.13"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "d9b20ed30f105399776b9c883e68e536ef602a16ae6f596d2c473591d6ad64c6"
++checksum = "c96395f0a926bc13b1c17622aaddda1ecb55d49c8f1bf9777e4d877800a43f8b"
+ dependencies = [
+  "proc-macro2",
+  "quote",
+@@ -4149,9 +4142,9 @@ dependencies = [
+ 
+ [[package]]
+ name = "pkg-config"
+-version = "0.3.32"
++version = "0.3.33"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "7edddbd0b52d732b21ad9a5fab5c704c14cd949e5e9a1ec5929a24fded1b904c"
++checksum = "19f132c84eca552bf34cab8ec81f1c1dcc229b811638f9d283dceabe58c5569e"
+ 
+ [[package]]
+ name = "plain"
+@@ -4178,7 +4171,7 @@ version = "0.18.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "60769b8b31b2a9f263dae2776c37b1b28ae246943cf719eb6946a1db05128a61"
+ dependencies = [
+- "bitflags 2.11.0",
++ "bitflags 2.11.1",
+  "crc32fast",
+  "fdeflate",
+  "flate2",
+@@ -4209,6 +4202,15 @@ dependencies = [
+  "never-say-never",
+ ]
+ 
++[[package]]
++name = "polycool"
++version = "0.4.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "50596ddc09eb5ad5f75cacd40209568e66df71baf86e1499a0e99c4cff12a5a6"
++dependencies = [
++ "arrayvec",
++]
++
+ [[package]]
+ name = "portable-atomic"
+ version = "1.13.1"
+@@ -4262,7 +4264,7 @@ version = "3.5.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "e67ba7e9b2b56446f1d419b1d807906278ffa1a658a8a5d8a39dcb1f5a78614f"
+ dependencies = [
+- "toml_edit 0.25.10+spec-1.1.0",
++ "toml_edit 0.25.11+spec-1.1.0",
+ ]
+ 
+ [[package]]
+@@ -4280,7 +4282,7 @@ version = "0.18.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "25485360a54d6861439d60facef26de713b1e126bf015ec8f98239467a2b82f7"
+ dependencies = [
+- "bitflags 2.11.0",
++ "bitflags 2.11.1",
+  "chrono",
+  "flate2",
+  "procfs-core",
+@@ -4293,25 +4295,25 @@ version = "0.18.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "e6401bf7b6af22f78b563665d15a22e9aef27775b79b149a66ca022468a4e405"
+ dependencies = [
+- "bitflags 2.11.0",
++ "bitflags 2.11.1",
+  "chrono",
+  "hex",
+ ]
+ 
+ [[package]]
+ name = "profiling"
+-version = "1.0.17"
++version = "1.0.18"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "3eb8486b569e12e2c32ad3e204dbaba5e4b5b216e9367044f25f1dba42341773"
++checksum = "3d595e54a326bc53c1c197b32d295e14b169e3cfeaa8dc82b529f947fba6bcf5"
+ dependencies = [
+  "profiling-procmacros",
+ ]
+ 
+ [[package]]
+ name = "profiling-procmacros"
+-version = "1.0.17"
++version = "1.0.18"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "52717f9a02b6965224f95ca2a81e2e0c5c43baacd28ca057577988930b6c3d5b"
++checksum = "4488a4a36b9a4ba6b9334a32a39971f77c1436ec82c38707bce707699cc3bbcb"
+ dependencies = [
+  "quote",
+  "syn",
+@@ -4325,7 +4327,7 @@ checksum = "4b45fcc2344c680f5025fe57779faef368840d0bd1f42f216291f0dc4ace4744"
+ dependencies = [
+  "bit-set",
+  "bit-vec",
+- "bitflags 2.11.0",
++ "bitflags 2.11.1",
+  "num-traits",
+  "proptest-macro",
+  "rand",
+@@ -4381,13 +4383,23 @@ dependencies = [
+  "prost",
+ ]
+ 
++[[package]]
++name = "ptmpfs"
++version = "0.1.1"
++source = "git+https://gitlab.nic.cz/ekalouskova/ptmpfs.git#7d8bd9ba5332557e645abe8084ed67b9c66cf1e7"
++dependencies = [
++ "bitflags 2.11.1",
++ "linux-raw-sys 0.12.1",
++ "rustix 1.1.4",
++]
++
+ [[package]]
+ name = "pulldown-cmark"
+ version = "0.13.3"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "7c3a14896dfa883796f1cb410461aef38810ea05f2b2c33c5aded3649095fdad"
+ dependencies = [
+- "bitflags 2.11.0",
++ "bitflags 2.11.1",
+  "getopts",
+  "memchr",
+  "pulldown-cmark-escape",
+@@ -4402,9 +4414,9 @@ checksum = "007d8adb5ddab6f8e3f491ac63566a7d5002cc7ed73901f72057943fa71ae1ae"
+ 
+ [[package]]
+ name = "pxfm"
+-version = "0.1.28"
++version = "0.1.29"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "b5a041e753da8b807c9255f28de81879c78c876392ff2469cde94799b2896b9d"
++checksum = "e0c5ccf5294c6ccd63a74f1565028353830a9c2f5eb0c682c355c471726a6e3f"
+ 
+ [[package]]
+ name = "qoi"
+@@ -4438,9 +4450,9 @@ checksum = "a993555f31e5a609f617c12db6250dedcac1b0a85076912c436e6fc9b2c8e6a3"
+ 
+ [[package]]
+ name = "quick-xml"
+-version = "0.39.2"
++version = "0.39.4"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "958f21e8e7ceb5a1aa7fa87fab28e7c75976e0bfe7e23ff069e0a260f894067d"
++checksum = "cdcc8dd4e2f670d309a5f0e83fe36dfdc05af317008fea29144da1a2ac858e5e"
+ dependencies = [
+  "memchr",
+ ]
+@@ -4468,9 +4480,9 @@ checksum = "f8dcc9c7d52a811697d2151c701e0d08956f92b0e24136cf4cf27b57a6a0d9bf"
+ 
+ [[package]]
+ name = "rand"
+-version = "0.9.2"
++version = "0.9.4"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "6db2770f06117d490610c7488547d543617b21bfa07796d7a12f6f1bd53850d1"
++checksum = "44c5af06bb1b7d3216d91932aed5265164bf384dc89cd6ba05cf59a35f5f76ea"
+ dependencies = [
+  "rand_chacha",
+  "rand_core",
+@@ -4574,9 +4586,9 @@ dependencies = [
+ 
+ [[package]]
+ name = "rayon"
+-version = "1.11.0"
++version = "1.12.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "368f01d005bf8fd9b1206fb6fa653e6c4a81ceb1466406b81792d87c5677a58f"
++checksum = "fb39b166781f92d482534ef4b4b1b2568f42613b53e5b6c160e24cfbfa30926d"
+ dependencies = [
+  "either",
+  "rayon-core",
+@@ -4610,7 +4622,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "7b634fabf032fab15307ffd272149b622260f55974d9fad689292a5d33df02e5"
+ dependencies = [
+  "bytemuck",
+- "font-types 0.11.2",
++ "font-types 0.11.3",
+ ]
+ 
+ [[package]]
+@@ -4628,16 +4640,16 @@ version = "0.5.18"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "ed2bf2547551a7053d6fdfafda3f938979645c44812fbfcda098faae3f1a362d"
+ dependencies = [
+- "bitflags 2.11.0",
++ "bitflags 2.11.1",
+ ]
+ 
+ [[package]]
+ name = "redox_syscall"
+-version = "0.7.3"
++version = "0.7.5"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "6ce70a74e890531977d37e532c34d45e9055d2409ed08ddba14529471ed0be16"
++checksum = "4666a1a60d8412eab19d94f6d13dcc9cea0a5ef4fdf6a5db306537413c661b1b"
+ dependencies = [
+- "bitflags 2.11.0",
++ "bitflags 2.11.1",
+ ]
+ 
+ [[package]]
+@@ -4824,7 +4836,7 @@ version = "0.38.44"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "fdb5bc1ae2baa591800df16c9ca78619bf65c0488b41b96ccec5d11220d8c154"
+ dependencies = [
+- "bitflags 2.11.0",
++ "bitflags 2.11.1",
+  "errno",
+  "libc",
+  "linux-raw-sys 0.4.15",
+@@ -4837,7 +4849,7 @@ version = "1.1.4"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "b6fe4565b9518b83ef4f91bb47ce29620ca828bd32cb7e408f0062e9930ba190"
+ dependencies = [
+- "bitflags 2.11.0",
++ "bitflags 2.11.1",
+  "errno",
+  "libc",
+  "linux-raw-sys 0.12.1",
+@@ -4878,7 +4890,7 @@ version = "0.20.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "fd3c7c96f8a08ee34eff8857b11b49b07d71d1c3f4e88f8a88d4c9e9f90b1702"
+ dependencies = [
+- "bitflags 2.11.0",
++ "bitflags 2.11.1",
+  "bytemuck",
+  "core_maths",
+  "log",
+@@ -5111,9 +5123,9 @@ dependencies = [
+ 
+ [[package]]
+ name = "siphasher"
+-version = "1.0.2"
++version = "1.0.3"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "b2aa850e253778c88a04c3d7323b043aeda9d3e30d5971937c1855769763678e"
++checksum = "8ee5873ec9cce0195efcb7a4e9507a04cd49aec9c83d0389df45b1ef7ba2e649"
+ 
+ [[package]]
+ name = "skia-bindings"
+@@ -5138,7 +5150,7 @@ version = "0.90.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "6a71c01d325d40b1031dee67d251a5e0132e79e2a9ec272149a4f4a0d4b8b3be"
+ dependencies = [
+- "bitflags 2.11.0",
++ "bitflags 2.11.1",
+  "skia-bindings",
+  "windows 0.62.2",
+ ]
+@@ -5247,7 +5259,7 @@ version = "0.19.2"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "3457dea1f0eb631b4034d61d4d8c32074caa6cd1ab2d59f2327bd8461e2c0016"
+ dependencies = [
+- "bitflags 2.11.0",
++ "bitflags 2.11.1",
+  "calloop 0.13.0",
+  "calloop-wayland-source",
+  "cursor-icon",
+@@ -5416,7 +5428,7 @@ version = "0.16.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "695b5790b3131dafa99b3bbfd25a216edb3d216dad9ca208d4657bfb8f2abc3d"
+ dependencies = [
+- "kurbo 0.13.0",
++ "kurbo 0.13.1",
+  "siphasher",
+ ]
+ 
+@@ -5473,9 +5485,9 @@ dependencies = [
+ 
+ [[package]]
+ name = "tar"
+-version = "0.4.45"
++version = "0.4.46"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "22692a6476a21fa75fdfc11d452fda482af402c008cdbaf3476414e122040973"
++checksum = "3f6221d9a6003c78398e3b239969f352578258df48c8eb051caadae0015bc840"
+ dependencies = [
+  "filetime",
+  "libc",
+@@ -5624,9 +5636,9 @@ checksum = "1f3ccbac311fea05f86f61904b462b55fb3df8837a366dfc601a0161d0532f20"
+ 
+ [[package]]
+ name = "tokio"
+-version = "1.51.0"
++version = "1.52.3"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "2bd1c4c0fc4a7ab90fc15ef6daaa3ec3b893f004f915f2392557ed23237820cd"
++checksum = "8fc7f01b389ac15039e4dc9531aa973a135d7a4135281b12d7c1bc79fd57fffe"
+ dependencies = [
+  "bytes",
+  "io-uring",
+@@ -5724,14 +5736,14 @@ dependencies = [
+ 
+ [[package]]
+ name = "toml_edit"
+-version = "0.25.10+spec-1.1.0"
++version = "0.25.11+spec-1.1.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "a82418ca169e235e6c399a84e395ab6debeb3bc90edc959bf0f48647c6a32d1b"
++checksum = "0b59c4d22ed448339746c59b905d24568fcbb3ab65a500494f7b8c3e97739f2b"
+ dependencies = [
+  "indexmap",
+  "toml_datetime 1.1.1+spec-1.1.0",
+  "toml_parser",
+- "winnow 1.0.1",
++ "winnow 1.0.3",
+ ]
+ 
+ [[package]]
+@@ -5740,7 +5752,7 @@ version = "1.1.2+spec-1.1.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "a2abe9b86193656635d2411dc43050282ca48aa31c2451210f4202550afb7526"
+ dependencies = [
+- "winnow 1.0.1",
++ "winnow 1.0.3",
+ ]
+ 
+ [[package]]
+@@ -5931,15 +5943,14 @@ dependencies = [
+ 
+ [[package]]
+ name = "typenum"
+-version = "1.19.0"
++version = "1.20.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "562d481066bde0658276a35467c4af00bdc6ee726305698a55b86e61d7ad82bb"
++checksum = "40ce102ab67701b8526c123c1bab5cbe42d7040ccfd0f64af1a385808d2f43de"
+ 
+ [[package]]
+ name = "ucifer"
+-version = "0.5.0-rc.2"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "7092028a0e1b9f4fb40830ee2eea59c2696eb0845fc4fdfa2e5958a45ed22e72"
++version = "0.5.0-rc.3"
++source = "git+https://gitlab.nic.cz/turris/ucifer.git#4bc55f1602fc1eba6d5f5f7593c4dc5f8bc7d094"
+ dependencies = [
+  "descape",
+  "hashbrown 0.16.1",
+@@ -6089,7 +6100,7 @@ dependencies = [
+  "flate2",
+  "fontdb",
+  "imagesize",
+- "kurbo 0.13.0",
++ "kurbo 0.13.1",
+  "log",
+  "pico-args",
+  "roxmltree",
+@@ -6113,9 +6124,9 @@ checksum = "b6c140620e7ffbb22c2dee59cafe6084a59b5ffc27a8859a5f0d494b5d52b6be"
+ 
+ [[package]]
+ name = "uuid"
+-version = "1.23.0"
++version = "1.23.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "5ac8b6f42ead25368cf5b098aeb3dc8a1a2c05a3eee8a9a1a68c640edbfc79d9"
++checksum = "ddd74a9687298c6858e9b88ec8935ec45d22e8fd5e6394fa1bd4e99a87789c76"
+ dependencies = [
+  "getrandom 0.4.2",
+  "js-sys",
+@@ -6211,11 +6222,11 @@ checksum = "ccf3ec651a847eb01de73ccad15eb7d99f80485de043efb2f370cd654f4ea44b"
+ 
+ [[package]]
+ name = "wasip2"
+-version = "1.0.2+wasi-0.2.9"
++version = "1.0.3+wasi-0.2.9"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "9517f9239f02c069db75e65f174b3da828fe5f5b945c4dd26bd25d89c03ebcf5"
++checksum = "20064672db26d7cdc89c7798c48a0fdfac8213434a1186e5ef29fd560ae223d6"
+ dependencies = [
+- "wit-bindgen",
++ "wit-bindgen 0.57.1",
+ ]
+ 
+ [[package]]
+@@ -6224,14 +6235,14 @@ version = "0.4.0+wasi-0.3.0-rc-2026-01-06"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "5428f8bf88ea5ddc08faddef2ac4a67e390b88186c703ce6dbd955e1c145aca5"
+ dependencies = [
+- "wit-bindgen",
++ "wit-bindgen 0.51.0",
+ ]
+ 
+ [[package]]
+ name = "wasm-bindgen"
+-version = "0.2.117"
++version = "0.2.121"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "0551fc1bb415591e3372d0bc4780db7e587d84e2a7e79da121051c5c4b89d0b0"
++checksum = "49ace1d07c165b0864824eee619580c4689389afa9dc9ed3a4c75040d82e6790"
+ dependencies = [
+  "cfg-if",
+  "once_cell",
+@@ -6242,9 +6253,9 @@ dependencies = [
+ 
+ [[package]]
+ name = "wasm-bindgen-futures"
+-version = "0.4.67"
++version = "0.4.71"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "03623de6905b7206edd0a75f69f747f134b7f0a2323392d664448bf2d3c5d87e"
++checksum = "96492d0d3ffba25305a7dc88720d250b1401d7edca02cc3bcd50633b424673b8"
+ dependencies = [
+  "js-sys",
+  "wasm-bindgen",
+@@ -6252,9 +6263,9 @@ dependencies = [
+ 
+ [[package]]
+ name = "wasm-bindgen-macro"
+-version = "0.2.117"
++version = "0.2.121"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "7fbdf9a35adf44786aecd5ff89b4563a90325f9da0923236f6104e603c7e86be"
++checksum = "8e68e6f4afd367a562002c05637acb8578ff2dea1943df76afb9e83d177c8578"
+ dependencies = [
+  "quote",
+  "wasm-bindgen-macro-support",
+@@ -6262,9 +6273,9 @@ dependencies = [
+ 
+ [[package]]
+ name = "wasm-bindgen-macro-support"
+-version = "0.2.117"
++version = "0.2.121"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "dca9693ef2bab6d4e6707234500350d8dad079eb508dca05530c85dc3a529ff2"
++checksum = "d95a9ec35c64b2a7cb35d3fead40c4238d0940c86d107136999567a4703259f2"
+ dependencies = [
+  "bumpalo",
+  "proc-macro2",
+@@ -6275,9 +6286,9 @@ dependencies = [
+ 
+ [[package]]
+ name = "wasm-bindgen-shared"
+-version = "0.2.117"
++version = "0.2.121"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "39129a682a6d2d841b6c429d0c51e5cb0ed1a03829d8b3d1e69a011e62cb3d3b"
++checksum = "c4e0100b01e9f0d03189a92b96772a1fb998639d981193d7dbab487302513441"
+ dependencies = [
+  "unicode-ident",
+ ]
+@@ -6310,7 +6321,7 @@ version = "0.244.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "47b807c72e1bac69382b3a6fb3dbe8ea4c0ed87ff5629b8685ae6b9a611028fe"
+ dependencies = [
+- "bitflags 2.11.0",
++ "bitflags 2.11.1",
+  "hashbrown 0.15.5",
+  "indexmap",
+  "semver",
+@@ -6336,7 +6347,7 @@ version = "0.31.14"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "645c7c96bb74690c3189b5c9cb4ca1627062bb23693a4fad9d8c3de958260144"
+ dependencies = [
+- "bitflags 2.11.0",
++ "bitflags 2.11.1",
+  "rustix 1.1.4",
+  "wayland-backend",
+  "wayland-scanner",
+@@ -6348,7 +6359,7 @@ version = "0.3.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "625c5029dbd43d25e6aa9615e88b829a5cad13b2819c4ae129fdbb7c31ab4c7e"
+ dependencies = [
+- "bitflags 2.11.0",
++ "bitflags 2.11.1",
+  "cursor-icon",
+  "wayland-backend",
+ ]
+@@ -6370,7 +6381,7 @@ version = "0.32.12"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "563a85523cade2429938e790815fd7319062103b9f4a2dc806e9b53b95982d8f"
+ dependencies = [
+- "bitflags 2.11.0",
++ "bitflags 2.11.1",
+  "wayland-backend",
+  "wayland-client",
+  "wayland-scanner",
+@@ -6382,7 +6393,7 @@ version = "0.3.12"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "2b6d8cf1eb2c1c31ed1f5643c88a6e53538129d4af80030c8cabd1f9fa884d91"
+ dependencies = [
+- "bitflags 2.11.0",
++ "bitflags 2.11.1",
+  "wayland-backend",
+  "wayland-client",
+  "wayland-protocols",
+@@ -6395,7 +6406,7 @@ version = "0.3.12"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "eb04e52f7836d7c7976c78ca0250d61e33873c34156a2a1fc9474828ec268234"
+ dependencies = [
+- "bitflags 2.11.0",
++ "bitflags 2.11.1",
+  "wayland-backend",
+  "wayland-client",
+  "wayland-protocols",
+@@ -6426,9 +6437,9 @@ dependencies = [
+ 
+ [[package]]
+ name = "web-sys"
+-version = "0.3.94"
++version = "0.3.98"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "cd70027e39b12f0849461e08ffc50b9cd7688d942c1c8e3c7b22273236b4dd0a"
++checksum = "4b572dff8bcf38bad0fa19729c89bb5748b2b9b1d8be70cf90df697e3a8f32aa"
+ dependencies = [
+  "js-sys",
+  "wasm-bindgen",
+@@ -6895,7 +6906,7 @@ dependencies = [
+  "ahash",
+  "android-activity",
+  "atomic-waker",
+- "bitflags 2.11.0",
++ "bitflags 2.11.1",
+  "block2 0.5.1",
+  "calloop 0.13.0",
+  "cfg_aliases",
+@@ -6944,9 +6955,9 @@ dependencies = [
+ 
+ [[package]]
+ name = "winnow"
+-version = "1.0.1"
++version = "1.0.3"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "09dac053f1cd375980747450bfc7250c264eaae0583872e845c0c7cd578872b5"
++checksum = "0592e1c9d151f854e6fd382574c3a0855250e1d9b2f99d9281c6e6391af352f1"
+ dependencies = [
+  "memchr",
+ ]
+@@ -6957,7 +6968,7 @@ version = "0.36.4"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "3f3fd376f71958b862e7afb20cfe5a22830e1963462f3a17f49d82a6c1d1f42d"
+ dependencies = [
+- "bitflags 2.11.0",
++ "bitflags 2.11.1",
+  "windows-sys 0.59.0",
+ ]
+ 
+@@ -6970,6 +6981,12 @@ dependencies = [
+  "wit-bindgen-rust-macro",
+ ]
+ 
++[[package]]
++name = "wit-bindgen"
++version = "0.57.1"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "1ebf944e87a7c253233ad6766e082e3cd714b5d03812acc24c318f549614536e"
++
+ [[package]]
+ name = "wit-bindgen-core"
+ version = "0.51.0"
+@@ -7019,7 +7036,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "9d66ea20e9553b30172b5e831994e35fbde2d165325bec84fc43dbf6f4eb9cb2"
+ dependencies = [
+  "anyhow",
+- "bitflags 2.11.0",
++ "bitflags 2.11.1",
+  "indexmap",
+  "log",
+  "serde",
+@@ -7101,7 +7118,7 @@ version = "0.4.2"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "d039de8032a9a8856a6be89cea3e5d12fdd82306ab7c94d74e6deab2460651c5"
+ dependencies = [
+- "bitflags 2.11.0",
++ "bitflags 2.11.1",
+  "dlib",
+  "log",
+  "once_cell",
+@@ -7146,9 +7163,9 @@ checksum = "e01738255b5a16e78bbb83e7fbba0a1e7dd506905cfc53f4622d89015a03fbb5"
+ 
+ [[package]]
+ name = "yeslogic-fontconfig-sys"
+-version = "6.0.0"
++version = "6.0.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "503a066b4c037c440169d995b869046827dbc71263f6e8f3be6d77d4f3229dbd"
++checksum = "1d8b8abf912b9a29ff112e1671c97c33636903d13a69712037190e6805af4f76"
+ dependencies = [
+  "dlib",
+  "once_cell",
+@@ -7180,9 +7197,9 @@ dependencies = [
+ 
+ [[package]]
+ name = "zbus"
+-version = "5.14.0"
++version = "5.15.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "ca82f95dbd3943a40a53cfded6c2d0a2ca26192011846a1810c4256ef92c60bc"
++checksum = "c3bcbf15c8708d7fc1be0c993622e0a5cbd5e8b52bfa40afa4c3e0cd8d724ac1"
+ dependencies = [
+  "async-broadcast",
+  "async-executor",
+@@ -7207,7 +7224,7 @@ dependencies = [
+  "uds_windows",
+  "uuid",
+  "windows-sys 0.61.2",
+- "winnow 0.7.15",
++ "winnow 1.0.3",
+  "zbus_macros",
+  "zbus_names",
+  "zvariant",
+@@ -7215,9 +7232,9 @@ dependencies = [
+ 
+ [[package]]
+ name = "zbus_macros"
+-version = "5.14.0"
++version = "5.15.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "897e79616e84aac4b2c46e9132a4f63b93105d54fe8c0e8f6bffc21fa8d49222"
++checksum = "51fa5406ad9175a8c825a931f8cf347116b531b3634fcb0b627c290f1f2516ff"
+ dependencies = [
+  "proc-macro-crate",
+  "proc-macro2",
+@@ -7230,12 +7247,12 @@ dependencies = [
+ 
+ [[package]]
+ name = "zbus_names"
+-version = "4.3.1"
++version = "4.3.2"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "ffd8af6d5b78619bab301ff3c560a5bd22426150253db278f164d6cf3b72c50f"
++checksum = "7074f3e50b894eac91750142016d30d0a89be8e67dbfd9704fb875825760e52d"
+ dependencies = [
+  "serde",
+- "winnow 0.7.15",
++ "winnow 1.0.3",
+  "zvariant",
+ ]
+ 
+@@ -7267,9 +7284,9 @@ dependencies = [
+ 
+ [[package]]
+ name = "zerofrom"
+-version = "0.1.7"
++version = "0.1.8"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "69faa1f2a1ea75661980b013019ed6687ed0e83d069bc1114e2cc74c6c04c4df"
++checksum = "0ec05a11813ea801ff6d75110ad09cd0824ddba17dfe17128ea0d5f68e6c5272"
+ dependencies = [
+  "zerofrom-derive",
+ ]
+@@ -7367,23 +7384,23 @@ dependencies = [
+ 
+ [[package]]
+ name = "zvariant"
+-version = "5.10.0"
++version = "5.11.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "5708299b21903bbe348e94729f22c49c55d04720a004aa350f1f9c122fd2540b"
++checksum = "1c1567a6ec68df868cbbfde844cfc6d81649fe5109a62b116b19fabd53e618ee"
+ dependencies = [
+  "endi",
+  "enumflags2",
+  "serde",
+- "winnow 0.7.15",
++ "winnow 1.0.3",
+  "zvariant_derive",
+  "zvariant_utils",
+ ]
+ 
+ [[package]]
+ name = "zvariant_derive"
+-version = "5.10.0"
++version = "5.11.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "5b59b012ebe9c46656f9cc08d8da8b4c726510aef12559da3e5f1bf72780752c"
++checksum = "c7d5b780599bbde114e39d9a0799577fad1ced5105d38515745f7b3099d8ceda"
+ dependencies = [
+  "proc-macro-crate",
+  "proc-macro2",
+@@ -7394,13 +7411,13 @@ dependencies = [
+ 
+ [[package]]
+ name = "zvariant_utils"
+-version = "3.3.0"
++version = "3.3.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "f75c23a64ef8f40f13a6989991e643554d9bef1d682a281160cf0c1bc389c5e9"
++checksum = "6d464f5733ffa07a3164d656f18533caace9d0638596721355d73256a410d691"
+ dependencies = [
+  "proc-macro2",
+  "quote",
+  "serde",
+  "syn",
+- "winnow 0.7.15",
++ "winnow 1.0.3",
+ ]
+diff --git a/backend/Cargo.toml b/backend/Cargo.toml
+index 82b32eb..d4318ac 100644
+--- a/backend/Cargo.toml
++++ b/backend/Cargo.toml
+@@ -37,7 +37,7 @@ arrayvec           = "0.7"
+ hashbrown          = "0.16"
+ idhasher           = { git = "https://gitlab.nic.cz/ekalouskova/idhasher.git" }
+ smol_str           = "0.3"
+-ucifer             = { tag = "v0.5.0-rc.3", git = "https://gitlab.nic.cz/turris/ucifer.git" }
++ucifer             = { git = "https://gitlab.nic.cz/turris/ucifer.git" }
+ 
+ # System APIs
+ cap-std            = { version = "3"  , features = ["fs_utf8"] }
+@@ -68,3 +68,4 @@ features = ["fs", "process", "macros", "rt-multi-thread", "tracing"]
+ [dev-dependencies]
+ assert2      = "0.3"
+ proptest     = { version = "1", features = ["attr-macro"] }
++ptmpfs.git   = "https://gitlab.nic.cz/ekalouskova/ptmpfs.git"
+diff --git a/backend/src/uci.rs b/backend/src/uci.rs
+index 1323233..dde554c 100644
+--- a/backend/src/uci.rs
++++ b/backend/src/uci.rs
+@@ -460,4 +460,5 @@ pub mod configs {
+ 	define_uci!(Network => "network");
+ 	define_uci!(Updater => "updater");
+ 	define_uci!(System => "system");
++	define_uci!(Firewall => "firewall");
+ }
+diff --git a/backend/src/wifi/assoc.rs b/backend/src/wifi/assoc.rs
+deleted file mode 100644
+index 2b65a2e..0000000
+--- a/backend/src/wifi/assoc.rs
++++ /dev/null
+@@ -1,87 +0,0 @@
+-//! Wi-Fi access point associations store
+-
+-use hardware_address::MacAddr;
+-use hashbrown::HashMap;
+-use tracing::debug;
+-use uom::si::u64::Frequency;
+-
+-use crate::wifi::PowerLevel;
+-
+-/// Stores imported associations
+-#[derive(Debug, Default)]
+-pub struct AssociationStore {
+-	pub associations: HashMap<MacAddr, Association>,
+-}
+-
+-impl AssociationStore {
+-	/// Update association store from event
+-	pub fn update(&mut self, event: Event) {
+-		match event {
+-			Event::Probe {
+-				address,
+-				signal,
+-				frequency,
+-			} => {
+-				let Some(entry) = self.associations.get_mut(&address) else {
+-					tracing::trace!(?address, "Got probe event for association we do not track");
+-					return;
+-				};
+-
+-				entry.signal = signal;
+-				entry.frequency = frequency;
+-			}
+-
+-			Event::Assoc {
+-				address,
+-				target: _,
+-				signal,
+-				frequency,
+-			} => {
+-				_ = self.associations.insert(
+-					address,
+-					Association {
+-						mac: address,
+-						signal,
+-						frequency,
+-					},
+-				);
+-			}
+-
+-			Event::Disassoc { address } => {
+-				let removed = self.associations.remove(&address);
+-				if removed.is_none() {
+-					debug!(%address, "Got disassociate event for unknown station");
+-				}
+-			}
+-		}
+-	}
+-}
+-
+-/// Wi-Fi association
+-#[derive(Debug)]
+-pub struct Association {
+-	/// MAC address of such association
+-	pub mac:       MacAddr,
+-	/// Signal strength (dBmW)
+-	pub signal:    PowerLevel,
+-	/// Connected frequency
+-	pub frequency: Frequency,
+-}
+-
+-#[derive(Debug)]
+-pub enum Event {
+-	Probe {
+-		address:   MacAddr,
+-		signal:    PowerLevel,
+-		frequency: Frequency,
+-	},
+-	Assoc {
+-		address:   MacAddr,
+-		target:    MacAddr,
+-		signal:    PowerLevel,
+-		frequency: Frequency,
+-	},
+-	Disassoc {
+-		address: MacAddr,
+-	},
+-}
+diff --git a/backend/src/wifi/config.rs b/backend/src/wifi/config.rs
+index 1e63ecf..db08bcd 100644
+--- a/backend/src/wifi/config.rs
++++ b/backend/src/wifi/config.rs
+@@ -37,6 +37,8 @@ use crate::errors::{FieldError, FieldErrorKind};
+ pub struct ApConfig {
+ 	/// Accesspoint designation in the configuration
+ 	pub designation: Option<SmolStr>,
++	/// Membership of the access point in a network
++	pub network:     SmolStr,
+ 	/// Indicates whichever the access point is active or not
+ 	pub active:      bool,
+ 	/// Network is hidden (does not broadcast it's ESSID)
+@@ -87,8 +89,7 @@ impl ApConfigStore {
+ 	}
+ }
+ 
+-/// Collection of error reports capped with the maximum amount
+-pub type FromUciErrors = ArrayVec<Report<FieldError>, 4>;
++pub type FromUciErrors = ArrayVec<Report<FieldError>, 5>;
+ 
+ #[derive(Debug)]
+ pub enum FromUciError {
+@@ -116,6 +117,19 @@ impl ApConfig {
+ 			None => Ok(default),
+ 		};
+ 
++		let network = match section.get("network") {
++			Some(ConfigOption::Scalar(scalar)) => Ok(scalar),
++			Some(ConfigOption::List(_)) => Err(FieldError {
++				name: SmolStr::new_static("network"),
++				kind: FieldErrorKind::TooMuch,
++			}),
++			None => Err(FieldError {
++				name: SmolStr::new_static("network"),
++				kind: FieldErrorKind::NotFound,
++			}),
++		}
++		.into_report();
++
+ 		let ssid = match section.get("ssid") {
+ 			Some(ConfigOption::Scalar(scalar)) => Ok(scalar),
+ 			Some(ConfigOption::List(_)) => Err(FieldError {
+@@ -142,15 +156,19 @@ impl ApConfig {
+ 		let disabled = optional_bool("disabled", false);
+ 		let hidden = optional_bool("hidden", false);
+ 
+-		let (ssid, disabled, hidden, psk) = match (ssid, disabled, hidden, psk) {
+-			(Ok(ssid), Ok(disabled), Ok(hidden), Ok(psk)) => (ssid, disabled, hidden, psk),
+-			(Err(ssid_error), Ok(_), Ok(_), Ok(_))
+-				if ssid_error.current_context().kind == FieldErrorKind::NotFound =>
++		let (network, ssid, disabled, hidden, psk) = match (network, ssid, disabled, hidden, psk) {
++			(Ok(network), Ok(ssid), Ok(disabled), Ok(hidden), Ok(psk)) => {
++				(network, ssid, disabled, hidden, psk)
++			}
++			(Err(network_error), Err(ssid_error), Ok(_), Ok(_), Ok(_))
++				if ssid_error.current_context().kind == FieldErrorKind::NotFound
++					|| network_error.current_context().kind == FieldErrorKind::NotFound =>
+ 			{
+ 				return Err(FromUciError::IncompleteButValid);
+ 			}
+-			(ssid, disabled, hidden, psk) => {
++			(network, ssid, disabled, hidden, psk) => {
+ 				let mut errors = ArrayVec::new();
++				maybe_push_error(&mut errors, network);
+ 				maybe_push_error(&mut errors, ssid);
+ 				maybe_push_error(&mut errors, disabled);
+ 				maybe_push_error(&mut errors, hidden);
+@@ -162,6 +180,7 @@ impl ApConfig {
+ 
+ 		Ok(Self {
+ 			designation,
++			network: SmolStr::new(network),
+ 			active: !disabled,
+ 			hidden,
+ 			ssid: SmolStr::new(ssid),
+@@ -193,15 +212,9 @@ mod tests {
+ 	fn harness_sections_are_valid() -> Result<(), Report> {
+ 		let document = ucifer::Document::try_from(UCI_FILE)?;
+ 		for (&key, section) in document.lookup_by_type("wifi-iface") {
+-			let designation = document.section_name(key);
+-
+-			// Example broken config
+-			if designation == Some("guest_iface_2") {
+-				continue;
+-			}
+-
+-			let designation = designation.map(SmolStr::new);
+-			let_assert!(Ok(_) = ApConfig::from_uci(designation, section));
++			let designation = document.section_name(key).map(SmolStr::new);
++			let result = ApConfig::from_uci(designation, section);
++			assert!(result.is_ok() || matches!(result, Err(FromUciError::IncompleteButValid)));
+ 		}
+ 
+ 		Ok(())
+@@ -223,6 +236,7 @@ mod tests {
+ 			config
+ 				== ApConfig {
+ 					designation: Some(SmolStr::new_static(designation)),
++					network:     SmolStr::new_static("lan"),
+ 					active:      true,
+ 					hidden:      false,
+ 					ssid:        SmolStr::new_static("Turris"),
+diff --git a/backend/src/wifi/group.rs b/backend/src/wifi/group.rs
+new file mode 100644
+index 0000000..cc89d39
+--- /dev/null
++++ b/backend/src/wifi/group.rs
+@@ -0,0 +1,143 @@
++use cap_std::AmbientAuthority;
++use rootcause::prelude::*;
++use smol_str::SmolStr;
++
++use crate::uci;
++use crate::wifi::{ApConfig, ToggleError};
++
++/// Check if all accesspoints of a network are on
++pub fn is_on(aps: &[ApConfig], network: &str) -> bool {
++	aps.iter()
++		.filter(|ap| ap.network == network)
++		.all(|ap| ap.active)
++}
++
++#[tracing::instrument(skip(config, ambient_authority))]
++pub async fn toggle(
++	config: &uci::Config<uci::configs::Wireless>,
++	network: &str,
++	enabled: bool,
++	ambient_authority: AmbientAuthority,
++) -> Result<(), Report<ToggleError>> {
++	_ = ambient_authority;
++
++	let value = if !enabled { "1" } else { "0" };
++	let network = SmolStr::new(network);
++	let do_reload = config
++		.update(move |document| {
++			let relevant_sections =
++				document
++					.lookup_by_type_mut("wifi-iface")
++					.filter(move |(_, config)| match config.get("network") {
++						Some(items) => items.iter().any(|n| n == network),
++						None => false,
++					});
++
++			relevant_sections.fold(false, |needs_reload, (_, section)| {
++				let current_would_change = section
++					.get("disabled")
++					.and_then(|opt| opt.try_as_bool().ok())
++					.map(|disabled| disabled == enabled)
++					.unwrap_or(true);
++
++				if current_would_change {
++					if let Err(error) = section.insert("disabled", value.into()) {
++						unreachable!("value is assumed valid: {error:?}");
++					}
++				}
++
++				needs_reload | current_would_change
++			})
++		})
++		.await
++		.context(ToggleError::Commit)?;
++
++	if do_reload {
++		tracing::info!("reloading Wi-Fi configuration");
++		if let Err(error) = tokio::process::Command::new("wifi").arg("reconf").spawn() {
++			tracing::error!(?error, "failed to execute `wifi reconf`");
++		}
++	} else {
++		tracing::debug!("Wi-Fi configuration is already in specified state, skipping reload");
++	}
++
++	Ok(())
++}
++
++#[cfg(test)]
++mod tests {
++	use assert2::check;
++	use cap_std::fs_utf8::Dir;
++	use cap_std::io_lifetimes::FromFd;
++
++	use super::*;
++	use crate::wifi::ApConfigStore;
++
++	fn test_section<'a>(
++		document: &mut ucifer::Document<'a>,
++		name: &'a str,
++		network: &'a str,
++		state: bool,
++	) {
++		let mut section = ucifer::document::Section::default();
++		let state_str = if state { "0" } else { "1" };
++		section
++			.insert("disabled", ucifer::ConfigOption::Scalar(state_str.into()))
++			.unwrap();
++
++		section
++			.insert("network", ucifer::ConfigOption::Scalar(network.into()))
++			.unwrap();
++
++		section
++			.insert("ssid", ucifer::ConfigOption::Scalar(name.into()))
++			.unwrap();
++
++		document.insert("wifi-iface", Some(name), section).unwrap();
++	}
++
++	#[tokio::test]
++	#[ignore]
++	async fn group_toggle() -> Result<(), Report> {
++		// TODO: private mount detection for resolution?
++
++		let mut config_store = ApConfigStore::default();
++		let tempdir = ptmpfs::create(
++			None,
++			ptmpfs::Mode::RWXU,
++			ptmpfs::CreateFlags::empty(),
++			ptmpfs::MountAttrFlags::MOUNT_ATTR_NOSUID
++				| ptmpfs::MountAttrFlags::MOUNT_ATTR_NOEXEC
++				| ptmpfs::MountAttrFlags::MOUNT_ATTR_NODEV,
++		)?;
++
++		let dir = Dir::from_into_fd(tempdir);
++		dir.create("wireless")?;
++
++		let uci = uci::init(dir.try_clone()?, cap_std::ambient_authority()).await?;
++		let wifi = uci.request::<uci::configs::Wireless>().await?;
++
++		wifi.update(|document| {
++			test_section(document, "ap24", "lan", false);
++			test_section(document, "ap5", "lan", false);
++			test_section(document, "cat", "nyan", true);
++		})
++		.await?;
++
++		{
++			let document = wifi.get().await;
++			config_store.update(document.get()).for_each(|_| ());
++			check!(!is_on(config_store.access_points(), "lan"));
++		}
++
++		toggle(&wifi, "lan", true, cap_std::ambient_authority()).await?;
++
++		{
++			let document = wifi.get().await;
++			config_store.update(document.get()).for_each(|_| ());
++			check!(is_on(config_store.access_points(), "lan"));
++		}
++
++		Ok(())
++	}
++}
+diff --git a/backend/src/wifi/mod.rs b/backend/src/wifi/mod.rs
+index 6f8ad19..7d82f7b 100644
+--- a/backend/src/wifi/mod.rs
++++ b/backend/src/wifi/mod.rs
+@@ -39,9 +39,10 @@ use smol_str::SmolStr;
+ 
+ use crate::uci;
+ 
+-pub mod assoc;
++//pub mod assoc;
+ pub mod config;
+-pub mod hostapd;
++pub mod group;
++//pub mod hostapd;
+ 
+ pub use config::{ApConfig, ApConfigStore};
+ 
+diff --git a/backend/test-data/uci-config/wireless b/backend/test-data/uci-config/wireless
+index 36cd5ae..2f0400b 100644
+--- a/backend/test-data/uci-config/wireless
++++ b/backend/test-data/uci-config/wireless
+@@ -1,22 +1,33 @@
+ config "wifi-iface" "default_radio0"
+ 	option "mode" "ap"
+-	option "key" "SuperSecret"
++	option "device" "radio0"
+ 	option "ssid" "Turris"
+-	option "encryption" "sae-mixed"
+-	option "disabled" "0"
++	option "disabled" "1"
++	option "key" "SuperSecret"
+ 	option "network" "lan"
+-	option "device" "radio0"
++	option "encryption" "sae-mixed"
+ config "wifi-iface" "guest_iface_0"
+-	option "ssid" "Turris-Guest-20"
+-	option "disabled" "0"
++	option "ifname" "guest_turris_3"
+ 	option "encryption" "sae-mixed"
+ 	option "key" ":3"
+-	option "wpa_group_rekey" "86400"
++	option "mode" "ap"
+ 	option "isolate" "1"
++	option "device" "radio3"
++	option "ssid" "Turris-Guest-20"
++	option "disabled" "1"
++	option "network" "guest_turris"
++	option "wpa_group_rekey" "86400"
++config "wifi-iface" "guest_iface_1"
++	option "wpa_group_rekey" "86400"
+ 	option "mode" "ap"
++	option "encryption" "sae-mixed"
++	option "ifname" "guest_turris_4"
++	option "key" ":3"
+ 	option "network" "guest_turris"
+-	option "ifname" "guest_turris_3"
+-	option "device" "radio3"
++	option "isolate" "1"
++	option "ssid" "Turris-Guest-6GHz"
++	option "device" "radio4"
++	option "disabled" "1"
+ config "wifi-iface" "guest_iface_2"
+-    option "device" "radio2"
+-    option "disabled" "1"
+\ No newline at end of file
++	option "disabled" "1"
++	option "device" "radio2"
+diff --git a/frontend/src/wifi/associations.rs b/frontend/src/wifi/associations.rs
+new file mode 100644
+index 0000000..7cad32d
+--- /dev/null
++++ b/frontend/src/wifi/associations.rs
+@@ -0,0 +1,361 @@
++use std::cell::RefCell;
++use std::fmt::Display;
++use std::rc::Rc;
++
++use futures_util::{Stream, StreamExt, TryStreamExt};
++use hardware_address::MacAddr;
++use peacockr_backend::hosts::Hostnames;
++use peacockr_backend::hosts::oui::OuiDb;
++use peacockr_backend::reexports::hashbrown::{self, HashMap};
++use peacockr_backend::wifi::{PowerLevel, assoc};
++use rootcause::prelude::*;
++use slint::{ComponentHandle as _, ModelNotify, ModelRc, ToSharedString};
++use smol_str::SmolStr;
++use tokio::sync::mpsc;
++use tokio::task::JoinHandle;
++use uom::si::frequency::kilohertz;
++use uom::si::u64::Frequency;
++
++use crate::api::DynamicHostEvent;
++use crate::{UbusCapability, ui};
++
++pub fn bind(
++	app: &ui::App,
++	ubus: Option<UbusCapability>,
++	oui_db: OuiDb,
++	mut dynamic_hosts_rx: mpsc::Receiver<DynamicHostEvent>,
++) -> Result<(), Report> {
++	let readouts = app.global::<ui::Readouts>();
++
++	let ap_map = Rc::new(RefCell::new(HashMap::new()));
++	let (tx, mut rx) = mpsc::channel(8);
++
++	readouts.on_assoc_subscribe_switch({
++		let ap_map = Rc::clone(&ap_map);
++		let app = app.clone_strong();
++
++		move |ap, class, shall_be_enabled| {
++			let mut map = ap_map.borrow_mut();
++			switch_handle(
++				&app,
++				ubus.as_ref(),
++				&mut map,
++				&tx,
++				ap,
++				class,
++				shall_be_enabled,
++			);
++		}
++	});
++
++	slint::spawn_local(async move {
++		let mut hostnames = Hostnames::default();
++		// TODO: loop termination on all streams exhausted
++
++		loop {
++			tokio::select! {
++				Some((ap, event)) = rx.recv() => {
++					let mut map = ap_map.borrow_mut();
++
++					on_event(&mut map, &oui_db, &hostnames, &ap, event);
++				},
++				Some(event) = dynamic_hosts_rx.recv() => {
++					update_dynamic_hosts(&ap_map.borrow(), &mut hostnames, &oui_db, event);
++				},
++			}
++		}
++	})?;
++
++	Ok(())
++}
++
++fn update_dynamic_hosts(
++	ap_map: &HashMap<SmolStr, Subscription>,
++	hostnames: &mut Hostnames,
++	oui: &OuiDb,
++	event: DynamicHostEvent,
++) {
++	let mac;
++	match event {
++		DynamicHostEvent::New { address, hostname } => {
++			mac = address;
++			if let Some(hostname) = hostname {
++				hostnames.dynamic_acquire(address, &hostname);
++			}
++		}
++		DynamicHostEvent::Remove(address) => {
++			mac = address;
++			hostnames.dynamic_release(address);
++		}
++	}
++
++	let hostname = peacockr_backend::hosts::device_friendly_name(hostnames, oui, mac);
++	for entry in ap_map.values() {
++		entry.model.update(mac, |entry| {
++			entry.hostname = hostname.to_shared_string();
++		});
++	}
++}
++
++fn on_event(
++	map: &mut HashMap<SmolStr, Subscription>,
++	oui_db: &OuiDb,
++	hostnames: &Hostnames,
++	ap: &str,
++	event: assoc::Event,
++) {
++	let Some(subscription) = map.get(ap) else {
++		tracing::warn!("got unsolicited AP event, ignoring");
++		return;
++	};
++
++	match event {
++		assoc::Event::Probe {
++			address,
++			signal,
++			frequency: _,
++		} => {
++			subscription.model.update(address, |assoc| {
++				assoc.signal = signal as _;
++			});
++		}
++		assoc::Event::Assoc {
++			address,
++			target: _,
++			signal,
++			frequency,
++		} => {
++			let hostname =
++				peacockr_backend::hosts::device_friendly_name(hostnames, oui_db, address);
++
++			subscription
++				.model
++				.insert(address, hostname, signal, frequency);
++		}
++		assoc::Event::Disassoc { address } => {
++			subscription.model.remove(address);
++		}
++	}
++}
++
++fn switch_handle(
++	app: &ui::App,
++	ubus: Option<&UbusCapability>,
++	tasks: &mut HashMap<SmolStr, Subscription>,
++	tx: &mpsc::Sender<(SmolStr, assoc::Event)>,
++	ap: slint::SharedString,
++	class: ui::ApClassification,
++	shall_be_enabled: bool,
++) {
++	if shall_be_enabled {
++		let ap = SmolStr::new(ap);
++		let task_entry = tasks.entry(ap.clone());
++		if let hashbrown::hash_map::Entry::Occupied(task_entry) = &task_entry {
++			let entry = task_entry.get();
++			if entry.task_h.is_finished() {
++				tasks.remove(&ap);
++				return;
++			}
++		}
++
++		let tx = tx.clone();
++		let task_h = match ubus {
++			Some(ubus) => {
++				let ubus = ubus.clone();
++				tokio::spawn(async move {
++					let mut buffer = [0; 4096];
++					match for_ubus_hostapd(&mut buffer, &ubus, ap).await {
++						Ok(stream) => pipe_events(stream, tx).await,
++						Err(error) => {
++							tracing::error!(?error, "failed to establish hostapd monitoring")
++						}
++					}
++				})
++			}
++			None => tokio::spawn(pipe_events(mock_events(ap), tx)),
++		};
++
++		let model = Rc::default();
++		task_entry.insert(Subscription {
++			task_h,
++			model: Rc::clone(&model),
++		});
++
++		let readouts = app.global::<ui::Readouts>();
++		match class {
++			ui::ApClassification::Primary => {
++				readouts.set_ap_primary(ui::ApDetails {
++					associations: ModelRc::from(model),
++					..readouts.get_ap_primary()
++				});
++			}
++			ui::ApClassification::Guest => {
++				readouts.set_ap_guest(ui::ApDetails {
++					associations: ModelRc::from(model),
++					..readouts.get_ap_guest()
++				});
++			}
++		}
++	} else {
++		if let Some(entry) = tasks.remove(&ap[..]) {
++			entry.task_h.abort();
++			entry.model.clear();
++		}
++	}
++}
++
++async fn pipe_events<S>(stream: S, tx: mpsc::Sender<(SmolStr, assoc::Event)>)
++where
++	S: Stream<Item = Result<(SmolStr, assoc::Event), Report>>,
++{
++	let mut stream = std::pin::pin!(stream);
++
++	while let Some(event) = stream.next().await {
++		let do_break = match event {
++			Ok(event) => {
++				let result = tx.send(event).await;
++				result.is_err()
++			}
++			Err(error) => {
++				tracing::error!(?error, "monitoring failed");
++				true
++			}
++		};
++
++		if do_break {
++			break;
++		}
++	}
++}
++
++struct Subscription {
++	task_h: JoinHandle<()>,
++	model:  Rc<Model>,
++}
++
++#[derive(Clone)]
++struct AssociationEntry {
++	mac:   MacAddr,
++	inner: ui::Association,
++}
++
++#[derive(Default)]
++struct Model {
++	data:   RefCell<Vec<AssociationEntry>>,
++	notify: ModelNotify,
++}
++
++impl Model {
++	/// Remove all entries and notify
++	fn clear(&self) {
++		self.data.borrow_mut().clear();
++		self.notify.reset();
++	}
++
++	/// Push new entry, overriding if already present
++	fn insert(&self, mac: MacAddr, hostname: impl Display, signal: PowerLevel, _freq: Frequency) {
++		let was_found = self.update(mac, |assoc| {
++			assoc.signal = signal as _;
++		});
++
++		if !was_found {
++			{
++				let mut data = self.data.borrow_mut();
++				data.push(AssociationEntry {
++					mac,
++					inner: ui::Association {
++						eui48:      mac.to_shared_string(),
++						hostname:   hostname.to_shared_string(),
++						link_speed: 0,
++						signal:     signal as _,
++					},
++				});
++			}
++
++			self.notify.row_added(0, 1);
++		}
++	}
++
++	/// Modify entry, returns [`true`] if found, otherwise [`false`]
++	fn update(&self, mac: MacAddr, f: impl FnOnce(&mut ui::Association)) -> bool {
++		let position;
++		{
++			let mut data = self.data.borrow_mut();
++			let Some((index, item)) = data
++				.iter_mut()
++				.enumerate()
++				.find(|(_, item)| item.mac == mac)
++			else {
++				return false;
++			};
++
++			f(&mut item.inner);
++			position = data.len() - index - 1;
++		}
++
++		self.notify.row_changed(position);
++		true
++	}
++
++	/// Remove entry in the store
++	fn remove(&self, mac: MacAddr) {
++		let position;
++		{
++			let mut data = self.data.borrow_mut();
++			let Some(index) = data.iter().position(|item| item.mac == mac) else {
++				return;
++			};
++
++			data.remove(index);
++
++			position = data.len() - index;
++		}
++
++		self.notify.row_removed(position, 1);
++	}
++}
++
++impl slint::Model for Model {
++	type Data = ui::Association;
++
++	fn row_count(&self) -> usize {
++		self.data.borrow().len()
++	}
++
++	fn row_data(&self, row: usize) -> Option<Self::Data> {
++		let data = self.data.borrow();
++		let rev_index = data.len().checked_sub(row + 1)?;
++		let row = data.get(rev_index)?;
++		Some(row.inner.clone())
++	}
++
++	fn model_tracker(&self) -> &dyn slint::ModelTracker {
++		&self.notify
++	}
++}
++
++/// Pekný argument, senátor, prečo to nepodložíte zdrojom? Môj zdroj je, že som
++/// si to vymyslel.
++fn mock_events(ap: SmolStr) -> impl Stream<Item = Result<(SmolStr, assoc::Event), Report>> {
++	let mock = [assoc::Event::Assoc {
++		address:   MacAddr::from_raw([0xD8, 0x58, 0xD7, 0xDD, 0xEE, 0xFF]),
++		target:    MacAddr::new(),
++		signal:    -30,
++		frequency: Frequency::new::<kilohertz>(2400),
++	}];
++
++	futures_util::stream::iter(mock).map(move |event| Ok((ap.clone(), event)))
++}
++
++/// Source events from `hostapd` on uBus socket
++async fn for_ubus_hostapd<'b>(
++	buffer: &'b mut [u8],
++	ubus: &UbusCapability,
++	ap: SmolStr,
++) -> Result<impl Stream<Item = Result<(SmolStr, assoc::Event), Report>> + use<'b>, Report> {
++	let ubus = ubus.connect().await?;
++	let stream = peacockr_backend::wifi::hostapd::events(buffer, ubus, &ap).await?;
++	let tagged = stream.map_ok(move |event| (ap.clone(), event));
++
++	Ok(tagged)
++}
+diff --git a/frontend/src/wifi/mod.rs b/frontend/src/wifi/mod.rs
+index 96941b3..f0d83d9 100644
+--- a/frontend/src/wifi/mod.rs
++++ b/frontend/src/wifi/mod.rs
+@@ -51,26 +51,39 @@ pub async fn bind(
+ 
+ 				readouts.set_ap_guest(ap_details_of_store_by_designator(&store, "guest_iface_0"));
+ 
++				let wifi_state = app.global::<ui::WiFiState>();
++				wifi_state.set_is_lan_on(peacockr_backend::wifi::group::is_on(
++					store.access_points(),
++					"lan",
++				));
++
++				wifi_state.set_is_guest_on(peacockr_backend::wifi::group::is_on(
++					store.access_points(),
++					"guest_turris",
++				));
++
+ 				uci_wifi.wait_updated().await;
+ 			}
+ 		}
+ 	})?;
+ 
+-	let readouts = app.global::<ui::Readouts>();
+-	readouts.on_switch_ap_state(move |designation, enabled| {
+-		if designation.is_empty() {
+-			tracing::debug!("no designation for the interface, ignoring");
+-		}
++	let wifi_state = app.global::<ui::WiFiState>();
++	wifi_state.on_switch_group(move |group, enabled| {
++		let network_name = match group {
++			ui::ApClassification::Primary => "lan",
++			ui::ApClassification::Guest => "guest_turris",
++		};
+ 
+ 		let uci_wifi = uci_wifi.clone();
+ 		slint::spawn_local(async move {
+-			if let Err(error) =
+-				wifi::toggle_access_point(&uci_wifi, &designation, enabled, ambient_authority).await
+-			{
+-				tracing::warn!(?error, "failed to set access point state");
++			let result =
++				wifi::group::toggle(&uci_wifi, network_name, enabled, ambient_authority).await;
++
++			if let Err(error) = result {
++				tracing::error!(?error, "failed to toggle access point state");
+ 			}
+ 		})
+-		.expect("failed to spawn task to set acesspoint state");
++		.expect("failed to spawn task to set accesspoint state");
+ 	});
+ 
+ 	Ok(())
+diff --git a/frontend/test-data/config.kdl b/frontend/test-data/config.kdl
+index 33ad8cc..9fc0864 100644
+--- a/frontend/test-data/config.kdl
++++ b/frontend/test-data/config.kdl
+@@ -2,10 +2,6 @@
+ 
+ platform linux-dev
+ 
+-api {
+-	listen-unix "peacockr-dev.sock"
+-}
+-
+ menu {
+ 	entry {
+ 		title "System Information"
+diff --git a/frontend/ui/app.slint b/frontend/ui/app.slint
+index ef1f990..8903d2f 100644
+--- a/frontend/ui/app.slint
++++ b/frontend/ui/app.slint
+@@ -32,7 +32,7 @@ import { Bandwidth } from "pages/bandwidth.slint";
+ import { Network } from "pages/network.slint";
+ import { Interfaces } from "pages/interfaces.slint";
+ import { SystemInfo, System } from "pages/system.slint";
+-import { WiFi } from "pages/wifi.slint";
++import { WiFi, WiFiState } from "pages/wifi.slint";
+ import { QRDetails } from "pages/qr_details.slint";
+ import { ConnectedClients } from "pages/connected_clients.slint";
+ import { Schnapps, SchnappsBackend } from "pages/schnapps.slint";
+@@ -41,7 +41,7 @@ import { NotificationCategoryView } from "pages/notifications/category-view.slin
+ import { NewNotification } from "pages/notifications/new-notification.slint";
+ import { Readouts } from "./readouts.slint";
+ export { DashboardBackend, SystemInfo, QRBackend, SchnappsBackend }
+-export { State }
++export { State, WiFiState }
+ 
+ export { Readouts, ApDetails, ApClassification } from "readouts.slint";
+ export { NotificationsStore }  from "pages/notifications/common.slint";
+diff --git a/frontend/ui/pages/wifi.slint b/frontend/ui/pages/wifi.slint
+index d2fcbd3..8b3ce21 100644
+--- a/frontend/ui/pages/wifi.slint
++++ b/frontend/ui/pages/wifi.slint
+@@ -33,6 +33,15 @@ import { Control } from "../control.slint";
+ import { Readouts, ApClassification } from "../readouts.slint";
+ import { ConnectedClientsState, ConnectedClientsSelection } from "./connected_clients.slint";
+ 
++import { Association, ApClassification } from "../readouts.slint";
++
++export global WiFiState {
++    in-out property <bool> is-lan-on;
++    in-out property <bool> is-guest-on;
++
++    callback switch-group(group: ApClassification, to: bool);
++}
++
+ export component WiFi inherits Page {
+     private property <int> selected-index: 0;
+ 
+@@ -95,9 +104,9 @@ export component WiFi inherits Page {
+                     
+         } else if (key == Key.Return) {
+             if (root.selected-index == 0) {
+-                Readouts.switch-ap-state(Readouts.ap-primary.ifname, !Readouts.ap-primary.active)
++                WiFiState.switch-group(ApClassification.primary, !WiFiState.is-lan-on);
+             } else if (root.selected-index == 1) {
+-                Readouts.switch-ap-state(Readouts.ap-guest.ifname, !Readouts.ap-guest.active)
++                WiFiState.switch-group(ApClassification.guest, !WiFiState.is-guest-on);
+             }
+         }
+     }
+@@ -153,7 +162,7 @@ export component WiFi inherits Page {
+                             }
+ 
+                             switch1 := Switch {
+-                                checked: Readouts.ap-primary.active;
++                                checked: WiFiState.is-lan-on;
+                             }
+                         }
+ 
+@@ -219,7 +228,7 @@ export component WiFi inherits Page {
+                             }
+ 
+                             switch2 := Switch {
+-                                checked: Readouts.ap-guest.active;
++                                checked: WiFiState.is-guest-on;
+                             }
+                         }
+ 
+-- 
+2.52.0
+
