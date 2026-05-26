@@ -68,7 +68,8 @@ MESON_ARGS+= \
 	-Dkeyfile_default=/etc/root.keys \
 	-Dprefix=/usr \
 	-Dunit_tests=disabled \
-	-Dutils=disabled
+	-Dutils=disabled \
+	-Dmalloc=disabled
 
 # we need to get actual TLS port number from kresd service to write it to config file
 define Package/knot-resolver/preinst
