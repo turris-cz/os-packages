@@ -215,6 +215,12 @@ ifdef(`GO',`
 		"title": "Syncthing",
 		"description": "Application which synchronizes files between two or more computer",
 		"labels": ["community", "storage"]
+	},
+	"adguardhome": {
+		"title": "Adguard Home",
+		"description": "AdGuard Home is a network-based solution for improving protection. Move Knot-resolver on ports 54 and 854, access - user: admin, pass: adminadmin",
+		"url": "https://adguard.com/en/adguard-home/overview.html",
+		"labels": ["advanced", "experimental"]
 	},')
 	"openvpn": {
 		"title": "OpenVPN",

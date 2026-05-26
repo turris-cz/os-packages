@@ -1,0 +1,12 @@
+#!/bin/sh
+
+[ "$INTERFACE" = "lan" ] && [ "$ACTION" = "ifup" ] || exit 0
+
+. /lib/functions/network.sh
+network_get_ipaddr LOCAL_NET lan
+
+if [ -n "$LOCAL_NET" ]; then
+    sed -i "s|address: .*|address: ${LOCAL_NET}:81|" /etc/adguardhome/adguardhome.yaml
+    
+    /etc/init.d/adguardhome restart
+fi

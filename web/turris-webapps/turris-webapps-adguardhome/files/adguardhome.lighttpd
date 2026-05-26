@@ -1,0 +1,2 @@
+# config generates based on UCI settings
+include_shell "sh /usr/libexec/services/adguardhome-dynamic"
