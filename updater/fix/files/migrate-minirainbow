@@ -14,5 +14,4 @@ if ! grep -q 'config led' /etc/config/system; then
 fi
 
 # Remove old version
-rm -f /usr/libexec/minirainbow.sh
 rm -f /etc/config/minirainbow
