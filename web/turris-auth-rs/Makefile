@@ -52,18 +52,17 @@ endef
 
 
 define Package/turris-auth-rs/install
-    $(INSTALL_DIR) $(1)/usr/bin/
-    $(INSTALL_BIN) $(PKG_BUILD_DIR)/target/$(RUSTC_TARGET_ARCH)/release/turris-auth-rs $(1)/usr/bin/turris-auth-rs
+	$(INSTALL_DIR) $(1)/usr/bin/
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/target/$(RUSTC_TARGET_ARCH)/release/turris-auth-rs $(1)/usr/bin/turris-auth-rs
 
-    $(INSTALL_DIR) $(1)/usr/share/turris-auth-rs/templates/
-    $(INSTALL_BIN) $(PKG_BUILD_DIR)/templates/* $(1)/usr/share/turris-auth-rs/templates/
+	$(INSTALL_DIR) $(1)/usr/share/turris-auth-rs/templates/
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/templates/* $(1)/usr/share/turris-auth-rs/templates/
 
-    $(INSTALL_DIR) $(1)/usr/share/turris-auth-rs/locales/
-    $(INSTALL_BIN) $(PKG_BUILD_DIR)/locales/en/main.ftl $(1)/usr/share/turris-auth-rs/locales/
+	$(INSTALL_DIR) $(1)/usr/share/turris-auth-rs/locales/
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/locales/en/main.ftl $(1)/usr/share/turris-auth-rs/locales/
 
-    $(INSTALL_DIR) $(1)/etc/lighttpd/conf.d
-    $(INSTALL_BIN) ./files/lighttpd.conf $(1)/etc/lighttpd/conf.d/50-turris-auth-rs.conf
-
+	$(INSTALL_DIR) $(1)/etc/lighttpd/conf.d
+	$(INSTALL_BIN) ./files/lighttpd.conf $(1)/etc/lighttpd/conf.d/50-turris-auth-rs.conf
 endef
 
 Build/Compile = $(call Build/Compile/Cargo)
@@ -76,31 +75,31 @@ TURRIS_AUTH_RS_TRANSLATIONS:=cs de es fr la nb nl pl ru sk sv
 
 # $1 = translation name
 define TurrisAuthRsTranslation
- define Package/turris-auth-rs-l10n-$(1)
+define Package/turris-auth-rs-l10n-$(1)
    SECTION:=web
    CATEGORY:=Web
    SUBMENU:=reForis
    TITLE:=turris-auth-rs-l10n-$(1)
    DEPENDS:=+turris-auth-rs
    MAINTAINER:=CZ.NIC <packaging@turris.cz>
- endef
-
- define Package/turris-auth-rs-l10n-$(1)/install
-    $$(INSTALL_DIR) $$(1)/usr/share/turris-auth-rs/locales/$(1)
-    $$(CP) $$(PKG_BUILD_DIR)/locales/$(1)/main.ftl $$(1)/usr/share/turris-auth-rs/locales/$(1)
- endef
-
- define Package/reforis-l10n-$(1)/postrm
-#!/bin/sh
-[ -n "$$$${IPKG_INSTROOT}" ] || /etc/init.d/lighttpd restart
- endef
-
- define Package/reforis-l10n-$(1)/postinst
-#!/bin/sh
-[ -n "$$$${IPKG_INSTROOT}" ] || /etc/init.d/lighttpd restart
- endef
-
- $$(eval $$(call BuildPackage,turris-auth-rs-l10n-$(1)))
 endef
 
- $(foreach trans,$(TURRIS_AUTH_RS_TRANSLATIONS),$(eval$(call TurrisAuthRsTranslation,$(trans))))
+define Package/turris-auth-rs-l10n-$(1)/install
+	$$(INSTALL_DIR) $$(1)/usr/share/turris-auth-rs/locales/$(1)
+	$$(CP) $$(PKG_BUILD_DIR)/locales/$(1)/main.ftl $$(1)/usr/share/turris-auth-rs/locales/$(1)
+endef
+
+define Package/reforis-l10n-$(1)/postrm
+#!/bin/sh
+[ -n "$$$${IPKG_INSTROOT}" ] || /etc/init.d/lighttpd restart
+endef
+
+define Package/reforis-l10n-$(1)/postinst
+#!/bin/sh
+[ -n "$$$${IPKG_INSTROOT}" ] || /etc/init.d/lighttpd restart
+endef
+
+$$(eval $$(call BuildPackage,turris-auth-rs-l10n-$(1)))
+endef
+
+$(foreach trans,$(TURRIS_AUTH_RS_TRANSLATIONS),$(eval $(call TurrisAuthRsTranslation,$(trans))))
