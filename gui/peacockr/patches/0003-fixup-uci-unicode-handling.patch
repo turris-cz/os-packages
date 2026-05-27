@@ -1,0 +1,25 @@
+From ad47679835db35277aff221a9c97900c9e1f73a0 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Erin=20Kalouskov=C3=A1?= <erin.kalouskova@nic.cz>
+Date: Wed, 6 May 2026 12:51:07 +0200
+Subject: [PATCH] fixup: uci unicode handling
+
+---
+ backend/Cargo.toml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/backend/Cargo.toml b/backend/Cargo.toml
+index 56d7938..82b32eb 100644
+--- a/backend/Cargo.toml
++++ b/backend/Cargo.toml
+@@ -37,7 +37,7 @@ arrayvec           = "0.7"
+ hashbrown          = "0.16"
+ idhasher           = { git = "https://gitlab.nic.cz/ekalouskova/idhasher.git" }
+ smol_str           = "0.3"
+-ucifer             = "0.5.0-rc.2"
++ucifer             = { tag = "v0.5.0-rc.3", git = "https://gitlab.nic.cz/turris/ucifer.git" }
+ 
+ # System APIs
+ cap-std            = { version = "3"  , features = ["fs_utf8"] }
+-- 
+2.54.0
+

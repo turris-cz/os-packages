@@ -24,6 +24,8 @@ PKG_BUILD_DEPENDS:=rust/host
 PKG_BUILD_DIR:=$(BUILD_DIR)/peacockr-$(PKG_VERSION)
 PKG_BUILD_PARALLEL:=1
 
+export CARGO_NET_GIT_FETCH_WITH_CLI:=true
+
 include $(INCLUDE_DIR)/package.mk
 include $(TOPDIR)/feeds/packages/lang/rust/rust-package.mk
 
