@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Add LEDs to board.json
-CFG=/etc/board.json . /etc/board.d/01_leds
+(CFG=/etc/board.json . /etc/board.d/01_leds)
 
 # Regenerate LED config if not user-modified
 if ! grep -q 'config led' /etc/config/system; then
