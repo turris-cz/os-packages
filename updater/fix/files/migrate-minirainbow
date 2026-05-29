@@ -13,4 +13,4 @@ if ! grep -q 'config led' /etc/config/system; then
 fi
 
 # Remove old config
-rm -f /etc/config/minirainbow
+rm -f /etc/config/rainbow
