@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2015-2025 CZ.NIC, z. s. p. o. (https://www.nic.cz/)
+# Copyright (C) 2015-2026 CZ.NIC, z. s. p. o. (https://www.nic.cz/)
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -10,12 +10,12 @@ PKG_RELRO_FULL:=0
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=knot-resolver6
-PKG_VERSION:=6.1.0
-PKG_RELEASE:=3
+PKG_VERSION:=6.3.0
+PKG_RELEASE:=1
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/knot/knot-resolver.git
-PKG_MIRROR_HASH:=91ae91bc80b8a8d10b0826a9210d183224fcf64d6d07cb0b28c85b1351a85627
+PKG_MIRROR_HASH:=2346790e0ca9120b8bc4b314a47853f99c7b20b366162a9fb99c41c527dfd47c
 PKG_SOURCE_VERSION:=v${PKG_VERSION}
 
 PKG_MAINTAINER:=Knot Resolver <knot-resolver@labs.nic.cz>
