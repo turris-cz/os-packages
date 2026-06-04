@@ -13,7 +13,7 @@ PKG_RELEASE:=1
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/foris-controller/foris-controller-tailscale-module.git
-PKG_MIRROR_HASH:=ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+PKG_MIRROR_HASH:=e7bc9b574f3d2f90af286932d5f60387ddbece3a52eb66d41f13d14bbaf7c3fb
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
