@@ -16,6 +16,18 @@ define ForisControllerModule
 		$(INSTALL_DIR) $$(1)/usr/bin ; \
 		$(CP) $(PKG_INSTALL_DIR)/usr/bin/* $$(1)/usr/bin/ ; \
 	fi
+
+	# TODO remove this and
+	# -|$(PYTHON3_PKG_DIR)/foris_controller_modules/__init__.py
+	# -|$(PYTHON3_PKG_DIR)/foris_controller_backends/__init__.py
+	# from filespec when all foris-controller modules
+	# doesn't contain foris_controller_modules/__init__.py
+	# and foris_controller_backends/__init__.py files
+	$(INSTALL_DIR) $(PKG_INSTALL_DIR)$(PYTHON3_PKG_DIR)/foris_controller_modules
+	$(INSTALL_DIR) $(PKG_INSTALL_DIR)$(PYTHON3_PKG_DIR)/foris_controller_backends
+	touch $(PKG_INSTALL_DIR)$(PYTHON3_PKG_DIR)/foris_controller_modules/__init__.py
+	touch $(PKG_INSTALL_DIR)$(PYTHON3_PKG_DIR)/foris_controller_backends/__init__.py
+
 	$$(call ForisControllerModule/$(1)/install,$$(1))
  endef
 
