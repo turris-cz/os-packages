@@ -85,6 +85,7 @@ define Build/Configure
 	$(MAKE) -C "$(PKG_BUILD_DIR)/busybox" $(PKG_JOBS) $(MAKE_FLAGS) oldconfig
 	sed -i \
 		-e 's|./Image|$(LINUX_DIR)/arch/$(LINUX_KARCH)/boot/Image|' \
+		-e 's|./zImage|$(LINUX_DIR)/arch/$(LINUX_KARCH)/boot/zImage|' \
 		-e 's|./dts|$(LINUX_DIR)/arch/$(LINUX_KARCH)/boot/dts|' \
 		-e 's|./initrd|$(PKG_BUILD_DIR)/initrd.gz|' \
 		"$(PKG_BUILD_DIR)/rescue.its"
