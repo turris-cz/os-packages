@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=unbound
-PKG_VERSION:=1.19.3
+PKG_VERSION:=1.25.1
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://nlnetlabs.nl/downloads/unbound/
-PKG_HASH:=3ae322be7dc2f831603e4b0391435533ad5861c2322e34a76006a9fb65eb56b9
+PKG_HASH:=0fe8b6277b0959cfd17562debac0aa5f71e0b02dc4ffa9c60271c583edab586f
 
 PKG_BUILD_PARALLEL:=1
 PKG_FIXUP:=autoreconf
