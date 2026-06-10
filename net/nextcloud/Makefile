@@ -120,5 +120,33 @@ chown nobody:nogroup "$$IPKG_INSTROOT"/usr/bin/nextcloud-cron.sh
 chmod 755 /etc/updater/hook_postupdate/91_nextcloud.sh
 endef
 
+define Package/$(PKG_NAME)/prerm
+#!/bin/sh
+# remove the nextcloud db and db user
+# happens prior to removal cause removal of mariadb happens in many cases as well
+# check if we are on real system
+if [ -z "$$IPKG_INSTROOT" ]; then
+	[ "$$1" = "remove" ] || exit 0
+	mariadb <<'SQL'
+	DROP DATABASE IF EXISTS nextcloud;
+	DROP USER IF EXISTS 'nextcloud'@'localhost';
+	DROP USER IF EXISTS 'nextcloud'@'127.0.0.1';
+	SQL
+fi
+exit 0
+endef
+
+define Package/$(PKG_NAME)/postrm
+#!/bin/sh
+# remove all nextcloud files except data/
+# check if we are on real system
+if [ -z "$$IPKG_INSTROOT" ]; then
+	[ "$$1" = "remove" ] || exit 0
+	find /srv/www/nextcloud -mindepth 1 -maxdepth 1 \
+		! -name data -exec rm -rf {} +
+fi
+exit 0
+endef
+
 $(eval $(call BuildPackage,nextcloud))
 $(eval $(call BuildPackage,nextcloud-install))
