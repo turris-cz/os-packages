@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=turris-auth-rs
-PKG_VERSION:=0.1.1
+PKG_VERSION:=0.2.0
 PKG_RELEASE:=1
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/reforis/turris-auth-rs.git
-PKG_HASH:=32dabf6d1807791b576d4da2b1c1c7ceacf41773
+PKG_MIRROR_HASH:=cd1e3296d056339967657007bfe64dcd95e43f97f0146f48aa4cead8243c0be4
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
@@ -58,8 +58,8 @@ define Package/turris-auth-rs/install
 	$(INSTALL_DIR) $(1)/usr/share/turris-auth-rs/templates/
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/templates/* $(1)/usr/share/turris-auth-rs/templates/
 
-	$(INSTALL_DIR) $(1)/usr/share/turris-auth-rs/locales/
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/locales/en/main.ftl $(1)/usr/share/turris-auth-rs/locales/
+	$(INSTALL_DIR) $(1)/usr/share/turris-auth-rs/locales/en/
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/locales/en/main.ftl $(1)/usr/share/turris-auth-rs/locales/en/
 
 	$(INSTALL_DIR) $(1)/etc/lighttpd/conf.d
 	$(INSTALL_BIN) ./files/lighttpd.conf $(1)/etc/lighttpd/conf.d/50-turris-auth-rs.conf
