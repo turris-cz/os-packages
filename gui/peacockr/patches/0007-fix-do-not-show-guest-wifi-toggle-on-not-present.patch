@@ -1,0 +1,91 @@
+From b6f2687cfeccf1ab9221ad21df176a8573b71c47 Mon Sep 17 00:00:00 2001
+From: EKatWired <ekat+patch@yuri.diy>
+Date: Fri, 12 Jun 2026 14:29:38 +0200
+Subject: [PATCH] fix: do not show guest wifi toggle on not-present
+
+---
+ frontend/src/wifi/mod.rs          | 1 +
+ frontend/ui/pages/dashboard.slint | 2 +-
+ frontend/ui/pages/qr.slint        | 9 +++++++++
+ frontend/ui/pages/wifi.slint      | 2 ++
+ frontend/ui/readouts.slint        | 1 +
+ 5 files changed, 14 insertions(+), 1 deletion(-)
+
+diff --git a/frontend/src/wifi/mod.rs b/frontend/src/wifi/mod.rs
+index f0d83d9..b86ca22 100644
+--- a/frontend/src/wifi/mod.rs
++++ b/frontend/src/wifi/mod.rs
+@@ -142,6 +142,7 @@ fn ap_config_to_ui(config: &wifi::ApConfig) -> Result<ui::ApDetails, Report> {
+ 		.map_or(SharedString::default(), |s| s.to_shared_string());
+ 
+ 	Ok(ui::ApDetails {
++		present: true,
+ 		active: config.active,
+ 		associations: Default::default(),
+ 		ifname,
+diff --git a/frontend/ui/pages/dashboard.slint b/frontend/ui/pages/dashboard.slint
+index 901b197..3083735 100644
+--- a/frontend/ui/pages/dashboard.slint
++++ b/frontend/ui/pages/dashboard.slint
+@@ -88,7 +88,7 @@ export component Dashboard inherits Page {
+     function navigate(key: string) {
+         if (key == Key.RightArrow && State.current-page == Page.qr-details) {
+             State.current-page = Page.qr;
+-        } else if (key == Key.LeftArrow && State.current-page == Page.qr) {
++        } else if (key == Key.LeftArrow && State.current-page == Page.qr && (!Readouts.initial-setup-finished || Readouts.ap-guest.present)) {
+             State.current-page = Page.qr-details;
+         } else if (key == Key.LeftArrow && State.current-page == Page.dashboard) {
+             State.current-page = Page.notifications;
+diff --git a/frontend/ui/pages/qr.slint b/frontend/ui/pages/qr.slint
+index be7e7b7..681cb73 100644
+--- a/frontend/ui/pages/qr.slint
++++ b/frontend/ui/pages/qr.slint
+@@ -63,4 +63,13 @@ export component QR inherits Page {
+             }
+         }
+     }
++    
++    if Readouts.initial-setup-finished && !Readouts.ap-guest.present: Rectangle {
++        Text {
++            text: @tr("Set up a guest access point in reForis in order to display the QR code for it.");
++            width: 220px;
++            wrap: word-wrap;
++            horizontal-alignment: center;
++        }
++    }
+ }
+diff --git a/frontend/ui/pages/wifi.slint b/frontend/ui/pages/wifi.slint
+index 8b3ce21..ac281e9 100644
+--- a/frontend/ui/pages/wifi.slint
++++ b/frontend/ui/pages/wifi.slint
+@@ -134,6 +134,7 @@ export component WiFi inherits Page {
+                     drop-shadow-offset-y: 2px;
+                     drop-shadow-blur: 8px;
+                     drop-shadow-color: rgba(0, 0, 0, 0.25);
++                    visible: Readouts.ap-primary.present;
+ 
+                     states [
+                         selected when root.selected-index == 0: {
+@@ -200,6 +201,7 @@ export component WiFi inherits Page {
+                     drop-shadow-offset-y: 2px;
+                     drop-shadow-blur: 8px;
+                     drop-shadow-color: rgba(0, 0, 0, 0.25);
++                    visible: Readouts.ap-guest.present;
+ 
+                     states [
+                         selected when root.selected-index == 1: {
+diff --git a/frontend/ui/readouts.slint b/frontend/ui/readouts.slint
+index 9706145..6651382 100644
+--- a/frontend/ui/readouts.slint
++++ b/frontend/ui/readouts.slint
+@@ -29,6 +29,7 @@ export struct Association {
+ }
+ 
+ export struct ApDetails {
++	present: bool,
+ 	active : bool,
+ 	ssid   : string,
+ 	psk    : string,
+-- 
+2.54.0
+
