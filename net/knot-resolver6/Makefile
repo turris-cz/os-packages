@@ -10,12 +10,12 @@ PKG_RELRO_FULL:=0
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=knot-resolver6
-PKG_VERSION:=6.1.0
-PKG_RELEASE:=3
+PKG_VERSION:=6.3.0
+PKG_RELEASE:=1
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/knot/knot-resolver.git
-PKG_MIRROR_HASH:=91ae91bc80b8a8d10b0826a9210d183224fcf64d6d07cb0b28c85b1351a85627
+PKG_MIRROR_HASH:=2346790e0ca9120b8bc4b314a47853f99c7b20b366162a9fb99c41c527dfd47c
 PKG_SOURCE_VERSION:=v${PKG_VERSION}
 
 PKG_MAINTAINER:=Knot Resolver <knot-resolver@labs.nic.cz>
@@ -39,6 +39,24 @@ define Package/knot-resolver6
   CATEGORY:=Network
   SUBMENU:=IP Addresses and Names
   TITLE:=Knot Resolver
+  PROVIDES:=dns-resolver
+  URL:=https://www.knot-resolver.cz
+  CONFLICTS:=knot-resolver
+  DEPENDS:=\
+    +knot-resolver6-core \
+    +knot-resolver6-init
+endef
+
+define Package/knot-resolver6/description
+  Default Knot Resolver package.
+  Pulls in the resolver core and the default init/backend implementation.
+endef
+
+define Package/knot-resolver6-core
+  SECTION:=net
+  CATEGORY:=Network
+  SUBMENU:=IP Addresses and Names
+  TITLE:=Knot Resolver core package
   URL:=https://www.knot-resolver.cz
   CONFLICTS:=knot-resolver
   DEPENDS:=\
@@ -56,17 +74,18 @@ define Package/knot-resolver6
   USERID:=kresd=3536:kresd=3536
 endef
 
-define Package/knot-resolver6/description
+define Package/knot-resolver6-core/description
   The Knot Resolver is a caching full resolver
   implementation, including both a resolver library and a daemon.
 endef
 
+
 define Package/knot-resolver6-managerless
   TITLE:=Obsolete Knot DNS Resolver setup
-  PROVIDES:=dns-resolver
+  PROVIDES:=knot-resolver6-init
   CONFLICTS:=knot-resolver6-manager
   DEPENDS:=\
-    +knot-resolver6
+    +knot-resolver6-core
 endef
 
 define Package/knot-resolver6-managerless/description
@@ -76,9 +95,10 @@ endef
 
 define Package/knot-resolver6-manager
   TITLE:=Knot DNS Resolver manager
-  PROVIDES:=dns-resolver
+  PROVIDES:=knot-resolver6-init
+  CONFLICTS:=knot-resolver6-managerless
   DEPENDS:=\
-    +knot-resolver6 \
+    +knot-resolver6-core \
     +python3-aiohttp \
     +python3-light \
     +python3-supervisor \
@@ -94,7 +114,7 @@ define Package/knot-resolver6-manager/description
   Management tool for Knot Resolver.
 endef
 
-define Package/knot-resolver6/config
+define Package/knot-resolver6-core/config
 	source "$(SOURCE)/Config.in"
 endef
 
@@ -112,6 +132,10 @@ MESON_ARGS+= \
 	-Dutils=enabled
 
 define Package/knot-resolver6/install
+	true
+endef
+
+define Package/knot-resolver6-core/install
 	$(INSTALL_DIR) $(1)/usr/sbin
 	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/sbin/kresd $(1)/usr/sbin/
 	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/sbin/kres-cache-gc $(1)/usr/sbin/
@@ -237,6 +261,7 @@ fi
 endef
 
 $(eval $(call BuildPackage,knot-resolver6))
+$(eval $(call BuildPackage,knot-resolver6-core))
+$(eval $(call BuildPackage,knot-resolver6-managerless))
 $(eval $(call Py3Package,knot-resolver6-manager))
 $(eval $(call BuildPackage,knot-resolver6-manager))
-$(eval $(call BuildPackage,knot-resolver6-managerless))

@@ -1,12 +1,10 @@
 This is just workaround. It should be removed after proper fixing in upstream.
 Patch fixes problem with lmdb pkg confing. It also adds workaround for get_option
 which is now not propagated in OpenWrt meson host package.
-Index: knot-resolver6-6.0.14/meson.build
-===================================================================
---- knot-resolver6-6.0.14.orig/meson.build
-+++ knot-resolver6-6.0.14/meson.build
-@@ -23,10 +23,7 @@ libknot = dependency('libknot', version:
- libdnssec = dependency('libdnssec', version: knot_version)
+--- a/meson.build
++++ b/meson.build
+@@ -27,10 +27,7 @@ else
+ endif
  libzscanner = dependency('libzscanner', version: knot_version)
  libuv = dependency('libuv', version: '>=1.27')  # need uv_udp_connect()
 -lmdb = dependency('lmdb', required: false)
@@ -14,6 +12,6 @@ Index: knot-resolver6-6.0.14/meson.build
 -  lmdb = meson.get_compiler('c').find_library('lmdb')
 -endif
 +lmdb = meson.get_compiler('c').find_library('lmdb')
- gnutls = dependency('gnutls', version: '>=3.4')
+ gnutls = dependency('gnutls', version: '>=3.4', required: true)
  luajit = dependency('luajit')
  # https://mesonbuild.com/howtox.html#add-math-library-lm-portably
