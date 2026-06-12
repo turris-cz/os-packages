@@ -126,7 +126,7 @@ define Package/$(PKG_NAME)/prerm
 # happens prior to removal cause removal of mariadb happens in many cases as well
 # check if we are on real system
 if [ -z "$$IPKG_INSTROOT" ]; then
-	[ "$$1" = "remove" ] || exit 0
+	[ "$${PKG_UPGRADE}" = 0 ] || exit 0
 	mariadb <<'SQL'
 	DROP DATABASE IF EXISTS nextcloud;
 	DROP USER IF EXISTS 'nextcloud'@'localhost';
@@ -141,7 +141,7 @@ define Package/$(PKG_NAME)/postrm
 # remove all nextcloud files except data/
 # check if we are on real system
 if [ -z "$$IPKG_INSTROOT" ]; then
-	[ "$$1" = "remove" ] || exit 0
+	[ "$${PKG_UPGRADE}" = 0 ] || exit 0
 	find /srv/www/nextcloud -mindepth 1 -maxdepth 1 \
 		! -name data -exec rm -rf {} +
 fi
