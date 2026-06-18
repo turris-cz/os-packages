@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=turris-auth-rs
 PKG_VERSION:=0.2.0
-PKG_RELEASE:=1
+PKG_RELEASE:=2
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/reforis/turris-auth-rs.git
@@ -63,6 +63,19 @@ define Package/turris-auth-rs/install
 
 	$(INSTALL_DIR) $(1)/etc/lighttpd/conf.d
 	$(INSTALL_BIN) ./files/lighttpd.conf $(1)/etc/lighttpd/conf.d/50-turris-auth-rs.conf
+endef
+
+define Package/turris-auth-rs/postinst
+#!/bin/sh
+[ -n "$$IPKG_INSTROOT" ] || {
+	/etc/init.d/lighttpd enable
+	/usr/bin/maintain-lighttpd-restart
+}
+endef
+
+define Package/turris-auth-rs/prerm
+#!/bin/sh
+[ -n "$$IPKG_INSTROOT" ] || /usr/bin/maintain-lighttpd-restart
 endef
 
 Build/Compile = $(call Build/Compile/Cargo)
