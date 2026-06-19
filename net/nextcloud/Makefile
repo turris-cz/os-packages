@@ -131,8 +131,8 @@ if [ -z "$$IPKG_INSTROOT" ]; then
 	DROP DATABASE IF EXISTS nextcloud;
 	DROP USER IF EXISTS 'nextcloud'@'localhost';
 	DROP USER IF EXISTS 'nextcloud'@'127.0.0.1';
-	SQL
-fi
+SQL
+	fi
 exit 0
 endef
 
