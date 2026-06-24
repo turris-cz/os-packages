@@ -20,11 +20,11 @@ PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)
 ROOTFS_INSTALL:=libgcc libc kernel \
 				kmod-crypto-hash kmod-crypto-crc32c kmod-lib-crc32c kmod-crypto-acompress kmod-lib-lzo kmod-lib-zlib-inflate kmod-lib-zlib-deflate \
 				kmod-lib-raid6 kmod-lib-xor kmod-lib-xxhash kmod-lib-zstd kmod-crypto-blake2b kmod-crypto-xxhash kmod-fs-btrfs \
-				libubox mtd libpthread librt libattr libuuid zlib libblkid liblzo libmount uboot-envtools \
-				btrfs-progs libsmartcols mount-utils schnapps dropbear usign cert-backup-btrfs cert-backup cznic-repo-keys libopenssl libpcre2 wget-ssl libhavege haveged \
+				libubox mtd libpthread librt libattr libuuid zlib libblkid liblzo libmount uboot-envtools libnghttp2 \
+				btrfs-progs libsmartcols mount-utils schnapps dropbear usign cert-backup-btrfs cert-backup cznic-repo-keys libpcre2 haveged \
 				kmod-nls-base kmod-usb-core kmod-scsi-core kmod-usb-storage kmod-usb-storage-extras kmod-usb-storage-uas \
 				kmod-fs-exfat kmod-lib-crc16 kmod-fs-ext4 kmod-nls-cp437 kmod-nls-iso8859-1 kmod-nls-utf8 kmod-fs-vfat
-PKG_BUILD_DEPENDS:=opkg/host mtd btrfs-progs schnapps wget cznic-repo-keys usign dropbear haveged uboot-tools kernel
+PKG_BUILD_DEPENDS:=opkg/host mtd btrfs-progs schnapps cznic-repo-keys usign dropbear haveged uboot-tools kernel pcre2
 
 include $(INCLUDE_DIR)/target.mk
 include $(INCLUDE_DIR)/kernel.mk
@@ -70,6 +70,8 @@ define Build/Prepare
 	$(INSTALL_BIN) ./files/board_helpers.sh "$(PKG_BUILD_DIR)/rootfs/lib/board_helpers.sh"
 	$(INSTALL_BIN) ./files/rescue.sh "$(PKG_BUILD_DIR)/rootfs/init"
 	$(INSTALL_BIN) ./files/$(DEVICE).sh "$(PKG_BUILD_DIR)/rootfs/lib/board.sh"
+	# $(INSTALL_DIR) "$(PKG_BUILD_DIR)/rootfs/lib/modules/$(LINUX_VERSION)"
+	# $(INSTALL_DATA) "$(LINUX_DIR)/modules.builtin" "$(PKG_BUILD_DIR)/rootfs/lib/modules/$(LINUX_VERSION)/"
 	$(HOST_TAR) -C $(PKG_BUILD_DIR)/busybox --strip-components=1 -xjf $(DL_DIR)/$(PKG_SOURCE)
 	mkdir -p "$(PKG_BUILD_DIR)"/rootfs//usr/share/udhcpc
 	cp "$(PKG_BUILD_DIR)"/busybox/examples/udhcp/simple.script "$(PKG_BUILD_DIR)"/rootfs//usr/share/udhcpc/default.script
@@ -102,7 +104,7 @@ define Build/Compile
 	echo -e "Package: tar\nVersion: 1.35-r1\nDepends: libc\nStatus: install user installed\nArchitecture: $(PKGARCH)\nInstalled-Time: 0\n\n" > "$(PKG_BUILD_DIR)/rootfs/usr/lib/opkg"/status
 	touch "$(PKG_BUILD_DIR)"/rootfs/usr/lib/opkg/info/tar.list
 	for pkg in $(ROOTFS_INSTALL); do\
-		PKG_FILE="$$$${pkg}_*_$(PKGARCH).ipk"; \
+		PKG_FILE="$$$${pkg}_*.ipk"; \
 		PKG="`find $(OUTPUT_DIR) -name "$$$$PKG_FILE" -print`"; \
 		[ -n "$$$$PKG" ] || { echo "$$$$PKG_FILE is missing!"; exit 1; }; \
 		$(STAGING_DIR_HOST)/bin/opkg --offline-root "$(PKG_BUILD_DIR)/rootfs" --force-depends install --force-depends "$$$$PKG" ;\

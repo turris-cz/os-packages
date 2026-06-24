@@ -48,7 +48,14 @@ uuid2part() {
         retry="$(expr "$retry" - 1)"
     done
     echo "$part"
-} 
+}
+
+rescue_wget() {
+    for i in $(seq 1 3); do
+        wget $@ && return
+    done
+    return $?
+}
 
 override_root() {
     if [ -n "$(fw_printenv root_uuid 2> /dev/null)" ]; then
@@ -117,8 +124,8 @@ download_medkit() {
         # Download medkit and signature
         for ext in tar.gz tar.gz.sig; do
             local i=0
-            # We are checking signature, so we don't care about https certificate
-            while ! wget -T 3 --no-check-certificate -O /mnt/src/medkit.$ext https://repo.turris.cz/hbs/medkit/${BOARD}-medkit${MDKT_VARIANT}-latest.$ext; do
+            # We are checking signature, so we don't care about https
+            while ! rescue_wget -O /mnt/src/medkit.$ext http://repo.turris.cz/hbs/medkit/${BOARD}-medkit${MDKT_VARIANT}-latest.$ext; do
                 echo "Can't download $BOARD-medkit-latest.$ext :-("
                 sleep 2
                 i="$(expr "$i" + 1)"
@@ -126,7 +133,7 @@ download_medkit() {
             done
             i=0
             if [ -n "$NOR_UPDATE" ]; then
-                while ! wget -T 3 --no-check-certificate -O /mnt/src/nor.$ext https://repo.turris.cz/hbs/medkit/${BOARD}-nor-latest.$ext; do
+                while ! rescue_wget -O /mnt/src/nor.$ext http://repo.turris.cz/hbs/medkit/${BOARD}-nor-latest.$ext; do
                     echo "Can't download $BOARD-nor-latest.$ext :-("
                     sleep 2
                     i="$(expr "$i" + 1)"
