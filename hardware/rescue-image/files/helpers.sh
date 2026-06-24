@@ -225,6 +225,7 @@ EOF
         mount "$TARGET_PART" "$trg_mnt_pth" || die 3 "Can't mount the partition"
         btrfs subvolume create "$trg_mnt_pth"/@ >> /tmp/debug.txt 2>&1 || die 3 "Can't create a subvolume"
         ln -s @/boot/boot.scr "$trg_mnt_pth"/boot.scr
+        mkdir -p "$trg_mnt_pth"/@/etc/schnapps/
         echo "ROOT_DEV='${TARGET_PART}'" >> "$trg_mnt_pth"/@/etc/schnapps/config
         umount "$trg_mnt_pth"
         mount "$TARGET_PART" -o subvol=@ "$trg_mnt_pth"
@@ -328,7 +329,7 @@ init() {
     mkdir /dev/pts
     mount -t devpts devpts /dev/pts
 
-    board_preinit
+    board_pre_init
 
     ip addr add 127.0.0.1/8 dev lo
     ip link set up dev lo
