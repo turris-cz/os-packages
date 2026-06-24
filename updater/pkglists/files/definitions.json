@@ -216,6 +216,10 @@ ifdef(`GO',`
 		"description": "Application which synchronizes files between two or more computer",
 		"labels": ["community", "storage"]
 	},
+	"tailscale": {
+		"title": "Tailscale",
+		"description": "Tailscale is a zero-config mesh VPN built on the WireGuard protocol."
+	},
 	"adguardhome": {
 		"title": "Adguard Home",
 		"description": "AdGuard Home is a network-based solution for improving protection. Move Knot-resolver on ports 54 and 854, access - user: admin, pass: adminadmin",
