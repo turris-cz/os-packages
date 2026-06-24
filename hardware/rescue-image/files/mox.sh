@@ -5,7 +5,7 @@
 handle_reset() {
     while sleep 0.2; do
         pressed=0
-        while [ "$(cat /sys/class/gpio/gpio466/value)" -eq 0 ]; do
+        while [ "$(cat /sys/class/gpio/gpio568/value)" -eq 0 ]; do
             sleep 0.1
             pressed="$(expr "$pressed" + 1)"
             [ "$pressed" -gt 20 ] || continue
@@ -17,12 +17,12 @@ handle_reset() {
 
 board_init() {
     generic_pre_init
-    echo 466 > /sys/class/gpio/export
-    echo in > /sys/class/gpio/gpio466/direction
-    echo default-on > /sys/class/leds/red/trigger
+    echo 568 > /sys/class/gpio/export
+    echo in > /sys/class/gpio/gpio568/direction
+    echo default-on > /sys/class/leds/mox:red:activity/trigger
     mkdir -p /etc
     echo '/dev/mtd2 0 0x00010000' > /etc/fw_env.config
-    BUTTON_STATE="$(cat /sys/class/gpio/gpio466/value)"
+    BUTTON_STATE="$(cat /sys/class/gpio/gpio568/value)"
     TARGET_DRIVE="/dev/mmcblk1"
     PART_NO="1"
     TARGET_PART="${TARGET_DRIVE}p${PART_NO}"
@@ -33,7 +33,7 @@ board_init() {
 }
 
 check_for_mode_change() {
-    new_btn_state="$(cat /sys/class/gpio/gpio466/value)"
+    new_btn_state="$(cat /sys/class/gpio/gpio568/value)"
     chk_ret=1
     if [ "$new_btn_state" -eq 0 ] && [ "$new_btn_state" -ne "$BUTTON_STATE" ]; then
         chk_ret=0
@@ -43,21 +43,21 @@ check_for_mode_change() {
 }
 
 display_mode() {
-    echo none > /sys/class/leds/red/trigger
+    echo none > /sys/class/leds/mox:red:activity/trigger
     sleep 0.5
     for i in $(seq 1 "$MODE"); do
         sleep 0.2
-        echo default-on > /sys/class/leds/red/trigger
+        echo default-on > /sys/class/leds/mox:red:activity/trigger
         sleep 0.2
-        echo none > /sys/class/leds/red/trigger
+        echo none > /sys/class/leds/mox:red:activity/trigger
     done
     sleep 0.5
-    echo default-on > /sys/class/leds/red/trigger
+    echo default-on > /sys/class/leds/mox:red:activity/trigger
 }
 
 busy() {
-    echo timer > /sys/class/leds/red/trigger
-    while sleep 0.5; do [ "$(cat /sys/class/gpio/gpio466/value)" -eq 1 ] || reboot; done &
+    echo timer > /sys/class/leds/mox:red:activity/trigger
+    while sleep 0.5; do [ "$(cat /sys/class/gpio/gpio568/value)" -eq 1 ] || reboot; done &
 }
 
 die() {
@@ -66,9 +66,9 @@ die() {
         sleep 0.3
         for i in $(seq 1 "$ret_code"); do
             sleep 0.2
-            echo default-on > /sys/class/leds/red/trigger
+            echo default-on > /sys/class/leds/mox:red:activity/trigger
             sleep 0.2
-            echo none > /sys/class/leds/red/trigger
+            echo none > /sys/class/leds/mox:red:activity/trigger
         done
         sleep 1.5
     done
