@@ -1,6 +1,6 @@
 #!/bin/sh
 
-board_preinit() {
+board_pre_init() {
     {
     while [ ! -e /dev/fb0 ]; do
         sleep 0.2;

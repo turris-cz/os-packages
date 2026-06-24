@@ -50,13 +50,6 @@ uuid2part() {
     echo "$part"
 }
 
-rescue_wget() {
-    for i in $(seq 1 3); do
-        wget $@ && return
-    done
-    return $?
-}
-
 override_root() {
     if [ -n "$(fw_printenv root_uuid 2> /dev/null)" ]; then
         UUID="$(fw_printenv root_uuid | sed 's|root_uuid=||')"
@@ -125,7 +118,7 @@ download_medkit() {
         for ext in tar.gz tar.gz.sig; do
             local i=0
             # We are checking signature, so we don't care about https
-            while ! rescue_wget -O /mnt/src/medkit.$ext http://repo.turris.cz/hbs/medkit/${BOARD}-medkit${MDKT_VARIANT}-latest.$ext; do
+            while ! wget -O /mnt/src/medkit.$ext http://repo.turris.cz/hbs/medkit/${BOARD}-medkit${MDKT_VARIANT}-latest.$ext; do
                 echo "Can't download $BOARD-medkit-latest.$ext :-("
                 sleep 2
                 i="$(expr "$i" + 1)"
@@ -225,6 +218,7 @@ EOF
         mount "$TARGET_PART" "$trg_mnt_pth" || die 3 "Can't mount the partition"
         btrfs subvolume create "$trg_mnt_pth"/@ >> /tmp/debug.txt 2>&1 || die 3 "Can't create a subvolume"
         ln -s @/boot/boot.scr "$trg_mnt_pth"/boot.scr
+        mkdir -p "$trg_mnt_pth"/@/etc/schnapps/
         echo "ROOT_DEV='${TARGET_PART}'" >> "$trg_mnt_pth"/@/etc/schnapps/config
         umount "$trg_mnt_pth"
         mount "$TARGET_PART" -o subvol=@ "$trg_mnt_pth"
@@ -328,7 +322,7 @@ init() {
     mkdir /dev/pts
     mount -t devpts devpts /dev/pts
 
-    board_preinit
+    board_pre_init
 
     ip addr add 127.0.0.1/8 dev lo
     ip link set up dev lo
