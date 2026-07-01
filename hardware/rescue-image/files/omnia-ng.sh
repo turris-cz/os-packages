@@ -48,7 +48,7 @@ display_mode() {
     local key=""
     local key_pressed=""
     while [ "$key" != "1c" ]; do
-        [ -e /dev/input/event0 ] || {
+        [ -e /dev/input/event1 ] || {
             sleep 1
             continue
         }
@@ -59,7 +59,7 @@ display_mode() {
             dd if=/usr/share/rescue/1.rgb of=/dev/fb0 > /dev/null 2>&1
         }
         echo "Current mode is $MODE"
-        key="$(head -c 20 /dev/input/event0 | tail -c 2 | hexdump -e '"%02x"')"
+        key="$(head -c 20 /dev/input/event1 | tail -c 2 | hexdump -e '"%02x"')"
         if [ -z "$key_pressed" ]; then
             echo "Key $key pressed"
         else
