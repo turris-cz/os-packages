@@ -21,12 +21,12 @@ define ReForisTranslation
 
  define Package/reforis-l10n-$(1)/postrm
 #!/bin/sh
-[ -n "$$$${IPKG_INSTROOT}" ] || /etc/init.d/lighttpd restart
+[ -n "$$$${IPKG_INSTROOT}" ] || /etc/init.d/reforis restart
  endef
 
  define Package/reforis-l10n-$(1)/postinst
 #!/bin/sh
-[ -n "$$$${IPKG_INSTROOT}" ] || /etc/init.d/lighttpd restart
+[ -n "$$$${IPKG_INSTROOT}" ] || /etc/init.d/reforis restart
  endef
 
  $$(eval $$(call BuildPackage,reforis-l10n-$(1)))
