@@ -5,7 +5,7 @@
 # where AdguardHome listens.
 
 if [[ $1 -eq 1 ]];then
-  LOCAL_NET=$(uci get network.lan.ipaddr)
+  LOCAL_NET=$(uci get network.lan.ipaddr | cut -d/ -f1)
 
   sed -i "s|address: XXX.XXX.XXX.XXX:XX|address: ${LOCAL_NET}:81|" /etc/adguardhome/adguardhome.yaml
   sed -i -E 's/^([[:space:]]*port:[[:space:]]*)XX([[:space:]]*(#.*)?)$/\153\2/' /etc/adguardhome/adguardhome.yaml
