@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=foris-controller-librespeed-module
-PKG_VERSION:=1.2.0
+PKG_VERSION:=1.3.0
 PKG_RELEASE:=1
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/foris-controller/foris-controller-librespeed-module.git
-PKG_MIRROR_HASH:=209a009a2f393e8d9907e9512aa1ed527e3323408887ca03e7ed458f1994549e
+PKG_MIRROR_HASH:=b143982faa605724725bef1efd1eb1834b16674436022520438ff3a100b8fe63
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>

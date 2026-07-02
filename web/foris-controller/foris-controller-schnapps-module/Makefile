@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2024 CZ.NIC z. s. p. o. (https://www.nic.cz/)
+# Copyright (C) 2019-2026 CZ.NIC z. s. p. o. (https://www.nic.cz/)
 #
 # This is free software, licensed under the GNU General Public License v3.
 # See /LICENSE for more information.
@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=foris-controller-schnapps-module
-PKG_VERSION:=1.0.0
-PKG_RELEASE:=6
+PKG_VERSION:=1.1.0
+PKG_RELEASE:=1
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/foris-controller/foris-controller-schnapps-module.git
-PKG_MIRROR_HASH:=99dd144e1ee675b6ea34b75eebedead98b7c0fdc512de0ccb3d8a34dfd75dcce
+PKG_MIRROR_HASH:=fb2b1a76d465d230a8e04ca13dee24dddf8f645cc2f3cbc647dc851f6fcff1c8
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>

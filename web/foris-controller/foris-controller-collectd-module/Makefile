@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2024 CZ.NIC z. s. p. o. (https://www.nic.cz/)
+# Copyright (C) 2019-2026 CZ.NIC z. s. p. o. (https://www.nic.cz/)
 #
 # This is free software, licensed under the GNU General Public License v3.
 # See /LICENSE for more information.
@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=foris-controller-collectd-module
-PKG_VERSION:=1.0.0
-PKG_RELEASE:=12
+PKG_VERSION:=1.1.0
+PKG_RELEASE:=1
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/foris-controller/foris-controller-collectd-module.git
-PKG_MIRROR_HASH:=5635f70653181d96a9ecfafd53f382833b04adb6011c1b53bf32b825be14ec92
+PKG_MIRROR_HASH:=2877f20e93bc46f210c880a0bcd4dea371ccc9dbff7aaf89e54484b29fba8b57
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>

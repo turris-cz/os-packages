@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2024 CZ.NIC z. s. p. o. (https://www.nic.cz/)
+# Copyright (C) 2019-2026 CZ.NIC z. s. p. o. (https://www.nic.cz/)
 #
 # This is free software, licensed under the GNU General Public License v3.
 # See /LICENSE for more information.
@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=foris-controller-netboot-module
-PKG_VERSION:=1.0.0
-PKG_RELEASE:=12
+PKG_VERSION:=1.1.0
+PKG_RELEASE:=1
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/foris-controller/foris-controller-netboot-module.git
-PKG_MIRROR_HASH:=6653e787e905dde23ac9db829c26688516d409f42482b479ee8b82c591a00ba4
+PKG_MIRROR_HASH:=2a939a0cc7c77cbed89e3ea94e0a2cff890fbe6b76fac49b1586f46d7605aa75
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>

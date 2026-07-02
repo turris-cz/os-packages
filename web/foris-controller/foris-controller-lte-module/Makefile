@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2023-2024 CZ.NIC z. s. p. o. (https://www.nic.cz/)
+# Copyright (C) 2023-2026 CZ.NIC z. s. p. o. (https://www.nic.cz/)
 #
 # This is free software, licensed under the GNU General Public License v3.
 # See /LICENSE for more information.
@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=foris-controller-lte-module
-PKG_VERSION:=1.1.0
-PKG_RELEASE:=2
+PKG_VERSION:=1.2.1
+PKG_RELEASE:=1
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/foris-controller/foris-controller-lte-module.git
-PKG_MIRROR_HASH:=83200fdcdaf89438cac6b90452e729194474863d80fdf3c33eca6b59e3b99613
+PKG_MIRROR_HASH:=9b9a610599aa95ba88e63440c449d007faf3c1e5ee0795360f13c3c84c8c58b8
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>

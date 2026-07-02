@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=foris-controller-tailscale-module
-PKG_VERSION:=0.3.0
+PKG_VERSION:=0.4.0
 PKG_RELEASE:=1
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/foris-controller/foris-controller-tailscale-module.git
-PKG_MIRROR_HASH:=e7bc9b574f3d2f90af286932d5f60387ddbece3a52eb66d41f13d14bbaf7c3fb
+PKG_MIRROR_HASH:=ce972eb4ccc66ce085496d999d0e4b995b3621b45aaea5a0729dc08fcf734c17
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
