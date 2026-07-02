@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2017-2025 CZ.NIC, z. s. p. o. (https://www.nic.cz/)
+# Copyright (C) 2017-2026 CZ.NIC, z. s. p. o. (https://www.nic.cz/)
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=pakon
 PKG_VERSION:=2.1.0
-PKG_RELEASE:=3
+PKG_RELEASE:=4
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/pakon.git
@@ -39,7 +39,7 @@ define Package/pakon
     +sqlite3-cli \
     +xz \
     +ouidb \
-    +turris-auth \
+    +turris-auth-rs \
     +lighttpd-mod-proxy
 endef
 
