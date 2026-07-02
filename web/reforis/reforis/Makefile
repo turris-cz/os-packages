@@ -44,7 +44,7 @@ define Package/reforis
     +lighttpd-mod-redirect \
     +lighttpd-mod-setenv \
     +lighttpd-mod-proxy \
-    +turris-auth \
+    +turris-auth-rs \
     +python3-blinker \
     +python3-eventlet \
     +python3-flask \

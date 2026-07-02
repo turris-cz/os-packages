@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2023 CZ.NIC z.s.p.o. (http://www.nic.cz/)
+# Copyright (C) 2019-2026 CZ.NIC z.s.p.o. (http://www.nic.cz/)
 #
 # This is free software, licensed under the GNU General Public License v3.
 # See /LICENSE for more information.
@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=foris-ws
 PKG_VERSION:=1.6.3
-PKG_RELEASE:=2
+PKG_RELEASE:=3
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/foris-controller/foris-ws.git
@@ -39,7 +39,7 @@ define Package/foris-ws
     +foris-client \
     +python3-ubus \
     +lighttpd-mod-proxy \
-    +turris-auth \
+    +turris-auth-rs \
     +fosquitto \
     +python3-cachelib \
     +python3-paho-mqtt
