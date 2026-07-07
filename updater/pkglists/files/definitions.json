@@ -210,6 +210,12 @@ ifdef(`GO',`
 		"url": "https://docs.turris.cz/geek/nextcloud/nextcloud/",
 		"labels": ["experimental", "storage"]
 	},
+	"vim-full": {
+		"title": "Vim-full",
+		"description": "Vim editor with features like syntax highlighting, menus, mouse support, translations, spell checking, etc. Replaces already installed vim-tiny.",
+		"url": "https://www.vim.org/",
+		"labels": ["community"]
+	},
 ifdef(`GO',`
 	"syncthing": {
 		"title": "Syncthing",
