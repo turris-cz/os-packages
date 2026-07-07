@@ -52,9 +52,9 @@ uuid2part() {
 
 rescue_wget() {
     for i in $(seq 1 3); do
-        wget $@ && return
+        wget "$@" && return 0
     done
-    return $?
+    return 1
 }
 
 override_root() {
