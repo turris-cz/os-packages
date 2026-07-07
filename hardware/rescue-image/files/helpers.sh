@@ -50,13 +50,6 @@ uuid2part() {
     echo "$part"
 }
 
-rescue_wget() {
-    for i in $(seq 1 3); do
-        wget "$@" && return 0
-    done
-    return 1
-}
-
 override_root() {
     if [ -n "$(fw_printenv root_uuid 2> /dev/null)" ]; then
         UUID="$(fw_printenv root_uuid | sed 's|root_uuid=||')"
@@ -125,7 +118,7 @@ download_medkit() {
         for ext in tar.gz tar.gz.sig; do
             local i=0
             # We are checking signature, so we don't care about https
-            while ! rescue_wget -O /mnt/src/medkit.$ext http://repo.turris.cz/hbs/medkit/${BOARD}-medkit${MDKT_VARIANT}-latest.$ext; do
+            while ! wget -O /mnt/src/medkit.$ext http://repo.turris.cz/hbs/medkit/${BOARD}-medkit${MDKT_VARIANT}-latest.$ext; do
                 echo "Can't download $BOARD-medkit-latest.$ext :-("
                 sleep 2
                 i="$(expr "$i" + 1)"
