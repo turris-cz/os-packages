@@ -1,0 +1,25 @@
+From 6f016f82f677fb39b9cb2892fe901c5175eb7059 Mon Sep 17 00:00:00 2001
+From: Richard Muzik <richard.muzik@turris.com>
+Date: Tue, 7 Jul 2026 12:52:54 +0200
+Subject: [PATCH] fix: remove typo in entry-point in pyproject.toml
+
+---
+ pyproject.toml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/pyproject.toml b/pyproject.toml
+index c2c85aa..204d30c 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -37,7 +37,7 @@ Homepage = "https://gitlab.nic.cz/turris/foris-controller/foris-controller-nextc
+ [tool.hatch.version]
+ path = "foris_controller_nextcloud_module/__init__.py"
+ 
+-[]project.entry-points.foris_controller_modules]
++[project.entry-points.foris_controller_modules]
+ nextcloud = "foris_controller_modules.nextcloud"
+ 
+ [tool.hatch.build.targets.sdist]
+-- 
+2.55.0
+
