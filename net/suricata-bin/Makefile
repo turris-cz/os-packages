@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=suricata-bin
-PKG_VERSION:=8.0.1
-PKG_RELEASE=9
+PKG_VERSION:=8.0.6
+PKG_RELEASE=1
 
 PKG_SOURCE:=suricata-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://www.openinfosecfoundation.org/download/
-PKG_HASH:=bd868f41717e5431cdda3a99386810257aafdbe2dbcbb58d07fb8476a03358a5
+PKG_HASH:=b264584edda4a3b2b462050099c7c54f4f35ac0c7164e41084be9b216c090f8c
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 PKG_LICENSE:=GPL-2.0
