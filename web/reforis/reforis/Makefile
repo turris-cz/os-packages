@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=reforis
 PKG_VERSION:=3.10.0
-PKG_RELEASE:=2
+PKG_RELEASE:=3
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/reforis/reforis
@@ -44,7 +44,7 @@ define Package/reforis
     +lighttpd-mod-redirect \
     +lighttpd-mod-setenv \
     +lighttpd-mod-proxy \
-    +turris-auth \
+    +turris-auth-rs \
     +python3-blinker \
     +python3-eventlet \
     +python3-flask \
