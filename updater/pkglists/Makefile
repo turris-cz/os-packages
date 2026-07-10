@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=pkglists
 PKG_VERSION:=1.14
-PKG_RELEASE:=63
+PKG_RELEASE:=64
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 
