@@ -75,7 +75,7 @@ Index: suricata-8.0.0/src/detect-mac.c
 +#include "util-debug.h"
 +
 +/*prototypes*/
-+static int DetectMacMatch (ThreadVars *, DetectEngineThreadCtx *, Packet *,
++static int DetectMacMatch (DetectEngineThreadCtx *, Packet *,
 +		const Signature *, const SigMatchCtx *);
 +static int DetectMacSetup (DetectEngineCtx *, Signature *, const char *);
 +void DetectMacFree(DetectEngineCtx *de_ctx, void *ptr);
@@ -115,7 +115,7 @@ Index: suricata-8.0.0/src/detect-mac.c
 + * \retval 0 no match
 + * \retval 1 match
 + */
-+static int DetectMacMatch (ThreadVars *t, DetectEngineThreadCtx *det_ctx, Packet *p,
++static int DetectMacMatch (DetectEngineThreadCtx *det_ctx, Packet *p,
 +		const Signature *s, const SigMatchCtx *ctx)
 +{
 +
