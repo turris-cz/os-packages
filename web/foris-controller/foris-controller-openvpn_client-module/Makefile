@@ -13,7 +13,7 @@ PKG_RELEASE:=1
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/foris-controller/foris-controller-openvpn_client-module.git
-PKG_MIRROR_HASH:=dc8f8c2b4486b13deba0d17080c2b7e49ee88f7bf081ffeed38a4eb08c92bc4f
+PKG_MIRROR_HASH:=ab97ef23f1359879d7d9fb7f3e84c90e59b139e390b456594d857ab205e97098
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
