@@ -19,7 +19,7 @@ ifdef(`OMNIA',`
 		"options": {
 			"survey": {
 				"title": "Usage Survey",
-				"description": "Collects data about router usage (installed packages, Internet connection type and etc.).",
+				"description": "Collects data about router usage, such as installed packages and Internet connection type.",
 				"default": true
 			},
 			"dynfw": {
@@ -45,7 +45,7 @@ ifdef(`OMNIA',`
 			},
 			"haas_new": {
 				"title": "SSH Honeypot - New",
-				"description": "Threat detection tool. SSH honeypot using Honeypot as a Service (haas.nic.cz). Build on rust language. UNINSTALL OLD HAAS FIRST, PLEASE!",
+				"description": "Threat detection tool. SSH honeypot using Honeypot as a Service (haas.nic.cz). Built in Rust. UNINSTALL THE OLD HAAS FIRST, PLEASE!",
 				"url": "https://docs.turris.cz/basics/collect/haas/",
 				"labels": ["experimental"]
 			}
@@ -74,12 +74,12 @@ ifdef(`OMNIA',`
 			},
 			"ujail": {
 				"title": "OpenWrt's process jail",
-				"description": "ujail allows to limit processes by limiting syscalls and file-system access",
+				"description": "ujail allows limiting processes by controlling syscalls and file-system access.",
 				"labels": ["community", "experimental"]
 			},
 			"seccomp": {
 				"title": "Secure Computing Mode (seccomp)",
-				"description": "Optional support for seccomp allowing processes to isolate from them self",
+				"description": "Optional seccomp support allows processes to isolate themselves.",
 				"labels": ["community", "experimental"]
 			}
 		}
@@ -94,7 +94,7 @@ ifdef(`OMNIA',`
 			},
 			"sqm": {
 				"title": "SQM",
-				"description": "Active Queue Management to boost performance on heavily loaded network."
+				"description": "Active Queue Management to boost performance on heavily loaded networks."
 			},
 			"tinyproxy": {
 				"title": "Tinyproxy",
@@ -121,7 +121,7 @@ ifdef(`OMNIA',`
 			},
 			"wireguard": {
 				"title": "WireGuard",
-				"description": "Alternative to OpenVPN, it provides fast, modern and secure VPN tunnel.",
+				"description": "An alternative to OpenVPN, WireGuard provides a fast, modern and secure VPN tunnel.",
 				"url": "https://openwrt.org/docs/guide-user/services/vpn/wireguard/start",
 				"labels": ["advanced"]
 			}
@@ -136,7 +136,7 @@ ifdef(`OMNIA',`
 	},
 	"nas": {
 		"title": "NAS",
-		"description": "Services allowing to connect a disk to the router and use it as network data store.",
+		"description": "Services allowing to connect a disk to the router and use it as network data storage.",
 		"url": "https://wiki.turris.cz/doc/en/howto/nas",
 		"options": {
 			"samba": {
@@ -158,7 +158,7 @@ ifdef(`OMNIA',`
 			},
 			"encrypt": {
 				"title": "Encrypted Storage",
-				"description": "Add support to access encrypted storage devices using dm-crypt.",
+				"description": "Adds support for encrypted storage devices using dm-crypt.",
 				"labels": ["advanced"]
 			}
 		},
@@ -166,12 +166,12 @@ ifdef(`OMNIA',`
 	},
 	"net_monitoring": {
 		"title": "Network monitoring and parental control",
-		"description": "Tools to monitor local network and users on it.",
+		"description": "Tools to monitor the local network and users on it.",
 		"options": {
 ifdef(`GO',`
 			"librespeed": {
 				"title": "Internet connection speed measurement",
-				"description": "Actively measures speed of Internet connection using a public network of LibreSpeed servers."
+				"description": "Actively measures Internet connection speed using a public network of LibreSpeed servers."
 			},')
 			"dev_detect": {
 				"title": "New devices detection",
@@ -194,7 +194,7 @@ ifdef(`GO',`
 	},
 	"netboot": {
 		"title": "Turris MOX network boot",
-		"description": "Server-side for Turris MOX without microSD card used as Wi-Fi access point.",
+		"description": "Server-side support for running a Turris MOX without a microSD card as a Wi-Fi access point.",
 		"url": "https://docs.turris.cz/basics/apps/netboot",
 		"labels": ["high_storage", "experimental"]
 	},
@@ -212,14 +212,14 @@ ifdef(`GO',`
 	},
 	"vim-full": {
 		"title": "Vim-full",
-		"description": "Vim editor with features like syntax highlighting, menus, mouse support, translations, spell checking, etc. Replaces already installed vim-tiny.",
+		"description": "Vim editor with features like syntax highlighting, menus, mouse support, translations, spell checking, etc. Replaces the already installed vim-tiny.",
 		"url": "https://www.vim.org/",
 		"labels": ["community"]
 	},
 ifdef(`GO',`
 	"syncthing": {
 		"title": "Syncthing",
-		"description": "Application which synchronizes files between two or more computer",
+		"description": "Application which synchronizes files between two or more computers.",
 		"labels": ["community", "storage"]
 	},
 	"tailscale": {
@@ -228,18 +228,18 @@ ifdef(`GO',`
 	},
 	"adguardhome": {
 		"title": "Adguard Home",
-		"description": "AdGuard Home is a network-based solution for improving protection. Move Knot-resolver on ports 54 and 854, access - user: admin, pass: adminadmin",
+		"description": "AdGuard Home is a network-based solution for improving protection. Moves Knot-resolver on ports 54 and 854. Default credentials: username 'admin', password 'adminadmin'",
 		"url": "https://adguard.com/en/adguard-home/overview.html",
 		"labels": ["advanced", "experimental"]
 	},')
 	"openvpn": {
 		"title": "OpenVPN",
-		"description": "Easy setup of the OpenVPN client and server from Foris.",
+		"description": "Simple setup of the OpenVPN client and server from Foris.",
 		"url": "https://docs.turris.cz/basics/apps/openvpn-server/openvpn/"
 	},
 	"kresd6": {
 		"title": "Knot Resolver 6",
-		"description": "Upcoming version of Knot Resolver. Currently without manager module.",
+		"description": "Upcoming version of Knot Resolver. Currently without the manager module.",
 		"url": "https://knot.pages.nic.cz/knot-resolver/upgrading-to-6.html",
 		"labels": ["experimental"]
 	},
@@ -266,23 +266,23 @@ ifdef(`GO',`
 	},
 	"firmware_update": {
 		"title": "Latest firmware",
-ifdef(`OMNIA',`		"description": "Keeps your NOR content, MCU firmware and factory image up-to-date",', `		"description": "Keeps your NOR content and factory image up-to-date",')
+ifdef(`OMNIA',`		"description": "Keeps your NOR content, MCU firmware, and factory image up to date.",', `		"description": "Keeps your NOR content and factory image up to date.",')
 		"labels": ["experimental"],
 		"options": {
 			"nor": {
 				"title": "U-Boot and rescue image",
 				"labels": ["experimental", "advanced"],
-				"description": "Most risky option, U-Boot is needed to boot your board. In case something goes wrong, your router will not boot and you will need to reflash it using serial cable.",
+				"description": "The riskiest option. U-Boot is needed to boot your board. If something goes wrong, your router will not boot and you will need to reflash it using a serial cable.",
 				"url": "https://docs.turris.cz/hw/omnia/serial-boot/"
 			},
 ifdef(`OMNIA',`
 			"mcu": {
 				"title": "MCU",
-				"description": "Controls power distribution and LEDs. Do not reboot during update, but otherwise quite safe."
+				"description": "Controls power distribution and LEDs. Do not reboot during the update. Otherwise, it is quite safe."
 			},')
 			"factory": {
 				"title": "Factory image",
-				"description": "Keeps image that is used for factory reset up to date. The safest option of all."
+				"description": "Keeps the image that is used for factory reset up to date. The safest option."
 			}
 		}
 	}
