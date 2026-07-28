@@ -228,7 +228,7 @@ ifdef(`GO',`
 	},
 	"adguardhome": {
 		"title": "Adguard Home",
-		"description": "AdGuard Home is a network-based solution for improving protection. Moves Knot-resolver on ports 54 and 854. Default credentials: username 'admin', password 'adminadmin'",
+		"description": "AdGuard Home is a network-based solution for improving protection. Moves Knot-resolver on ports 54 and 854. Default credentials: username - admin, password - adminadmin",
 		"url": "https://adguard.com/en/adguard-home/overview.html",
 		"labels": ["advanced", "experimental"]
 	},')
