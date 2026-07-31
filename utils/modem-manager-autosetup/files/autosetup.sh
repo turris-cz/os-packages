@@ -7,9 +7,15 @@ get_settings() {
     [ -n "$1" ] || return
     local mcc="$(echo "$1" | head -c 3)"
     local mnc="$(echo "$1" | tail -c +4)"
-    local info="$(jq '.apns.apn| [ .[] | select(.mcc == "'"$mcc"'" and .mnc == "'"$mnc"'" and (.type | contains("default"))) ][0]' < /usr/share/modem-manager-autosetup/apns-conf.json)"
-    [ -n "$info" ] || info="$(jq '.apns.apn| [ .[] | select(.mcc == "'"$mcc"'" and .mnc == "'"$mnc"'") ][0]' < /usr/share/modem-manager-autosetup/apns-conf.json)"
-    if [ -n "$info" ] &&  [ "$info" != null ]; then
+    local imsi="$2"
+    local info="$(jq '.apns.apn[] | select(.mcc == "'"$mcc"'" and .mnc == "'"$mnc"'" and has("type") and (.type | contains("default")))' < /usr/share/modem-manager-autosetup/apns-conf.json)"
+    [ -n "$info" ] || info="$(jq '.apns.apn[] | select(.mcc == "'"$mcc"'" and .mnc == "'"$mnc"'")' < /usr/share/modem-manager-autosetup/apns-conf.json)"
+    if [ -n "$info" ] && [ -n "$imsi" ]; then
+        local tmp="$(echo "$info" | jq 'select(.mvno_match_data? and .mvno_type? == "imsi") | select(.mvno_match_data as $mvno | "'"$imsi"'" | startswith($mvno))')"
+        [ -z "$tmp" ] || info="$tmp"
+    fi
+    if [ -n "$info" ]; then
+        info="$(echo "$info" | jq -s '.[0]')"
         APN="$(echo "$info" | jq -r .apn)"
         USER="$(echo "$info" | jq -r .user)"
         PASSWORD="$(echo "$info" | jq -r .password)"
@@ -18,6 +24,10 @@ get_settings() {
 
 get_operator_info() {
     mmcli -i 0 -K | sed -n 's|^sim.properties.operator-code[[:blank:]]*:[[:blank:]]*||p'
+}
+
+get_imsi() {
+    mmcli -i 0 -K | sed -n 's|^sim.properties.imsi[[:blank:]]*:[[:blank:]]*||p'
 }
 
 disable_and_exit() {
@@ -69,7 +79,8 @@ EOF
 
 check_config
 OPERATOR="$(get_operator_info)"
+IMSI="$(get_imsi)"
 [ -n "$OPERATOR" ] || exit 0
-get_settings "$OPERATOR"
+get_settings "$OPERATOR" "$IMSI"
 [ -n "$APN" ] || exit 0
 set_configs
