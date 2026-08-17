@@ -8,7 +8,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=reforis
-PKG_VERSION:=3.10.0
+PKG_VERSION:=3.9.2
 PKG_RELEASE:=2
 
 PKG_SOURCE_PROTO:=git
