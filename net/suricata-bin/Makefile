@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=suricata-bin
 PKG_VERSION:=8.0.1
-PKG_RELEASE=9
+PKG_RELEASE=10
 
 PKG_SOURCE:=suricata-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://www.openinfosecfoundation.org/download/
@@ -48,6 +48,15 @@ TARGET_CFLAGS+=-fno-stack-protector
 
 # Add atomic library for 64-bit atomic operations on 32-bit PowerPC
 TARGET_LDFLAGS+=-latomic
+
+# Suricata drives its own cargo invocation from its autotools build, so unlike
+# rust-package.mk based packages it never picks up CARGO_PKG_CONFIG_VARS, and
+# its Rust half is built without the Rust build flags, target compiler settings
+# and target linker used by the rest of the OpenWrt build. On soft-float
+# targets that makes suricata abort at startup while parsing request-body-limit
+# from its own default configuration.
+MAKE_VARS+=$(CARGO_PKG_CONFIG_VARS)
+CONFIGURE_VARS+=$(CARGO_PKG_CONFIG_VARS)
 
 define Package/suricata-bin
   SECTION:=net
