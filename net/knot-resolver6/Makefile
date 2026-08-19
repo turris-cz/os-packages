@@ -10,12 +10,12 @@ PKG_RELRO_FULL:=0
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=knot-resolver6
-PKG_VERSION:=6.3.0
+PKG_VERSION:=6.4.2
 PKG_RELEASE:=1
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/knot/knot-resolver.git
-PKG_MIRROR_HASH:=2346790e0ca9120b8bc4b314a47853f99c7b20b366162a9fb99c41c527dfd47c
+PKG_MIRROR_HASH:=85ed933cd24973a1c1a2c40b8743a3b62a527cbec017e3b988dc0f5f02d4dd34
 PKG_SOURCE_VERSION:=v${PKG_VERSION}
 
 PKG_MAINTAINER:=Knot Resolver <knot-resolver@labs.nic.cz>
