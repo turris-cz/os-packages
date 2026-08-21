@@ -8,13 +8,13 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=pakon
-PKG_VERSION:=2.1.0
-PKG_RELEASE:=3
+PKG_VERSION:=2.2.1
+PKG_RELEASE:=1
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/pakon.git
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
-PKG_MIRROR_HASH:=b746a031cecc12a39640af550c01c0b0e7d8868b09a5b4c090700c72af660e8b
+PKG_MIRROR_HASH:=ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 PKG_LICENSE:=GPL-3.0-only
