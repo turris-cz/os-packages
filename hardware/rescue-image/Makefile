@@ -37,9 +37,9 @@ DEVICE := omnia
 else ifeq ($(CONFIG_TARGET_ipq95xx_generic_DEVICE_cznic_turris-omnia-ng),y)
 DEVICE := omnia-ng
 ROOTFS_INSTALL+=kmod-qca-nss-phy kmod-qca-ssdk \
-				kmod-hwmon-core kmod-qca8k-cc kmod-qca8084 kmod-qca81xx kmod-qca8xxx-phc \
+				kmod-hwmon-core kmod-qca8k-cc kmod-qca8084 kmod-qcom-lnx-phy kmod-qca-mdio kmod-sfp \
 				kmod-lib-crc-ccitt kmod-slhc kmod-ppp kmod-iptunnel kmod-gre kmod-pppox kmod-pptp \
-				kmod-nf-conntrack kmod-nf-conntrack6 kmod-nat46 kmod-qca-nss-ppe kmod-qca-nss-dp kmod-qca-nss-drv-lite \
+				kmod-nf-conntrack kmod-nf-conntrack6 kmod-nat46 kmod-qca-nss-ppe kmod-qca-nss-dp \
 				kmod-input-core kmod-nls-base kmod-input-gpio-keys kmod-input-evdev kmod-usb-dwc3 kmod-usb-dwc3-qcom
 # Trying to make sure we are build late enough for all binary packages to be actually created
 PKG_BUILD_DEPENDS+=qssdk qca-nss-drv qca-nss-phy hostapd nat64 qca-nss-ppe qca-nss-dp
@@ -47,7 +47,7 @@ else
 DEVICE := unknown
 endif
 
-OMNIA_NG_PKGS:=kmod-qca-nss-phy kmod-qca-ssdk kmod-nat46 kmod-qca-nss-ppe kmod-qca-nss-dp kmod-qca-nss-drv-lite
+OMNIA_NG_PKGS:=kmod-qca-nss-phy kmod-qca-ssdk kmod-nat46 kmod-qca-nss-ppe kmod-qca-nss-dp
 
 define Package/rescue-image
 	TITLE:=rescue-image
