@@ -22,6 +22,8 @@ include $(TOPDIR)/feeds/packages/lang/python/pypi.mk
 include $(INCLUDE_DIR)/package.mk
 include $(TOPDIR)/feeds/packages/lang/python/python3-package.mk
 
+PYTHON3_PKG_BUILD_VARS:=MULTIDICT_NO_EXTENSIONS=1
+
 define Package/python3-multidict
   SECTION:=lang
   CATEGORY:=Languages
