@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2020-2025 CZ.NIC z.s.p.o. (https://www.nic.cz/)
+# Copyright (C) 2020-2026 CZ.NIC z.s.p.o. (https://www.nic.cz/)
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=reforis-storage-plugin
-PKG_VERSION:=1.4.0
+PKG_VERSION:=1.5.1
 PKG_RELEASE:=1
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/reforis/reforis-storage
-PKG_MIRROR_HASH:=d0b94a4d9ad74e9d20360a050e21b8b07b034538f0c9a932af108cbe6fc60149
+PKG_MIRROR_HASH:=d116ca9bd8a398fed15b135e626de0bb8d292a7a476cb0abcf6e6db1d0b9093e
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
