@@ -17,16 +17,16 @@ if [[ $1 -eq 1 ]];then
     /etc/lighttpd-self-signed.pem > /etc/adguardhome/adguardhome.crt
 
   awk 'BEGIN{k=0} /BEGIN (RSA |EC )?PRIVATE KEY/{k=1} k{print} /END (RSA |EC )?PRIVATE KEY/{k=0}' \
-    /etc/lighttpd-self-signed.pem > /etc/adguardhome/adguardhome.key 
+    /etc/lighttpd-self-signed.pem > /etc/adguardhome/adguardhome.key
 
   chmod 600 /etc/adguardhome/adguardhome.key
 
 
   uci set resolver.common.port='54'
+  uci set resolver.common.port_tls='854'
   uci commit resolver
-  sed -i "s/\(net\.listen('\$addr',[[:space:]]*\)853\([[:space:]]*,[[:space:]]*{[[:space:]]*kind[[:space:]]*=[[:space:]]*'tls'[[:space:]]*}[[:space:]]*)\)/\1854\2/" /etc/init.d/kresd
   chmod 755 /etc/hotplug.d/iface/99-adguard-update
-  /etc/init.d/kresd restart
+  /etc/init.d/resolver restart
   /etc/init.d/adguardhome start
   /etc/init.d/adguardhome enable
   /etc/init.d/lighttpd restart
@@ -34,11 +34,11 @@ if [[ $1 -eq 1 ]];then
 elif [[ $1 -eq 2 ]];then
 
   uci set resolver.common.port='53'
+  uci set resolver.common.port_tls='853'
   uci commit resolver
-  sed -i "s/\(net\.listen('\$addr',[[:space:]]*\)854\([[:space:]]*,[[:space:]]*{[[:space:]]*kind[[:space:]]*=[[:space:]]*'tls'[[:space:]]*}[[:space:]]*)\)/\1853\2/" /etc/init.d/kresd
-  /etc/init.d/kresd restart
+  /etc/init.d/resolver restart
   /etc/init.d/adguardhome stop
-  /etc/init.d/adguardhome disable 
+  /etc/init.d/adguardhome disable
 
   rm -rf /etc/adguardhome
 fi
