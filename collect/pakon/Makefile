@@ -9,12 +9,15 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=pakon
 PKG_VERSION:=2.1.0
-PKG_RELEASE:=3
+PKG_RELEASE:=4
 
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/pakon.git
-PKG_SOURCE_VERSION:=v$(PKG_VERSION)
-PKG_MIRROR_HASH:=b746a031cecc12a39640af550c01c0b0e7d8868b09a5b4c090700c72af660e8b
+# TESTING: build the rePakon branch instead of the release tag
+PKG_SOURCE_URL:=https://github.com/BKPepe/pakon.git
+PKG_SOURCE_VERSION:=752b639dedcabcfaaf21c2a90ca31c361e4d3306
+PKG_MIRROR_HASH:=928ab9388570210712d01a1501ef851f4c035c16b43d935986da75ee99b1bd3a
+
+PKG_BUILD_DEPENDS:=node/host
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 PKG_LICENSE:=GPL-3.0-only
@@ -22,6 +25,20 @@ PKG_LICENSE_FILES:=LICENSE
 
 include $(INCLUDE_DIR)/package.mk
 include $(TOPDIR)/feeds/packages/lang/python/python3-package.mk
+
+# The rePakon web interface is a React application. Py3Package owns
+# Build/Compile, so hook the npm build in front of it rather than override it.
+NPM:=$(STAGING_DIR_HOSTPKG)/bin/npm
+NPM_VARS:= \
+	npm_config_cache=$(PKG_BUILD_DIR)/.npm-cache \
+	npm_config_audit=false \
+	npm_config_fund=false
+
+define Build/Compile/repakon-ui
+	cd $(PKG_BUILD_DIR)/new-web && $(NPM_VARS) $(NPM) ci
+	cd $(PKG_BUILD_DIR)/new-web && $(NPM_VARS) $(NPM) run build
+endef
+Hooks/Compile/Pre += Build/Compile/repakon-ui
 
 define Package/pakon
   SECTION:=collect
@@ -66,6 +83,12 @@ define Py3Package/pakon/install
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/web/api.cgi $(1)/www/cgi-bin/pakon
 	$(INSTALL_DIR) $(1)/etc/lighttpd/conf.d/
 	$(INSTALL_DATA) ./files/lighttpd-pakon.conf $(1)/etc/lighttpd/conf.d/80-pakon.conf
+
+	# rePakon web
+	$(INSTALL_DIR) $(1)/www/repakon
+	$(CP) $(PKG_BUILD_DIR)/new-web/build/. $(1)/www/repakon/
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/web/api.cgi $(1)/www/cgi-bin/repakon
+	$(INSTALL_DATA) ./files/lighttpd-repakon.conf $(1)/etc/lighttpd/conf.d/80-repakon.conf
 
 	# PaKon itself
 	$(CP) $(PKG_INSTALL_DIR)/* $(1)/
