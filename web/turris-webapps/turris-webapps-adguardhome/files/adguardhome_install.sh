@@ -10,8 +10,9 @@ if [[ $1 -eq 1 ]];then
   sed -i "s|address: XXX.XXX.XXX.XXX:XX|address: ${LOCAL_NET}:81|" /etc/adguardhome/adguardhome.yaml
   sed -i -E 's/^([[:space:]]*port:[[:space:]]*)XX([[:space:]]*(#.*)?)$/\153\2/' /etc/adguardhome/adguardhome.yaml
 
-  sed -i 's|^\([[:space:]]*option[[:space:]]\+config[[:space:]]\+\)/etc/adguardhome\.yaml[[:space:]]*$|\1/etc/adguardhome/adguardhome.yaml|' /etc/config/adguardhome
-  sed -i 's|^\([[:space:]]*option[[:space:]]\+workdir[[:space:]]\+\)/var/lib/adguardhome[[:space:]]*$|\1/srv/services/adguardhome|' /etc/config/adguardhome
+  uci set adguardhome.config.config='/etc/adguardhome/adguardhome.yaml'
+  uci set adguardhome.config.workdir='/srv/services/adguardhome'
+  uci commit adguardhome
 
   awk 'BEGIN{c=0} /BEGIN CERTIFICATE/{c=1} c{print} /END CERTIFICATE/{c=0}' \
     /etc/lighttpd-self-signed.pem > /etc/adguardhome/adguardhome.crt
