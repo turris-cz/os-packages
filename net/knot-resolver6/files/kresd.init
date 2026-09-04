@@ -34,13 +34,14 @@ check_root_key() {
 json_add_interface() {
     local interface="$1"
     local port="$2"
+    local port_tls="$3"
     [ "$interface" = "::0" ] && interface="::"
     json_add_object ""
     json_add_string interface "${interface}@${port}"
     json_add_string kind "dns"
     json_close_object
     json_add_object ""
-    json_add_string interface "$interface@853"
+    json_add_string interface "${interface}@${port_tls}"
     json_add_string kind "dot"
     json_close_object
 }
@@ -51,10 +52,11 @@ json_add_network() {
 
     json_add_object network
 
-    local port
+    local port port_tls
     config_get port "$section" port
+    config_get port_tls "$section" port_tls
     json_add_array listen
-    config_list_foreach "$section" interface json_add_interface "$port"
+    config_list_foreach "$section" interface json_add_interface "$port" "$port_tls"
     json_close_array
 
     local do_ipv4

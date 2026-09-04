@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2015-2026 CZ.NIC, z. s. p. o. (https://www.nic.cz/)
+# Copyright (C) 2023-2026 CZ.NIC, z. s. p. o. (https://www.nic.cz/)
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -130,6 +130,38 @@ MESON_ARGS+= \
 	-Dprefix=/usr \
 	-Dunit_tests=disabled \
 	-Dutils=enabled
+
+# we need to get actual TLS port number from kresd service to write it to config file
+define Package/knot-resolver6-managerless/preinst
+#!/bin/sh
+
+[ -n "$${IPKG_INSTROOT}" ] && exit 0
+uci -q get resolver.common.port_tls >/dev/null && exit 0
+
+port_tls="$$(sed -n "s/.*net.listen.*,[[:space:]]*\([0-9]\+\),.*kind = 'tls'.*/\1/p" \
+        /etc/init.d/kresd 2>/dev/null | head -n1)"
+
+[ -n "$$port_tls" ] || port_tls=853
+
+uci set resolver.common.port_tls="$$port_tls"
+uci commit resolver
+endef
+
+# we need to get actual TLS port number from kresd service to write it to config file
+define Package/knot-resolver6-manager/preinst
+#!/bin/sh
+
+[ -n "$${IPKG_INSTROOT}" ] && exit 0
+uci -q get resolver.common.port_tls >/dev/null && exit 0
+
+port_tls="$$(sed -n 's/.*json_add_string[[:space:]]\+interface[[:space:]]\+"\$interface@\([0-9]\+\)".*/\1/p' \
+        /etc/init.d/kresd 2>/dev/null | head -n1)"
+
+[ -n "$$port_tls" ] || port_tls=853
+
+uci set resolver.common.port_tls="$$port_tls"
+uci commit resolver
+endef
 
 define Package/knot-resolver6/install
 	true
