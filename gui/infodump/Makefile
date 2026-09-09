@@ -53,7 +53,7 @@ define Package/infodump/install
 	$(INSTALL_BIN) ./files/infodump.init $(1)/etc/init.d/infodump
 endef
 
-define Package/foris-controller-app/postinst
+define Package/infodump/postinst
 #!/bin/sh
 [ -n "$$IPKG_INSTROOT" ] || {
 	/etc/init.d/infodump enable
