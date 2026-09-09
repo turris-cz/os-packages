@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2025-2026 CZ.NIC, z.s.p.o. (https://www.nic.cz/)
+# Copyright (C) 2026 CZ.NIC, z.s.p.o. (https://www.nic.cz/)
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -31,7 +31,7 @@ include $(INCLUDE_DIR)/package.mk
 include $(TOPDIR)/feeds/packages/lang/rust/rust-package.mk
 
 CARGO_PKG_PROFILE:=release
-CARGO_RUSTFLAGS+=--cfg tokio_unstable
+#CARGO_RUSTFLAGS+=--cfg tokio_unstable
 
 define Package/infodump
   SECTION:=gui
@@ -51,6 +51,13 @@ define Package/infodump/install
 
 	$(INSTALL_DIR) $(1)/etc/init.d/
 	$(INSTALL_BIN) ./files/infodump.init $(1)/etc/init.d/infodump
+endef
+
+define Package/foris-controller-app/postinst
+#!/bin/sh
+[ -n "$$IPKG_INSTROOT" ] || {
+	/etc/init.d/infodump enable
+}
 endef
 
 # Build/Compile = $(call Build/Compile/Cargo,frontend)
