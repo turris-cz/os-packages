@@ -37,7 +37,7 @@ define Package/infodump
   SECTION:=gui
   CATEGORY:=GUI Applications
   TITLE:=Simple diagnostics program with hardware detection
-  DEPENDS:=$(RUST_ARCH_DEPENDS) +libwayland +xkeyboard-config +peacomp +libsqlite3
+  DEPENDS:=$(RUST_ARCH_DEPENDS) +libwayland +xkeyboard-config +peacomp +libsqlite3 +turris-hwdb
   URL:=https://gitlab.nic.cz/turris/display/infodump
 endef
 
