@@ -1,0 +1,60 @@
+From c3f655377404a07e510be3d351f4919d16cd7b22 Mon Sep 17 00:00:00 2001
+From: EKatWired <ekat+patch@yuri.diy>
+Date: Thu, 10 Sep 2026 11:28:09 +0200
+Subject: [PATCH] feat: add F1-trigger for factory diagnostics
+
+This will trigger `turris-infodump` every time F1 key is
+pressed (that is the LED dimming key).
+---
+ frontend/src/main.rs              | 6 ++++++
+ frontend/ui/control.slint         | 1 +
+ frontend/ui/pages/dashboard.slint | 4 +++-
+ 3 files changed, 10 insertions(+), 1 deletion(-)
+
+diff --git a/frontend/src/main.rs b/frontend/src/main.rs
+index 4bc51f7..dca6c82 100644
+--- a/frontend/src/main.rs
++++ b/frontend/src/main.rs
+@@ -83,6 +83,12 @@ async fn main() -> Result<(), Report> {
+ 	slint_lswl_backend::init().context("failed to initialize windowing backend")?;
+ 
+ 	let app = ui::make_app().context("failed to create application")?;
++	app.global::<ui::Control>().on_invoke_factory_diagnostics(|| {
++		let result = std::process::Command::new("turris-infodump").spawn();
++		if let Err(error) = result {
++			tracing::error!("failed to spawn factory diagnostics: {error:?}");
++		}
++	});
+ 
+ 	slint::spawn_local({
+ 		let app = app.clone_strong();
+diff --git a/frontend/ui/control.slint b/frontend/ui/control.slint
+index ee6376c..87008b1 100644
+--- a/frontend/ui/control.slint
++++ b/frontend/ui/control.slint
+@@ -21,4 +21,5 @@
+ 
+ export global Control {
+     callback key-pressed();
++	callback invoke-factory-diagnostics();
+ }
+\ No newline at end of file
+diff --git a/frontend/ui/pages/dashboard.slint b/frontend/ui/pages/dashboard.slint
+index 9c5fbbb..0cf3203 100644
+--- a/frontend/ui/pages/dashboard.slint
++++ b/frontend/ui/pages/dashboard.slint
+@@ -104,7 +104,9 @@ export component Dashboard inherits Page {
+             State.current-page = Page.menu;
+         } else if (key == Key.LeftArrow && State.current-page == Page.menu) {
+             State.current-page = Page.dashboard;
+-        }
++		} else if (key == Key.F1 && !Readouts.initial-setup-finished) {
++		  	Control.invoke-factory-diagnostics();
++		}
+     }
+ 
+     // Timer to update bandwidth every second on Dashboard page
+-- 
+GitLab
+
+
