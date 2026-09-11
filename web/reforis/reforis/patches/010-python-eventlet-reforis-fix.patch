@@ -1,0 +1,40 @@
+Index: reforis-3.10.0/pyproject.toml
+===================================================================
+--- reforis-3.10.0.orig/pyproject.toml
++++ reforis-3.10.0/pyproject.toml
+@@ -38,7 +38,7 @@ devel = ["l18n", "pycountry", "pytest",
+ full = ["eventlet"]
+ 
+ [project.scripts]
+-reforis = "reforis.__main__:main"
++reforis = "reforis_entrypoint:main"
+ reforis-cli = "reforis.cli:cli"
+ 
+ [project.urls]
+@@ -49,10 +49,10 @@ dependencies = ["hatch-reforis"]
+ reforis_module = "reforis"
+ 
+ [tool.hatch.build.targets.sdist]
+-include = ["/js", "/reforis", "/reforis_static"]
++include = ["/js", "/reforis", "/reforis_static", "/reforis_entrypoint"]
+ 
+ [tool.hatch.build.targets.wheel]
+-include = ["/reforis", "/reforis_static"]
++include = ["/reforis", "/reforis_static", "/reforis_entrypoint"]
+ exclude = ["**/*.po", "**/*.pot"]
+ 
+ [tool.ruff]
+Index: reforis-3.10.0/reforis_entrypoint/__init__.py
+===================================================================
+--- /dev/null
++++ reforis-3.10.0/reforis_entrypoint/__init__.py
+@@ -0,0 +1,9 @@
++import eventlet
++
++
++def main():
++    eventlet.monkey_patch()
++
++    from reforis.__main__ import main as reforis_main
++
++    return reforis_main()
