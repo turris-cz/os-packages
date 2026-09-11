@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=turris-auth-rs
-PKG_VERSION:=0.2.0
+PKG_VERSION:=0.2.1
 PKG_RELEASE:=1
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/reforis/turris-auth-rs.git
-PKG_MIRROR_HASH:=cd1e3296d056339967657007bfe64dcd95e43f97f0146f48aa4cead8243c0be4
+PKG_MIRROR_HASH:=167c564f02f7909ce427841bd38351c88a1d7f9ddfc85c754f9164c9463418c1
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
