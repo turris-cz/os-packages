@@ -50,13 +50,16 @@ define Package/infodump/install
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/target/$(RUSTC_TARGET_ARCH)/release/infodump $(1)/usr/bin/turris-infodump
 
 	$(INSTALL_DIR) $(1)/etc/init.d/
-	$(INSTALL_BIN) ./files/infodump.init $(1)/etc/init.d/infodump
+	$(INSTALL_BIN) ./files/infodump.init $(1)/etc/init.d/turris-infodump
+
+	$(INSTALL_DIR) $(1)/etc/hotplug.d/button/
+	$(INSTALL_BIN) ./files/infodump.hotplug $(1)/etc/hotplug.d/button/30-factory-infodump
 endef
 
 define Package/infodump/postinst
 #!/bin/sh
 [ -n "$$IPKG_INSTROOT" ] || {
-	/etc/init.d/infodump enable
+	/etc/init.d/turris-infodump enable
 }
 endef
 
