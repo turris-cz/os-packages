@@ -13,7 +13,7 @@ PKG_RELEASE:=1
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/reforis/reforis-storage
-PKG_MIRROR_HASH:=d116ca9bd8a398fed15b135e626de0bb8d292a7a476cb0abcf6e6db1d0b9093e
+PKG_MIRROR_HASH:=b83fd4685596fc5abd95b1a4fd11093441301353e0aaa0af690eb32d00bb7a3e
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
