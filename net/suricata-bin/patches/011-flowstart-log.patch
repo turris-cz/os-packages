@@ -69,7 +69,7 @@ Index: suricata-8.0.0/src/output-json-flowstart.c
 ===================================================================
 --- /dev/null
 +++ suricata-8.0.0/src/output-json-flowstart.c
-@@ -0,0 +1,301 @@
+@@ -0,0 +1,300 @@
 +/* Copyright (C) 2007-2017 Open Information Security Foundation
 + *
 + * You can copy, redistribute or modify this Program under the terms of
@@ -352,7 +352,6 @@ Index: suricata-8.0.0/src/output-json-flowstart.c
 +{
 +    OutputPacketLoggerFunctions output_logger_functions = {
 +        .LogFunc = JsonFlowstartLogger,
-+        .FlushFunc = NULL,
 +        .ConditionFunc = JsonFlowstartLogCondition,
 +        .ThreadInitFunc = JsonFlowstartLogThreadInit,
 +        .ThreadDeinitFunc = JsonFlowstartLogThreadDeinit,
