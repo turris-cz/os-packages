@@ -7,10 +7,8 @@ Subject: [PATCH] include_dir config option
  src/conf-yaml-loader.c | 68 ++++++++++++++++++++++++++++++++++++++++++++++++--
  1 file changed, 66 insertions(+), 2 deletions(-)
 
-Index: suricata-8.0.0/src/conf-yaml-loader.c
-===================================================================
---- suricata-8.0.0.orig/src/conf-yaml-loader.c
-+++ suricata-8.0.0/src/conf-yaml-loader.c
+--- a/src/conf-yaml-loader.c
++++ b/src/conf-yaml-loader.c
 @@ -31,6 +31,8 @@
  #include "util-debug.h"
  #include "util-unittest.h"
@@ -99,7 +97,7 @@ Index: suricata-8.0.0/src/conf-yaml-loader.c
  /**
   * \brief Parse a YAML layer.
   *
-@@ -288,7 +340,14 @@ static int ConfYamlParse(
+@@ -294,7 +346,14 @@ static int ConfYamlParse(
                  TAILQ_INSERT_TAIL(&parent->head, seq_node, next);
              }
              else {
@@ -115,7 +113,7 @@ Index: suricata-8.0.0/src/conf-yaml-loader.c
                      SCLogInfo("Including configuration file %s.", value);
                      if (SCConfYamlHandleInclude(parent, value) != 0) {
                          goto fail;
-@@ -297,6 +356,10 @@ static int ConfYamlParse(
+@@ -303,6 +362,10 @@ static int ConfYamlParse(
                  }
                  else if (state == CONF_KEY) {
  
@@ -126,7 +124,7 @@ Index: suricata-8.0.0/src/conf-yaml-loader.c
                      if (strcmp(value, "include") == 0) {
                          state = CONF_INCLUDE;
                          if (++include_count > 1) {
-@@ -361,6 +424,12 @@ static int ConfYamlParse(
+@@ -367,6 +430,12 @@ static int ConfYamlParse(
                      state = CONF_VAL;
                  }
                  else {
@@ -139,10 +137,8 @@ Index: suricata-8.0.0/src/conf-yaml-loader.c
                      if (value != NULL && (tag != NULL) && (strcmp(tag, "!include") == 0)) {
                          SCLogInfo("Including configuration file %s at "
                              "parent node %s.", value, node->name);
-Index: suricata-8.0.0/src/conf-yaml-loader.h
-===================================================================
---- suricata-8.0.0.orig/src/conf-yaml-loader.h
-+++ suricata-8.0.0/src/conf-yaml-loader.h
+--- a/src/conf-yaml-loader.h
++++ b/src/conf-yaml-loader.h
 @@ -30,6 +30,7 @@ int SCConfYamlLoadFile(const char *);
  int SCConfYamlLoadString(const char *, size_t);
  int SCConfYamlLoadFileWithPrefix(const char *filename, const char *prefix);

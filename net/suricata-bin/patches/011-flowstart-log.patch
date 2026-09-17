@@ -1,8 +1,6 @@
-Index: suricata-8.0.0/src/Makefile.am
-===================================================================
---- suricata-8.0.0.orig/src/Makefile.am
-+++ suricata-8.0.0/src/Makefile.am
-@@ -389,6 +389,7 @@ noinst_HEADERS = \
+--- a/src/Makefile.am
++++ b/src/Makefile.am
+@@ -390,6 +390,7 @@ noinst_HEADERS = \
  	output-json-email-common.h \
  	output-json-file.h \
  	output-json-flow.h \
@@ -10,7 +8,7 @@ Index: suricata-8.0.0/src/Makefile.am
  	output-json-frame.h \
  	output-json-ftp.h \
  	output-json-http.h \
-@@ -987,6 +988,7 @@ libsuricata_c_a_SOURCES = \
+@@ -990,6 +991,7 @@ libsuricata_c_a_SOURCES = \
  	output-json-email-common.c \
  	output-json-file.c \
  	output-json-flow.c \
@@ -18,10 +16,8 @@ Index: suricata-8.0.0/src/Makefile.am
  	output-json-frame.c \
  	output-json-ftp.c \
  	output-json-http.c \
-Index: suricata-8.0.0/src/output-json-flow.c
-===================================================================
---- suricata-8.0.0.orig/src/output-json-flow.c
-+++ suricata-8.0.0/src/output-json-flow.c
+--- a/src/output-json-flow.c
++++ b/src/output-json-flow.c
 @@ -53,7 +53,7 @@
  #include "flow-storage.h"
  #include "util-exception-policy.h"
@@ -53,10 +49,8 @@ Index: suricata-8.0.0/src/output-json-flow.c
      if (unlikely(jb == NULL)) {
          SCReturnInt(TM_ECODE_OK);
      }
-Index: suricata-8.0.0/src/output-json-flow.h
-===================================================================
---- suricata-8.0.0.orig/src/output-json-flow.h
-+++ suricata-8.0.0/src/output-json-flow.h
+--- a/src/output-json-flow.h
++++ b/src/output-json-flow.h
 @@ -25,6 +25,7 @@
  #define SURICATA_OUTPUT_JSON_FLOW_H
  
@@ -65,11 +59,9 @@ Index: suricata-8.0.0/src/output-json-flow.h
  void EveAddFlow(Flow *f, SCJsonBuilder *js);
  void EveAddAppProto(Flow *f, SCJsonBuilder *js);
  
-Index: suricata-8.0.0/src/output-json-flowstart.c
-===================================================================
 --- /dev/null
-+++ suricata-8.0.0/src/output-json-flowstart.c
-@@ -0,0 +1,301 @@
++++ b/src/output-json-flowstart.c
+@@ -0,0 +1,300 @@
 +/* Copyright (C) 2007-2017 Open Information Security Foundation
 + *
 + * You can copy, redistribute or modify this Program under the terms of
@@ -352,7 +344,6 @@ Index: suricata-8.0.0/src/output-json-flowstart.c
 +{
 +    OutputPacketLoggerFunctions output_logger_functions = {
 +        .LogFunc = JsonFlowstartLogger,
-+        .FlushFunc = NULL,
 +        .ConditionFunc = JsonFlowstartLogCondition,
 +        .ThreadInitFunc = JsonFlowstartLogThreadInit,
 +        .ThreadDeinitFunc = JsonFlowstartLogThreadDeinit,
@@ -371,10 +362,8 @@ Index: suricata-8.0.0/src/output-json-flowstart.c
 +}
 +
 +#endif
-Index: suricata-8.0.0/src/output-json-flowstart.h
-===================================================================
 --- /dev/null
-+++ suricata-8.0.0/src/output-json-flowstart.h
++++ b/src/output-json-flowstart.h
 @@ -0,0 +1,30 @@
 +/* Copyright (C) 2007-2017 Open Information Security Foundation
 + *
@@ -406,10 +395,8 @@ Index: suricata-8.0.0/src/output-json-flowstart.h
 +void JsonFlowstartLogRegister(void);
 +
 +#endif /* __OUTPUT_JSON_FLOWSTART_H__ */
-Index: suricata-8.0.0/src/output.c
-===================================================================
---- suricata-8.0.0.orig/src/output.c
-+++ suricata-8.0.0/src/output.c
+--- a/src/output.c
++++ b/src/output.c
 @@ -48,6 +48,7 @@
  #include "output-json-alert.h"
  #include "output-json-anomaly.h"
@@ -418,7 +405,7 @@ Index: suricata-8.0.0/src/output.c
  #include "output-json-netflow.h"
  #include "log-cf-common.h"
  #include "output-json-drop.h"
-@@ -1146,6 +1147,8 @@ void OutputRegisterLoggers(void)
+@@ -1128,6 +1129,8 @@ void OutputRegisterLoggers(void)
      JsonNetFlowLogRegister();
      /* json stats */
      JsonStatsLogRegister();
@@ -427,10 +414,8 @@ Index: suricata-8.0.0/src/output.c
  
      /* DNP3. */
      JsonDNP3LogRegister();
-Index: suricata-8.0.0/src/suricata-common.h
-===================================================================
---- suricata-8.0.0.orig/src/suricata-common.h
-+++ suricata-8.0.0/src/suricata-common.h
+--- a/src/suricata-common.h
++++ b/src/suricata-common.h
 @@ -501,6 +501,7 @@ typedef enum LoggerId {
      LOGGER_JSON_FILE,
      LOGGER_TCP_DATA,
