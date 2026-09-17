@@ -28,4 +28,6 @@ define Package/turris-hwdb/install
 	$(INSTALL_DATA) ./files/hwdb.sqlite3 $(1)/usr/share/turris-hwdb/
 endef
 
+Build/Compile:=:
+
 $(eval $(call BuildPackage,turris-hwdb))
