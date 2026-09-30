@@ -11,11 +11,9 @@ components in gpg2 on OpenWrt, executing the script might results in failure.
  schnapps.sh | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/schnapps.sh b/schnapps.sh
-index 31af04f..f1cdbba 100755
 --- a/schnapps.sh
 +++ b/schnapps.sh
-@@ -619,7 +619,7 @@ tar_it() {
+@@ -650,7 +650,7 @@ tar_it() {
          EXCLUDE="--exclude-from=$TEMP_DIR/export-exclude"
      fi
      [ ! -d /etc/schnapps/export-overlay ] || OVERLAY="-C /etc/schnapps/export-overlay ."
@@ -24,7 +22,7 @@ index 31af04f..f1cdbba 100755
          mk_tmp_dir
          mkdir -p "$TEMP_DIR/gpg"
          chmod -R 0700 "$TEMP_DIR/gpg"
-@@ -627,7 +627,7 @@ tar_it() {
+@@ -658,7 +658,7 @@ tar_it() {
          echo "$GPG_PASS" > "$TEMP_DIR/gpg/pass"
          [ "$output" = '-' ] || output="$output.gpg"
          tar --numeric-owner $EXCLUDE --one-file-system -cpvf "$output" \
@@ -33,6 +31,3 @@ index 31af04f..f1cdbba 100755
                  --passphrase-file \"$TEMP_DIR/gpg/pass\" --cipher-algo=AES256 -c" \
              -C "$dir" . $OVERLAY
          ret="$?"
--- 
-2.41.0
-
