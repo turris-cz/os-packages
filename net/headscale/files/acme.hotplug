@@ -1,0 +1,15 @@
+#!/bin/sh
+# Called by acme-common after certificate was issued or renewed. The
+# dedicated lighttpd instance picks certificate paths when its configuration is
+# generated so the service has to be restarted.
+
+case "$ACTION" in
+	issued|renewed) ;;
+	*) exit 0 ;;
+esac
+
+[ "$(uci -q get headscale.main.enabled)" = 1 ] || exit 0
+[ "$(uci -q get headscale.lighttpd.enabled)" != 0 ] || exit 0
+[ "$(uci -q get headscale.lighttpd.acme)" != 0 ] || exit 0
+
+/etc/init.d/headscale restart

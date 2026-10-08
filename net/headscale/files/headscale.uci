@@ -1,0 +1,61 @@
+config headscale 'main'
+	option enabled '0'
+	# Public URL of the server. Has to be https:// and a dedicated host name
+	# (no path). Clients connect with: tailscale up --login-server <server_url>
+	option server_url 'https://hs.example.com'
+	# Headscale listens on 127.0.0.1:<listen_port> (behind the reverse proxy)
+	option listen_port '8080'
+	# State directory (database, private keys). Empty means /srv/headscale
+	# when the storage plugin is active and /etc/headscale otherwise.
+	option data_dir ''
+	option log_level 'info'
+	# Prometheus metrics and debug pages, e.g. '127.0.0.1:9090'. This
+	# endpoint has no authentication, so only loopback addresses are accepted.
+	# Empty disables it.
+	option metrics_listen ''
+	# ACL policy file in HuJSON, e.g. '/etc/headscale/acl.hujson'.
+	# Empty means everything is allowed.
+	option policy_path ''
+	# Expert: use your own headscale YAML configuration instead of the one
+	# generated from this file. Options above (except enabled) are ignored.
+	# option config_file '/etc/headscale/config.yaml'
+
+config prefixes 'prefixes'
+	# Headscale supports one prefix per IP family. Empty disables the family
+	# (at least one has to be set).
+	option v4 '100.64.0.0/10'
+	option v6 'fd7a:115c:a1e0::/48'
+	# sequential or random
+	option allocation 'sequential'
+
+config derp 'derp'
+	# Embedded DERP relay. Needs UDP <stun_port> reachable from WAN.
+	option enabled '0'
+	option stun_port '3478'
+	# Public addresses advertised to clients (optional)
+	option ipv4 ''
+	option ipv6 ''
+	# Also offer the public DERP servers run by Tailscale Inc. to your
+	# clients. When disabled, only your own relay is used.
+	option tailscale_map '0'
+
+# Used by package headscale-lighttpd
+config lighttpd 'lighttpd'
+	option enabled '1'
+	# Ports of the dedicated lighttpd instance
+	option https_port '8443'
+	option http_port '8081'
+	# Redirect WAN ports 443 and 80 to the ports above in firewall. This is
+	# the only way the dedicated instance gets reachable from the internet.
+	option wan_access '0'
+	# Expose the REST admin API (/api/, protected by API keys created with
+	# `headscale apikeys create`), /swagger and /version to the internet.
+	# Tailscale clients don't need them. By default administration is possible
+	# only locally with the `headscale` command.
+	option remote_api '0'
+	# Obtain and renew Let's Encrypt certificate for the server_url host
+	option acme '1'
+	# Account e-mail, used only when acme has none configured yet
+	option acme_email ''
+	# Use Let's Encrypt staging environment (for testing)
+	option acme_staging '0'
