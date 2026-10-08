@@ -1,0 +1,8 @@
+// Example headscale ACL policy. Enable it with: uci set headscale.main.policy_path=/etc/headscale/acl.hujson
+// See https://tailscale.com/kb/1018/acls
+{
+	"acls": [
+		// Allow all nodes to reach each other
+		{ "action": "accept", "src": ["*"], "dst": ["*:*"] },
+	],
+}

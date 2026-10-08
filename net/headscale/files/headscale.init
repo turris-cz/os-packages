@@ -1,0 +1,301 @@
+#!/bin/sh /etc/rc.common
+
+START=95
+STOP=10
+USE_PROCD=1
+
+CONF_DIR=/var/etc/headscale
+RUN_DIR=/var/run/headscale
+LIGHTTPD_CONF_SH=/usr/libexec/headscale/lighttpd-conf.sh
+
+log() {
+	logger -t headscale -p "daemon.$1" "$2"
+}
+
+# opt SECTION OPTION [DEFAULT]; empty value yields the default as well
+opt() {
+	local v
+	v="$(uci -q get "headscale.$1.$2")"
+	echo "${v:-$3}"
+}
+
+storage_active() {
+	[ -n "$(uci -q get storage.srv.uuid)" ] && [ "$(stat -c %m /srv 2>/dev/null)" = "/srv" ]
+}
+
+has_lighttpd_pkg() {
+	[ -x "$LIGHTTPD_CONF_SH" ]
+}
+
+# Create firewall section if it does not exist yet
+fw_ensure() {
+	uci -q get "firewall.$1" >/dev/null || uci set "firewall.$1=$2"
+}
+
+# Firewall rules are regular named sections in /etc/config/firewall that are
+# kept up to date here. This runs before any process is started so the ports
+# are open (or closed) before headscale serves anything.
+firewall_sync() {
+	local on web=0 stun=0
+
+	on="$(opt main enabled 0)"
+
+	if has_lighttpd_pkg; then
+		[ "$on" = 1 ] && [ "$(opt lighttpd enabled 1)" = 1 ] && \
+			[ "$(opt lighttpd wan_access 0)" = 1 ] && web=1
+
+		fw_ensure headscale_https redirect
+		uci set firewall.headscale_https.name='Headscale-HTTPS'
+		uci set firewall.headscale_https.src='wan'
+		uci set firewall.headscale_https.proto='tcp'
+		uci set firewall.headscale_https.src_dport='443'
+		uci set firewall.headscale_https.dest_port="$(opt lighttpd https_port 8443)"
+		uci set firewall.headscale_https.target='DNAT'
+		uci set firewall.headscale_https.enabled="$web"
+
+		fw_ensure headscale_acme redirect
+		uci set firewall.headscale_acme.name='Headscale-ACME'
+		uci set firewall.headscale_acme.src='wan'
+		uci set firewall.headscale_acme.proto='tcp'
+		uci set firewall.headscale_acme.src_dport='80'
+		uci set firewall.headscale_acme.dest_port="$(opt lighttpd http_port 8081)"
+		uci set firewall.headscale_acme.target='DNAT'
+		uci set firewall.headscale_acme.enabled="$web"
+	fi
+
+	[ "$on" = 1 ] && [ "$(opt derp enabled 0)" = 1 ] && stun=1
+	fw_ensure headscale_stun rule
+	uci set firewall.headscale_stun.name='Headscale-STUN'
+	uci set firewall.headscale_stun.src='wan'
+	uci set firewall.headscale_stun.proto='udp'
+	uci set firewall.headscale_stun.dest_port="$(opt derp stun_port 3478)"
+	uci set firewall.headscale_stun.target='ACCEPT'
+	uci set firewall.headscale_stun.enabled="$stun"
+
+	if [ -n "$(uci -q changes firewall)" ]; then
+		uci commit firewall
+		/etc/init.d/firewall reload >/dev/null 2>&1
+	fi
+}
+
+# Keep certificate section for server_url host in /etc/config/acme
+acme_sync() {
+	local host="$1" want=0 changed=0 email
+
+	has_lighttpd_pkg || return 0
+	[ -f /etc/config/acme ] || return 0
+
+	[ "$(opt main enabled 0)" = 1 ] && [ "$(opt lighttpd enabled 1)" = 1 ] && \
+		[ "$(opt lighttpd acme 1)" = 1 ] && want=1
+
+	uci_acme_set() {
+		[ "$(uci -q get "acme.$1")" = "$2" ] && return 0
+		uci set "acme.$1=$2"
+		changed=1
+	}
+
+	[ -n "$(uci -q get acme.headscale)" ] || { uci set acme.headscale=cert; changed=1; }
+	uci_acme_set headscale.enabled "$want"
+	uci_acme_set headscale.validation_method webroot
+	uci_acme_set headscale.staging "$(opt lighttpd acme_staging 0)"
+	if [ "$(uci -q get acme.headscale.domains)" != "$host" ]; then
+		uci -q delete acme.headscale.domains
+		uci add_list acme.headscale.domains="$host"
+		changed=1
+	fi
+
+	if [ "$want" = 1 ]; then
+		email="$(uci -q get 'acme.@acme[0].account_email')"
+		if [ -z "$email" ] && [ -n "$(opt lighttpd acme_email)" ]; then
+			uci set 'acme.@acme[0].account_email'="$(opt lighttpd acme_email)"
+			changed=1
+		fi
+		[ -n "$(uci -q get 'acme.@acme[0].account_email')" ] || \
+			log warn "no account_email set in /etc/config/acme or headscale.lighttpd.acme_email, certificate can't be issued"
+	fi
+
+	if [ "$changed" = 1 ]; then
+		uci commit acme
+		# Give the dedicated lighttpd instance time to start listening
+		( sleep 15; /etc/init.d/acme start ) >/dev/null 2>&1 &
+	fi
+}
+
+render_config() {
+	local config="$1" data_dir="$2"
+	local server_url listen_port metrics policy v4 v6 derp_ipv4 derp_ipv6
+
+	server_url="$(opt main server_url)"
+	listen_port="$(opt main listen_port 8080)"
+	metrics="$(opt main metrics_listen)"
+	policy="$(opt main policy_path)"
+	v4="$(uci -q get headscale.prefixes.v4)"
+	v6="$(uci -q get headscale.prefixes.v6)"
+	[ -n "$(uci -q get headscale.prefixes)" ] || { v4=100.64.0.0/10; v6=fd7a:115c:a1e0::/48; }
+	derp_ipv4="$(opt derp ipv4)"
+	derp_ipv6="$(opt derp ipv6)"
+
+	{
+		cat <<EOF
+# Generated from /etc/config/headscale, do not edit
+server_url: "$server_url"
+listen_addr: "127.0.0.1:$listen_port"
+grpc_listen_addr: "127.0.0.1:50443"
+grpc_allow_insecure: false
+disable_check_updates: true
+trusted_proxies:
+  - 127.0.0.1/32
+  - ::1/128
+noise:
+  private_key_path: "$data_dir/noise_private.key"
+prefixes:
+EOF
+		[ -z "$v4" ] || echo "  v4: \"$v4\""
+		[ -z "$v6" ] || echo "  v6: \"$v6\""
+		echo "  allocation: \"$(opt prefixes allocation sequential)\""
+		[ -z "$metrics" ] || echo "metrics_listen_addr: \"$metrics\""
+		cat <<EOF
+derp:
+  server:
+    enabled: $([ "$(opt derp enabled 0)" = 1 ] && echo true || echo false)
+    region_id: 999
+    region_code: "headscale"
+    region_name: "Headscale Embedded DERP"
+    verify_clients: true
+    stun_listen_addr: "0.0.0.0:$(opt derp stun_port 3478)"
+    private_key_path: "$data_dir/derp_server_private.key"
+    automatically_add_embedded_derp_region: true
+EOF
+		[ -z "$derp_ipv4" ] || echo "    ipv4: \"$derp_ipv4\""
+		[ -z "$derp_ipv6" ] || echo "    ipv6: \"$derp_ipv6\""
+		if [ "$(opt derp tailscale_map 0)" = 1 ]; then
+			cat <<EOF
+  urls:
+    - https://controlplane.tailscale.com/derpmap/default
+  auto_update_enabled: true
+  update_frequency: 3h
+EOF
+		else
+			cat <<EOF
+  urls: []
+  auto_update_enabled: false
+EOF
+		fi
+		cat <<EOF
+  paths: []
+database:
+  type: sqlite
+  sqlite:
+    path: "$data_dir/db.sqlite"
+    write_ahead_log: true
+tls_cert_path: ""
+tls_key_path: ""
+log:
+  level: "$(opt main log_level info)"
+  format: text
+policy:
+  mode: file
+  path: "$policy"
+dns:
+  magic_dns: false
+  override_local_dns: false
+  base_domain: "tailnet.invalid"
+  nameservers:
+    global: []
+unix_socket: "$RUN_DIR/headscale.sock"
+unix_socket_permission: "0770"
+EOF
+	} > "$config"
+	chown root:headscale "$config"
+	chmod 0640 "$config"
+}
+
+start_service() {
+	local server_url host data_dir config v4 v6
+
+	# Always, so disabling headscale closes its ports in firewall
+	firewall_sync
+
+	[ "$(opt main enabled 0)" = 1 ] || return 0
+
+	server_url="$(opt main server_url)"
+	case "$server_url" in
+		https://*) ;;
+		*) log err "headscale.main.server_url has to start with https://"; return 1 ;;
+	esac
+	host="${server_url#https://}"
+	host="${host%%/*}"
+	host="${host%%:*}"
+	case "$host" in
+		""|*[!A-Za-z0-9.-]*) log err "invalid host name in headscale.main.server_url"; return 1 ;;
+	esac
+
+	mkdir -p "$CONF_DIR" "$RUN_DIR"
+	chmod 0750 "$CONF_DIR"
+	chown root:headscale "$CONF_DIR"
+	chown headscale:headscale "$RUN_DIR"
+	chmod 0750 "$RUN_DIR"
+
+	config="$(opt main config_file)"
+	if [ -z "$config" ]; then
+		v4="$(uci -q get headscale.prefixes.v4)"
+		v6="$(uci -q get headscale.prefixes.v6)"
+		if [ -n "$(uci -q get headscale.prefixes)" ] && [ -z "$v4" ] && [ -z "$v6" ]; then
+			log err "at least one of headscale.prefixes.v4 and v6 has to be set"
+			return 1
+		fi
+		if [ "$(opt derp enabled 0)" != 1 ] && [ "$(opt derp tailscale_map 0)" != 1 ]; then
+			log warn "no DERP servers are offered to clients (derp.enabled and derp.tailscale_map are off)"
+		fi
+
+		# Metrics/debug server has no authentication
+		case "$(opt main metrics_listen)" in
+			""|127.0.0.1:*|localhost:*|\[::1\]:*) ;;
+			*) log err "headscale.main.metrics_listen has to be a loopback address (unauthenticated debug endpoint)"; return 1 ;;
+		esac
+
+		data_dir="$(opt main data_dir)"
+		if [ -z "$data_dir" ]; then
+			if storage_active; then
+				data_dir=/srv/headscale
+			else
+				data_dir=/etc/headscale
+			fi
+		fi
+		mkdir -p "$data_dir"
+		chown headscale:headscale "$data_dir"
+		chmod 0700 "$data_dir"
+
+		config="$CONF_DIR/config.yaml"
+		render_config "$config" "$data_dir"
+	fi
+
+	acme_sync "$host"
+
+	procd_open_instance headscale
+	procd_set_param command /usr/bin/headscale serve -c "$config"
+	procd_set_param user headscale
+	procd_set_param respawn 3600 5 5
+	procd_set_param stdout 1
+	procd_set_param stderr 1
+	procd_close_instance
+
+	if has_lighttpd_pkg && [ "$(opt lighttpd enabled 1)" = 1 ]; then
+		if "$LIGHTTPD_CONF_SH" > "$CONF_DIR/lighttpd.conf" && \
+			/usr/sbin/lighttpd -tt -f "$CONF_DIR/lighttpd.conf" >/dev/null 2>&1; then
+			procd_open_instance lighttpd
+			procd_set_param command /usr/sbin/lighttpd -D -f "$CONF_DIR/lighttpd.conf"
+			procd_set_param file "$CONF_DIR/lighttpd.conf"
+			procd_set_param respawn 3600 5 5
+			procd_set_param stdout 1
+			procd_set_param stderr 1
+			procd_close_instance
+		else
+			log err "invalid lighttpd configuration generated, reverse proxy not started (see: lighttpd -tt -f $CONF_DIR/lighttpd.conf)"
+		fi
+	fi
+}
+
+service_triggers() {
+	procd_add_reload_trigger headscale
+}
