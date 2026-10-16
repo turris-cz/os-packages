@@ -13,11 +13,9 @@ Signed-off-by: Šimon Bořek <simon.borek@nic.cz>
  schnapps.sh | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/schnapps.sh b/schnapps.sh
-index ea26a7c..36f9aac 100755
 --- a/schnapps.sh
 +++ b/schnapps.sh
-@@ -292,7 +292,7 @@ generic_list() {
+@@ -306,7 +306,7 @@ generic_list() {
                      ;;
                  json)
                      [ "$first" = "y" ] || echo ", "
@@ -26,6 +24,3 @@ index ea26a7c..36f9aac 100755
                      first=""
                      ;;
                  csv)
--- 
-2.37.2
-
