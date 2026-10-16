@@ -168,11 +168,10 @@ ifdef(`OMNIA',`
 		"title": "Network monitoring and parental control",
 		"description": "Tools to monitor the local network and users on it.",
 		"options": {
-ifdef(`GO',`
 			"librespeed": {
 				"title": "Internet connection speed measurement",
 				"description": "Actively measures Internet connection speed using a public network of LibreSpeed servers."
-			},')
+			},
 			"dev_detect": {
 				"title": "New devices detection",
 				"description": "Software for detecting new devices on local network.",
