@@ -1,7 +1,5 @@
-Index: suricata-8.0.0/rust/Makefile.am
-===================================================================
---- suricata-8.0.0.orig/rust/Makefile.am
-+++ suricata-8.0.0/rust/Makefile.am
+--- a/rust/Makefile.am
++++ b/rust/Makefile.am
 @@ -64,10 +64,12 @@ CARGO_ENV +=	LOCALSTATEDIR=$(e_localstat
  # To pass specific CFLAGS to Lua.
  CARGO_ENV +=	SURICATA_LUA_SYS_CFLAGS="$(SURICATA_LUA_SYS_CFLAGS)"
@@ -16,10 +14,8 @@ Index: suricata-8.0.0/rust/Makefile.am
  		$(CARGO_ENV) \
  		$(CARGO) build $(RELEASE) $(NIGHTLY_ARGS) \
  			--features "$(RUST_FEATURES)" $(RUST_TARGET)
-Index: suricata-8.0.0/rust/.cargo/config.toml.in
-===================================================================
---- suricata-8.0.0.orig/rust/.cargo/config.toml.in
-+++ suricata-8.0.0/rust/.cargo/config.toml.in
+--- a/rust/.cargo/config.toml.in
++++ b/rust/.cargo/config.toml.in
 @@ -6,3 +6,5 @@
  @rust_vendor_comment@
  @rust_vendor_comment@[source.vendored-sources]

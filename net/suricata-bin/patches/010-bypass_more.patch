@@ -1,8 +1,6 @@
-Index: suricata-8.0.0/src/stream-tcp.c
-===================================================================
---- suricata-8.0.0.orig/src/stream-tcp.c
-+++ suricata-8.0.0/src/stream-tcp.c
-@@ -503,6 +503,20 @@ void StreamTcpInitConfig(bool quiet)
+--- a/src/stream-tcp.c
++++ b/src/stream-tcp.c
+@@ -511,6 +511,20 @@ void StreamTcpInitConfig(bool quiet)
                       "TCP stream engine memcaps.");
      }
  
@@ -23,7 +21,7 @@ Index: suricata-8.0.0/src/stream-tcp.c
      if ((SCConfGetInt("stream.prealloc-sessions", &value)) == 1) {
          stream_config.prealloc_sessions = (uint32_t)value;
      } else {
-@@ -5690,6 +5704,14 @@ int StreamTcpPacket (ThreadVars *tv, Pac
+@@ -5826,6 +5840,14 @@ int StreamTcpPacket (ThreadVars *tv, Pac
          {
              /* we can call bypass callback, if enabled */
              if (StreamTcpBypassEnabled()) {
@@ -38,10 +36,8 @@ Index: suricata-8.0.0/src/stream-tcp.c
                  PacketBypassCallback(p);
              }
          }
-Index: suricata-8.0.0/src/stream-tcp.h
-===================================================================
---- suricata-8.0.0.orig/src/stream-tcp.h
-+++ suricata-8.0.0/src/stream-tcp.h
+--- a/src/stream-tcp.h
++++ b/src/stream-tcp.h
 @@ -70,6 +70,7 @@ typedef struct TcpStreamCnf_ {
      bool midstream;
      bool async_oneside;
