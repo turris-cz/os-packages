@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=headscale
-PKG_VERSION:=0.28.0
+PKG_VERSION:=0.29.5
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://codeload.github.com/juanfont/headscale/tar.gz/v$(PKG_VERSION)?
-PKG_HASH:=cb38683998d13d2700df258a81c00add199dccb999b1dacc4491305cdaa67db3
+PKG_HASH:=b4ea4abd8b333181906dacc379edceeb3df562aa3d40df086476728fa30e4e8f
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 PKG_LICENSE:=BSD-3-Clause

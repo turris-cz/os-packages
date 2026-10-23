@@ -1,0 +1,79 @@
+--- a/hscontrol/db/db.go	2026-10-23 09:51:26.955841816 +0200
++++ b/hscontrol/db/db.go	2026-10-23 09:51:27.383329849 +0200
+@@ -9,7 +9,6 @@
+ 	"net/netip"
+ 	"path/filepath"
+ 	"slices"
+-	"strconv"
+ 	"time"
+ 
+ 	"github.com/glebarez/sqlite"
+@@ -20,7 +19,6 @@
+ 	"github.com/juanfont/headscale/hscontrol/util"
+ 	"github.com/rs/zerolog/log"
+ 	"github.com/tailscale/squibble"
+-	"gorm.io/driver/postgres"
+ 	"gorm.io/gorm"
+ 	"gorm.io/gorm/logger"
+ 	"gorm.io/gorm/schema"
+@@ -926,6 +924,8 @@
+ 	return &db, err
+ }
+ 
++var errPostgresNotSupported = errors.New("PostgreSQL support is not compiled in")
++
+ func openDB(cfg types.DatabaseConfig) (*gorm.DB, error) {
+ 	// TODO(kradalby): Integrate this with zerolog
+ 	var dbLogger logger.Interface
+@@ -980,49 +980,8 @@
+ 		return db, err
+ 
+ 	case types.DatabasePostgres:
+-		dbString := fmt.Sprintf(
+-			"host=%s dbname=%s user=%s",
+-			cfg.Postgres.Host,
+-			cfg.Postgres.Name,
+-			cfg.Postgres.User,
+-		)
+-
+-		log.Info().
+-			Str("database", types.DatabasePostgres).
+-			Str("path", dbString).
+-			Msg("Opening database")
+-
+-		if sslEnabled, err := strconv.ParseBool(cfg.Postgres.Ssl); err == nil { //nolint:noinlineerr
+-			if !sslEnabled {
+-				dbString += " sslmode=disable"
+-			}
+-		} else {
+-			dbString += " sslmode=" + cfg.Postgres.Ssl
+-		}
+-
+-		if cfg.Postgres.Port != 0 {
+-			dbString += fmt.Sprintf(" port=%d", cfg.Postgres.Port)
+-		}
+-
+-		if cfg.Postgres.Pass != "" {
+-			dbString += " password=" + cfg.Postgres.Pass
+-		}
+-
+-		db, err := gorm.Open(postgres.Open(dbString), &gorm.Config{
+-			Logger: dbLogger,
+-		})
+-		if err != nil {
+-			return nil, err
+-		}
+-
+-		sqlDB, _ := db.DB()
+-		sqlDB.SetMaxIdleConns(cfg.Postgres.MaxIdleConnections)
+-		sqlDB.SetMaxOpenConns(cfg.Postgres.MaxOpenConnections)
+-		sqlDB.SetConnMaxIdleTime(
+-			time.Duration(cfg.Postgres.ConnMaxIdleTimeSecs) * time.Second,
+-		)
+-
+-		return db, nil
++		// The PostgreSQL driver is not compiled in to keep the binary small.
++		return nil, errPostgresNotSupported
+ 	}
+ 
+ 	return nil, fmt.Errorf(
