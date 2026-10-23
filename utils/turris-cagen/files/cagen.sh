@@ -146,7 +146,7 @@ do_gen_server() {
 	SERIAL=$(cat serial)
 	echo "$SERIAL server $1" >>notes.txt
 	echo "$SERIAL server $1" >generating
-	echo "$1" | openssl req -new -newkey rsa:4096 -keyout "$SERIAL".key -nodes -out "$SERIAL".csr -config "$OPENSSL_CONF" -extensions usr_server
+	echo "$1" | openssl req -new -newkey rsa:4096 -keyout "$SERIAL".key -nodes -out "$SERIAL".csr -config "$OPENSSL_CONF"
 	openssl ca -out "$SERIAL".crt -config "$OPENSSL_CONF" -batch -extensions usr_server -infiles "$SERIAL".csr
 	chmod 0400 "$SERIAL".key
 	do_gen_crl
@@ -160,7 +160,7 @@ do_gen_client() {
 	SERIAL=$(cat serial)
 	echo "$SERIAL client $1" >>notes.txt
 	echo "$SERIAL client $1" >generating
-	echo "$1" | openssl req -new -newkey rsa:4096 -keyout "$SERIAL".key -nodes -out "$SERIAL".csr -config "$OPENSSL_CONF" -extensions usr_client
+	echo "$1" | openssl req -new -newkey rsa:4096 -keyout "$SERIAL".key -nodes -out "$SERIAL".csr -config "$OPENSSL_CONF"
 	openssl ca -out "$SERIAL".crt -config "$OPENSSL_CONF" -batch -extensions usr_client -infiles "$SERIAL".csr
 	chmod 0400 "$SERIAL".key
 	do_gen_crl
