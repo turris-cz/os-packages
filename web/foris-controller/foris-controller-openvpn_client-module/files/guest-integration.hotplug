@@ -1,9 +1,42 @@
 #!/bin/sh
-IPTABLES="iptables"
-[ ! -x "$(which iptables-legacy)" ] || IPTABLES="iptables-legacy"
-if [ "$ACTION" = "route-up" ] && [ "$redirect_gateway" = 1 ]; then
-	$IPTABLES -I zone_tr_guest_forward -m comment --comment "Turris: Guest to VPN forwarding policy" -j zone_tr_vpn_cl_dest_ACCEPT
-fi
-if [ "$ACTION" = "down" ] || [ "$ACTION" = "route-pre-down" ]; then
-	$IPTABLES -D zone_tr_guest_forward -m comment --comment "Turris: Guest to VPN forwarding policy" -j zone_tr_vpn_cl_dest_ACCEPT
-fi
+
+FAMILY="inet"
+TABLE="fw4"
+SOURCE_CHAIN="forward_tr_guest"
+TARGET_CHAIN="accept_to_tr_vpn_cl"
+RULE_COMMENT="Turris: Guest to VPN forwarding policy"
+
+find_rule_handles() {
+    nft -a list chain "$FAMILY" "$TABLE" "$SOURCE_CHAIN" 2>/dev/null |
+        awk -v target="$TARGET_CHAIN" -v comment="$RULE_COMMENT" '
+            index($0, "jump " target " ") &&
+            index($0, "comment \"" comment "\"") {
+                for (i = 1; i < NF; i++)
+                    if ($i == "handle")
+                        print $(i + 1)
+            }
+        '
+}
+
+case "$ACTION" in
+    route-up)
+        if [ "$redirect_gateway" = "1" ] &&
+           nft list chain "$FAMILY" "$TABLE" "$SOURCE_CHAIN" >/dev/null 2>&1 &&
+           nft list chain "$FAMILY" "$TABLE" "$TARGET_CHAIN" >/dev/null 2>&1 &&
+           [ -z "$(find_rule_handles)" ]; then
+
+            nft insert rule "$FAMILY" "$TABLE" "$SOURCE_CHAIN" \
+                jump "$TARGET_CHAIN" \
+                comment "\"$RULE_COMMENT\"" || exit 1
+        fi
+        ;;
+
+    route-pre-down|down)
+        for handle in $(find_rule_handles); do
+            nft delete rule "$FAMILY" "$TABLE" \
+                "$SOURCE_CHAIN" handle "$handle" || exit 1
+        done
+        ;;
+esac
+
+exit 0
