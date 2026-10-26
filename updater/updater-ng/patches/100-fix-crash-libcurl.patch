@@ -1,0 +1,15 @@
+Index: updater-ng-70.2.1/src/lib/download.c
+===================================================================
+--- updater-ng-70.2.1.orig/src/lib/download.c
++++ updater-ng-70.2.1/src/lib/download.c
+@@ -105,9 +105,7 @@ static void download_event_cb(int fd, sh
+ }
+ 
+ // Curl callback to set watched sockets
+-static int download_socket_cb(CURL *curl_easy, curl_socket_t s, int what, void *userp, void *socketp) {
+-	struct download_i *inst;
+-	ASSERT_CURL(curl_easy_getinfo(curl_easy, CURLINFO_PRIVATE, &inst));
++static int download_socket_cb(CURL *curl_easy __attribute__((unused)), curl_socket_t s, int what, void *userp, void *socketp) {
+ 	struct downloader *downloader = userp;
+ 	struct download_socket_data *sdata = socketp;
+ 	if (what == CURL_POLL_REMOVE) {
