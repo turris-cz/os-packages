@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2025 CZ.NIC z.s.p.o. (https://www.nic.cz/)
+# Copyright (C) 2019-2026 CZ.NIC z.s.p.o. (https://www.nic.cz/)
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=reforis-remote-access-plugin
-PKG_VERSION:=2.3.0
+PKG_VERSION:=2.3.1
 PKG_RELEASE:=1
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/reforis/reforis-remote-access
-PKG_MIRROR_HASH:=141a2be6c8bda6931246b3297cec0b5477a94e0172820368f85070e9eb11b420
+PKG_MIRROR_HASH:=695a37d5f17a72f31d61c3b152a0656e6892aa0e87a8da65d83ebc1d607d138c
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
