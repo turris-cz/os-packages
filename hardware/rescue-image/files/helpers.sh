@@ -328,10 +328,65 @@ flash_image() {
     done
     mdev -s
     echo "Image should be ready"
+    case "$(cat /tmp/medkit-file)" in
+        *-ext4-*) echo "Note: factory reset works only with a squashfs root, not with this ext4 image" ;;
+    esac
 }
 
 root_is_btrfs() {
     blkid "$TARGET_PART" | grep -q 'TYPE="btrfs"'
+}
+
+# Prints the second partition of the target drive, the OpenWrt root
+openwrt_root_part() {
+    case "$TARGET_DRIVE" in
+        *[0-9]) echo "${TARGET_DRIVE}p2" ;;
+        *) echo "${TARGET_DRIVE}2" ;;
+    esac
+}
+
+# Prints the little endian number made of the bytes given as arguments
+le() {
+    local v=0 s=0 b
+    for b in "$@"; do
+        v=$(( v + (b << s) ))
+        s=$(( s + 8 ))
+    done
+    echo "$v"
+}
+
+# Prints where the OpenWrt overlay starts, in 64 KiB blocks of the root
+# partition. fstools puts it after the squashfs root, aligned to 64 KiB.
+openwrt_overlay_block() {
+    local part="$(openwrt_root_part)" size bsize blog used idt inode dirt block
+    [ -b "$part" ] || return 1
+    [ "$(dd if="$part" bs=4 count=1 2> /dev/null)" = hsqs ] || return 1
+    # Without the partition size, the bounds check below can't work
+    size="$(blockdev --getsize64 "$part")" || return 1
+    case "$size" in
+        ''|*[!0-9]*) return 1 ;;
+    esac
+    # The 96 bytes of the squashfs 4.0 superblock
+    set -- $(hexdump -n 96 -v -e '1/1 "%u "' "$part")
+    [ "$#" -eq 96 ] || return 1
+    bsize="$(le ${13} ${14} ${15} ${16})"
+    blog="$(le ${23} ${24})"
+    used="$(le ${41} ${42} ${43} ${44} ${45} ${46} ${47} ${48})"
+    idt="$(le ${49} ${50} ${51} ${52} ${53} ${54} ${55} ${56})"
+    inode="$(le ${65} ${66} ${67} ${68} ${69} ${70} ${71} ${72})"
+    dirt="$(le ${73} ${74} ${75} ${76} ${77} ${78} ${79} ${80})"
+    block=$(( (used + 65535) / 65536 ))
+    # Version 4, a block size of 4 KiB to 1 MiB that matches block_log, and
+    # the tables in their order inside bytes_used. The wipe of 16 blocks must
+    # stay inside the partition.
+    if [ "$(le ${29} ${30})" -ne 4 ] || [ "$blog" -lt 12 ] || [ "$blog" -gt 20 ] ||
+        [ "$bsize" -ne $(( 1 << blog )) ] || [ "$inode" -lt 96 ] ||
+        [ "$inode" -ge "$dirt" ] || [ "$dirt" -ge "$used" ] || [ "$idt" -ge "$used" ] ||
+        [ "$(( (block + 16) * 65536 ))" -gt "$size" ]; then
+        echo "The squashfs superblock on $part looks damaged" >&2
+        return 1
+    fi
+    echo "$block"
 }
 
 reflash() {
@@ -492,10 +547,20 @@ mode_2() {
 # Factory reset
 MODE3="Factory reset"
 mode_3() {
+    local block
     echo "Running factory reset"
-    root_is_btrfs || die 3 "Factory reset needs a btrfs root"
-    reset_uenv || die 3 "Can't reset the U-Boot environment"
-    schnapps rollback factory || die 3 "Factory reset failed"
+    if root_is_btrfs; then
+        reset_uenv || die 3 "Can't reset the U-Boot environment"
+        schnapps rollback factory || die 3 "Factory reset failed"
+    elif block="$(openwrt_overlay_block)"; then
+        # OpenWrt formats a wiped overlay on the next boot, as after a flash.
+        # Like its own factory reset, this keeps the U-Boot environment.
+        echo "Wiping the OpenWrt overlay"
+        dd if=/dev/zero of="$(openwrt_root_part)" bs=64k seek="$block" count=16 conv=fsync >> /tmp/debug.txt 2>&1 \
+            || die 3 "Can't wipe the OpenWrt overlay"
+    else
+        die 3 "Factory reset needs a btrfs root or OpenWrt on squashfs"
+    fi
 }
 
 # Reflash from USB
