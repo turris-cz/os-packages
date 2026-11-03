@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2022-2025 CZ.NIC z.s.p.o. (https://www.nic.cz/)
+# Copyright (C) 2022-2026 CZ.NIC z.s.p.o. (https://www.nic.cz/)
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=reforis-nextcloud-plugin
-PKG_VERSION:=1.4.0
+PKG_VERSION:=1.4.1
 PKG_RELEASE:=1
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/reforis/reforis-nextcloud
-PKG_MIRROR_HASH:=5f1a17366cc0101c9c1609e8f067ebdbdb279934c47a981d7d8fc8ebf14d26f7
+PKG_MIRROR_HASH:=f388c75b266d97197c6b009ee789cf730c60ec178c37a656ec70f24f4b169d06
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>

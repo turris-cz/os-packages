@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=reforis-storage-plugin
-PKG_VERSION:=1.5.1
+PKG_VERSION:=1.5.2
 PKG_RELEASE:=1
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/reforis/reforis-storage
-PKG_MIRROR_HASH:=d116ca9bd8a398fed15b135e626de0bb8d292a7a476cb0abcf6e6db1d0b9093e
+PKG_MIRROR_HASH:=741ee5535330843943b6c607edc1adfd784c416c9f0c9a3db3e7622d62415de4
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
