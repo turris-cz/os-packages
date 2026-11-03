@@ -1,10 +1,10 @@
 #
-## Copyright (C) 2018-2021 CZ.NIC z.s.p.o. (https://www.nic.cz/)
+# Copyright (C) 2018-2021 CZ.NIC z.s.p.o. (https://www.nic.cz/)
 #
-## This is free software, licensed under the GNU General Public License v3.
+# This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
-# #
 #
+
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=sentinel-minipot
