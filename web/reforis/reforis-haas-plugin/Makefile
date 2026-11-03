@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2020-2025 CZ.NIC z.s.p.o. (https://www.nic.cz/)
+# Copyright (C) 2020-2026 CZ.NIC z.s.p.o. (https://www.nic.cz/)
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=reforis-haas-plugin
-PKG_VERSION:=1.4.0
+PKG_VERSION:=1.4.1
 PKG_RELEASE:=1
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/reforis/reforis-haas
-PKG_MIRROR_HASH:=75a6c61545c20a5929b418c80a682adbcfc8c0e3536471580aa60e04954c1cda
+PKG_MIRROR_HASH:=4cbed646f28b7687ee7e1f7e537422717b068de9fc509675349594dbef08a068
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
