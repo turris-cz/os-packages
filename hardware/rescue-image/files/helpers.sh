@@ -330,6 +330,10 @@ flash_image() {
     echo "Image should be ready"
 }
 
+root_is_btrfs() {
+    blkid "$TARGET_PART" | grep -q 'TYPE="btrfs"'
+}
+
 reflash() {
     if [ -f /tmp/medkit-drive ]; then
         if expr "$(cat /tmp/medkit-drive)" : "${TARGET_DRIVE}.*" > /dev/null; then
@@ -481,15 +485,17 @@ mode_1() {
 MODE2="Btrfs rollback"
 mode_2() {
     echo "Running btrfs rollback"
-    schnapps rollback
+    root_is_btrfs || die 3 "Rollback needs a btrfs root"
+    schnapps rollback || die 3 "Rollback failed"
 }
 
 # Factory reset
 MODE3="Factory reset"
 mode_3() {
     echo "Running factory reset"
-    reset_uenv
-    schnapps rollback factory
+    root_is_btrfs || die 3 "Factory reset needs a btrfs root"
+    reset_uenv || die 3 "Can't reset the U-Boot environment"
+    schnapps rollback factory || die 3 "Factory reset failed"
 }
 
 # Reflash from USB
