@@ -1,19 +1,19 @@
 #
-## Copyright (C) 2018-2025 CZ.NIC z.s.p.o. (https://www.nic.cz/)
+# Copyright (C) 2018-2026 CZ.NIC z.s.p.o. (https://www.nic.cz/)
 #
-## This is free software, licensed under the GNU General Public License v3.
+# This is free software, licensed under the GNU General Public License v3.
 # See /LICENSE for more information.
-# #
+#
 #
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=turris-translations
-PKG_VERSION:=1.7.0
+PKG_VERSION:=1.7.1
 PKG_RELEASE:=1
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/turris-translations.git
-PKG_MIRROR_HASH:=59d59ca9097782fd0ce0c21a98b9c2a83cbce4754e9b76b5c6e7c9e24150e08a
+PKG_MIRROR_HASH:=f89e1cec3a0e0ca42863b8da35b1dae57b78bb315b0841fbccba4be12ac2c0ee
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
