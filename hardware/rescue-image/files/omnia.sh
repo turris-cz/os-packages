@@ -7,6 +7,26 @@ find_mtd_index() {
     sed -n 's|^mtd\([0-9]*\):.*"'"$1"'"$|\1|p' /proc/mtd | head -n 1
 }
 
+# leds-turris-omnia has one node per LED and none for all of them
+LEDS="power lan-0 lan-1 lan-2 lan-3 lan-4 wan wlan-1 wlan-2 wlan-3 indicator-1 indicator-2"
+
+# Set the colour of all LEDs, "R G B"
+leds_color() {
+    local led
+    for led in $LEDS; do
+        [ -e /sys/class/leds/rgb\:$led/multi_intensity ] || continue
+        echo "$1" > /sys/class/leds/rgb\:$led/multi_intensity
+    done
+}
+
+leds_trigger() {
+    local led
+    for led in $LEDS; do
+        [ -e /sys/class/leds/rgb\:$led/trigger ] || continue
+        echo "$1" > /sys/class/leds/rgb\:$led/trigger
+    done
+}
+
 board_init() {
     local idx
 
@@ -25,69 +45,60 @@ board_init() {
     TARGET_DRIVE="/dev/mmcblk0"
     PART_NO="1"
     TARGET_PART="${TARGET_DRIVE}p${PART_NO}"
-    BRIGHT="`cat /sys/class/leds/omnia-led\:all/device/global_brightness`"
+    BRIGHT="`cat /sys/class/leds/rgb\:power/device/brightness 2> /dev/null`"
+    # The LEDs show the mode. The button steps 0 to 100 and that would be put
+    # back, so on a dark board each press would change the mode unseen.
+    if [ "$BRIGHT" = 0 ]; then
+        echo 100 > /sys/class/leds/rgb\:power/device/brightness && BRIGHT=100
+    fi
     WAN_IF="eth2"
     DELAY=40
     RESCUE_IF="`ip a s | sed -n 's|^[0-9]*:[[:blank:]]*\(lan4\)@.*|\1|p'`"
     RESCUE_IF_UP="`ip a s | sed -n 's|^[0-9]*:[[:blank:]]*\(lan4\)@\([^:]*\):.*|\2|p'`"
-    echo '0 255 0' >  /sys/class/leds/omnia-led\:all/color
-    echo default-on > /sys/class/leds/omnia-led\:all/trigger
+    leds_color '0 255 0'
+    leds_trigger default-on
     enable_btrfs
     generic_post_init
 }
 
+# The button changes the global brightness. Use a change of it to select the
+# next mode and put the brightness back.
 check_for_mode_change() {
-    if [ "`cat /sys/class/leds/omnia-led\:all/device/global_brightness`" -ne "$BRIGHT" ]; then
-        echo "$BRIGHT" > /sys/class/leds/omnia-led\:all/device/global_brightness
+    local cur="`cat /sys/class/leds/rgb\:power/device/brightness 2> /dev/null`"
+    [ -n "$cur" ] && [ -n "$BRIGHT" ] || return 1
+    if [ "$cur" -ne "$BRIGHT" ]; then
+        # When it can't be put back, keep the new value, or every next look
+        # would be taken for another press
+        echo "$BRIGHT" > /sys/class/leds/rgb\:power/device/brightness || BRIGHT="$cur"
         return 0
     fi
     return 1
 }
 
+# Show the mode as the number of lit LEDs, starting with power
 display_mode() {
-    MODE_TG=default-on
-    echo '255 64 0' >  /sys/class/leds/omnia-led\:all/color
-    for i in /sys/class/leds/omnia-led*; do
-        echo none > "$i"/trigger
+    local led n=0
+    leds_color '255 64 0'
+    leds_trigger none
+    for led in $LEDS; do
+        n="$(expr $n + 1)"
+        [ -e /sys/class/leds/rgb\:$led/trigger ] || continue
+        if [ "$n" -le "$MODE" ]; then
+            echo default-on > /sys/class/leds/rgb\:$led/trigger
+        else
+            echo 0 > /sys/class/leds/rgb\:$led/brightness
+        fi
     done
-    echo "$MODE_TG" > /sys/class/leds/omnia-led\:power/trigger
-    if [ "$MODE" -gt 1 ]; then
-        echo "$MODE_TG" > /sys/class/leds/omnia-led\:lan0/trigger
-    fi
-    if [ "$MODE" -gt 2 ]; then
-        echo "$MODE_TG" > /sys/class/leds/omnia-led\:lan1/trigger
-    fi
-    if [ "$MODE" -gt 3 ]; then
-        echo "$MODE_TG" > /sys/class/leds/omnia-led\:lan2/trigger
-    fi
-    if [ "$MODE" -gt 4 ]; then
-        echo "$MODE_TG" > /sys/class/leds/omnia-led\:lan3/trigger
-    fi
-    if [ "$MODE" -gt 5 ]; then
-        echo "$MODE_TG" > /sys/class/leds/omnia-led\:lan4/trigger
-    fi
-    if [ "$MODE" -gt 6 ]; then
-        echo "$MODE_TG" > /sys/class/leds/omnia-led\:wan/trigger
-    fi
-    if [ "$MODE" -gt 7 ]; then
-        echo "$MODE_TG" > /sys/class/leds/omnia-led\:pci1/trigger
-    fi
-    if [ "$MODE" -gt 8 ]; then
-        echo "$MODE_TG" > /sys/class/leds/omnia-led\:pci2/trigger
-    fi
-    if [ "$MODE" -gt 9 ]; then
-        echo "$MODE_TG" > /sys/class/leds/omnia-led\:pci3/trigger
-    fi
 }
 
 busy() {
-    echo '255 0 0' >  /sys/class/leds/omnia-led\:all/color
+    leds_color '255 0 0'
 }
 
 die() {
     predie "$1" "$2"
-    echo '0 0 255' >  /sys/class/leds/omnia-led\:all/color
-    echo timer > /sys/class/leds/omnia-led\:all/trigger
+    leds_color '0 0 255'
+    leds_trigger timer
     while true; do
         sleep 1
     done

@@ -26,6 +26,10 @@ ROOTFS_INSTALL:=libgcc libc kernel \
 				kmod-fs-exfat kmod-lib-crc16 kmod-fs-ext4 kmod-nls-cp437 kmod-nls-iso8859-1 kmod-nls-utf8 kmod-fs-vfat
 PKG_BUILD_DEPENDS:=opkg/host mtd btrfs-progs schnapps cznic-repo-keys usign dropbear haveged uboot-tools kernel pcre2
 
+# The LED controller of the Omnia sits behind an I2C mux, and the kernel has no
+# driver built in for either of them
+OMNIA_PKGS:=kmod-i2c-mux kmod-i2c-mux-pca954x kmod-leds-turris-omnia
+
 include $(INCLUDE_DIR)/target.mk
 include $(INCLUDE_DIR)/kernel.mk
 include $(INCLUDE_DIR)/package.mk
@@ -34,6 +38,7 @@ ifeq ($(CONFIG_TARGET_mvebu_cortexa53_DEVICE_cznic_turris-mox),y)
 DEVICE := mox
 else ifeq ($(CONFIG_TARGET_mvebu_cortexa9_DEVICE_cznic_turris-omnia),y)
 DEVICE := omnia
+ROOTFS_INSTALL+=$(OMNIA_PKGS)
 else ifeq ($(CONFIG_TARGET_ipq95xx_generic_DEVICE_cznic_turris-omnia-ng),y)
 DEVICE := omnia-ng
 ROOTFS_INSTALL+=kmod-qca-nss-phy kmod-qca-ssdk \
@@ -52,6 +57,7 @@ OMNIA_NG_PKGS:=kmod-qca-nss-phy kmod-qca-ssdk kmod-nat46 kmod-qca-nss-ppe kmod-q
 define Package/rescue-image
 	TITLE:=rescue-image
 	DEPENDS:=@(TARGET_mvebu_cortexa53_DEVICE_cznic_turris-mox||TARGET_mvebu_cortexa9_DEVICE_cznic_turris-omnia||TARGET_ipq95xx_generic_DEVICE_cznic_turris-omnia-ng) \
+		 $(foreach pkg,$(OMNIA_PKGS),+TARGET_mvebu_cortexa9_DEVICE_cznic_turris-omnia:$(pkg)) \
 		 $(foreach pkg,$(OMNIA_NG_PKGS),+TARGET_ipq95xx_generic_DEVICE_cznic_turris-omnia-ng:$(pkg))
 endef
 
