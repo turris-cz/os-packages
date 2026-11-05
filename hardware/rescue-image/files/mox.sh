@@ -26,6 +26,7 @@ board_init() {
     TARGET_DRIVE="/dev/mmcblk1"
     PART_NO="1"
     TARGET_PART="${TARGET_DRIVE}p${PART_NO}"
+    OPENWRT_IMAGES="*-cznic_turris-mox-sdcard.img.gz *-cznic_turris-mox-squashfs-sdcard.img.gz *-cznic_turris-mox-ext4-sdcard.img.gz"
     [ -n "$RESCUE_IF" ] || RESCUE_IF=eth0
     handle_reset &
     enable_btrfs
