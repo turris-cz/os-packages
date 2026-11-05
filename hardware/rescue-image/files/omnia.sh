@@ -2,11 +2,9 @@
 
 . /lib/board_helpers.sh
 
+# Busybox has no awk here
 find_mtd_index() {
-    local PART="$(grep "\"$1\"" /proc/mtd | awk -F: '{print $1}')"
-    local INDEX="${PART##mtd}"
-
-    echo ${INDEX}
+    sed -n 's|^mtd\([0-9]*\):.*"'"$1"'"$|\1|p' /proc/mtd | head -n 1
 }
 
 board_init() {
