@@ -95,6 +95,14 @@ busy() {
     leds_color '255 0 0'
 }
 
+# Yellow when the mode is done or its shell is ready, as on the Omnia NG
+success() {
+    leds_color '255 255 0'
+    leds_trigger default-on
+    echo "Everything done!"
+    grep -v 'dont_reboot' /proc/cmdline > /dev/null || sleep 99999
+}
+
 die() {
     predie "$1" "$2"
     leds_color '0 0 255'
