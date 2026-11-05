@@ -10,19 +10,19 @@ PKG_RELRO_FULL:=0
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=knot-resolver6
-PKG_VERSION:=6.4.2
+PKG_VERSION:=6.5.1
 PKG_RELEASE:=1
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/knot/knot-resolver.git
-PKG_MIRROR_HASH:=85ed933cd24973a1c1a2c40b8743a3b62a527cbec017e3b988dc0f5f02d4dd34
+PKG_MIRROR_HASH:=0a0e68013cdb7e8686e486e31d4779ddfc5824287e6ae096e08a24406fc7d5a4
 PKG_SOURCE_VERSION:=v${PKG_VERSION}
 
 PKG_MAINTAINER:=Knot Resolver <knot-resolver@labs.nic.cz>
 PKG_LICENSE:=GPL-3.0-later
 PKG_LICENSE_FILES:=COPYING
 
-PKG_BUILD_DEPENDS:=protobuf-c/host python-poetry-core/host
+PKG_BUILD_DEPENDS:=protobuf-c/host python-setuptools/host
 
 PKG_INSTALL:=1
 
