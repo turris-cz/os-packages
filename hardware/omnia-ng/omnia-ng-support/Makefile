@@ -1,9 +1,16 @@
+#
+# Copyright (C) 2025-2026 CZ.NIC z.s.p.o. (http://www.nic.cz/)
+#
+# This is free software, licensed under the GNU General Public License v2.
+# See /LICENSE for more information.
+#
+
 include $(TOPDIR)/rules.mk
 include $(INCLUDE_DIR)/kernel.mk
 
 PKG_NAME:=omnia-ng-support
 PKG_VERSION:=1.5
-PKG_RELEASE:=19
+PKG_RELEASE:=20
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 
