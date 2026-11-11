@@ -1,0 +1,32 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Josef Schlehofer <pepe.schlehofer@gmail.com>
+Date: Wed, 11 Nov 2026 16:23:20 +0100
+Subject: [PATCH] Fail with an error code when die is called
+
+Since commit e5db5aa ("Check the error code of sshfs"), ERR starts as 0
+and die keeps it, because ${ERR:-1} only replaces an empty value. The
+EXIT trap ends with exit "$ERR", so every die after the trap is set
+exits with 0, and a caller can't see the failure. A rescue system that
+ran schnapps rollback on a read-only card got "Can't make snapshot of
+current state" with exit code 0 and went on as if it had rolled back.
+
+Set ERR to 1 in die unless it already holds an error code.
+
+Signed-off-by: Josef Schlehofer <pepe.schlehofer@gmail.com>
+---
+ schnapps.sh | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/schnapps.sh b/schnapps.sh
+index 3831c2b..31cc32d 100755
+--- a/schnapps.sh
++++ b/schnapps.sh
+@@ -43,7 +43,7 @@ VERSION="@VERSION@"
+ 
+ die() {
+     echo "$@" >&2
+-    ERR="${ERR:-1}"
++    [ "$ERR" != 0 ] || ERR=1
+     exit 1
+ }
+ 
