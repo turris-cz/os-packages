@@ -1,0 +1,12 @@
+Index: foris-controller-openvpn-module-1.2.0/foris_controller_backends/openvpn/__init__.py
+===================================================================
+--- foris-controller-openvpn-module-1.2.0.orig/foris_controller_backends/openvpn/__init__.py
++++ foris-controller-openvpn-module-1.2.0/foris_controller_backends/openvpn/__init__.py
+@@ -126,6 +126,7 @@ class StatusFileReader:
+                             name, ip_and_port, in_bytes, out_bytes, since
+                         ) = line.rsplit(",", 4)
+                         ip, port = ip_and_port.rsplit(":", 1)
++                        ip = re.sub(r"^(?:tcp|udp)[46](?:-(?:client|server))?:", "", ip)
+                         ip = str(ipaddress.ip_address(ip.strip("[]")))
+                         since = datetime.fromisoformat(since).isoformat()
+                         res[name].append({
