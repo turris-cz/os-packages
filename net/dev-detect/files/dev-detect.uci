@@ -2,6 +2,7 @@ package 'dev-detect'
 
 config watchlist 'watchlist'
     list ifaces 'br-lan'
+    list ifaces 'br-guest-turris'
     list ifaces 'br-guest_turris'
 
 config storage 'storage'
