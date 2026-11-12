@@ -1,0 +1,13 @@
+#!/bin/sh
+# Turris OS 6 names the guest network bridge br-guest-turris. Watch it also
+# in configurations created when the default was br-guest_turris only.
+
+ifaces="$(uci -q get dev-detect.watchlist.ifaces)" || exit 0
+case " $ifaces " in
+    *" br-guest-turris "*) exit 0 ;;
+    *" br-guest_turris "*) ;;
+    *) exit 0 ;;
+esac
+
+uci add_list dev-detect.watchlist.ifaces='br-guest-turris'
+uci commit dev-detect
