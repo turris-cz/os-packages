@@ -30,7 +30,26 @@ if [ ! -f "$OUI_FILE" ]; then
 	exit 2
 fi
 
-PREFIX="$(echo "$QRY" | sed -n 's/^\([0-9a-fA-F]\{2\}\)\([:\.-]\{0,1\}\)\([0-9a-fA-F]\{2\}\)\2\([0-9a-fA-F]\{2\}\)\2[0-9a-fA-F]\{2\}\2[0-9a-fA-F]\{2\}\2[0-9a-fA-F]\{2\}$/\1\3\4/p')"
-[ -n "$PREFIX" ] || exit 3
-
-grep -i "$PREFIX" "$OUI_FILE" 2> /dev/null | cut -d'|' -f2
+# The MAC address is aa:bb:cc:dd:ee:ff, with '-' or '.' in place of ':' or
+# without separators. Print the vendor of its first three octets, exit with 3
+# if it is not a MAC address. It is passed in the environment, as awk -v
+# would expand backslash escapes in it.
+MAC="$QRY" awk -F '|' '
+BEGIN {
+	mac = ENVIRON["MAC"]
+	sep = substr(mac, 3, 1)
+	if (sep == ".")
+		sep = "[.]"
+	else if (sep != ":" && sep != "-")
+		sep = ""
+	hex = "[0-9A-Fa-f][0-9A-Fa-f]"
+	if (mac !~ ("^" hex sep hex sep hex sep hex sep hex sep hex "$"))
+		exit 3
+	gsub(/[-:.]/, "", mac)
+	prefix = toupper(substr(mac, 1, 6))
+}
+$1 == prefix {
+	print $2
+	exit
+}
+' "$OUI_FILE"

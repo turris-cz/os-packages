@@ -8,14 +8,14 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=ouidb
-PKG_VERSION:=20220320
-PKG_RELEASE:=4
+PKG_VERSION:=20261108
+PKG_RELEASE:=1
 
-PKG_SOURCE_VERSION:=6a97b2095c4c2a31b2099037a43814990c611648
-PKG_SOURCE_URL:=https://github.com/wireshark/wireshark/raw/$(PKG_SOURCE_VERSION)
-PKG_SOURCE_URL_FILE:=manuf
-PKG_SOURCE:=$(PKG_NAME)-$(PKG_SOURCE_VERSION).txt
-PKG_HASH:=0737d8aaaa404f3d0606e34b4622c840535885fc899aecb2964a4b96f2db51d6
+PKG_SOURCE_VERSION:=52693c47e0321ced967cdf311fc1bfe6203e581d
+PKG_SOURCE_URL:=https://github.com/wireshark/wireshark/raw/$(PKG_SOURCE_VERSION)/epan
+PKG_SOURCE_URL_FILE:=manuf-data.c
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_SOURCE_VERSION).c
+PKG_HASH:=01473a7ff5845768fffa034da50671bed2c4664a0fcb14a7ee980ecce1def1ac
 
 UNPACK_CMD:=:
 
@@ -30,9 +30,7 @@ define Package/ouidb
 endef
 
 define Build/Compile
-	awk -v re='^[0-9A-F]{2}:[0-9A-F]{2}:[0-9A-F]{2}$$$$' \
-		'$$$$1 ~ re && $$$$3 { gsub(":", "", $$$$1); print $$$$1 "|" $$$$3 }' \
-		$(DL_DIR)/$(PKG_SOURCE) > $(PKG_BUILD_DIR)/oui.db
+	awk -f ./files/oui-db.awk $(DL_DIR)/$(PKG_SOURCE) > $(PKG_BUILD_DIR)/oui.db
 endef
 
 define Package/ouidb/install
