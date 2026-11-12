@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=turris-webapps-adguardhome
 PKG_VERSION:=1.0
-PKG_RELEASE:=2
+PKG_RELEASE:=3
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 PKG_LICENSE:=GPL-3.0-or-later
@@ -23,7 +23,8 @@ define Package/turris-webapps-adguardhome
   TITLE:=Adguardhome integration
   DEPENDS:=+adguardhome \
     +turris-webapps \
-    +lighttpd-mod-proxy
+    +lighttpd-mod-proxy \
+    +procd-ujail
   URL:=https://gitlab.nic.cz/turris/webapps
 endef
 
