@@ -84,16 +84,18 @@ and at least one has to remain.
 
 | option | default | description |
 |---|---|---|
-| `enabled` | `0` | run the embedded DERP relay (opens UDP `stun_port` on WAN) |
+| `enabled` | `1` | run the embedded DERP relay (opens UDP `stun_port` on WAN) |
 | `stun_port` | `3478` | |
 | `ipv4`, `ipv6` | *(empty)* | public addresses advertised to clients |
 | `tailscale_map` | `0` | also hand clients the public DERP servers operated by Tailscale Inc. |
 
 The embedded DERP relay is **not** published anywhere. It is only added to the
 DERP map that this headscale sends to its own clients, and it only relays for
-nodes of your tailnet (`verify_clients` is always on). With `tailscale_map` off
-and DERP disabled, clients get no relay at all (the init script warns); direct
-connections still work where NAT allows it.
+nodes of your tailnet (`verify_clients` is always on). Headscale refuses to
+start with an empty DERP map, so **at least one** of `enabled` and
+`tailscale_map` has to be `1`; otherwise the init script logs an error and does
+not start headscale. Direct connections between nodes still work where NAT
+allows it, the DERP relay is only the fallback.
 
 `config lighttpd 'lighttpd'` (`headscale-lighttpd` only)
 

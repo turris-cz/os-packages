@@ -63,7 +63,7 @@ firewall_sync() {
 		uci set firewall.headscale_acme.enabled="$web"
 	fi
 
-	[ "$on" = 1 ] && [ "$(opt derp enabled 0)" = 1 ] && stun=1
+	[ "$on" = 1 ] && [ "$(opt derp enabled 1)" = 1 ] && stun=1
 	fw_ensure headscale_stun rule
 	uci set firewall.headscale_stun.name='Headscale-STUN'
 	uci set firewall.headscale_stun.src='wan'
@@ -157,7 +157,7 @@ EOF
 		cat <<EOF
 derp:
   server:
-    enabled: $([ "$(opt derp enabled 0)" = 1 ] && echo true || echo false)
+    enabled: $([ "$(opt derp enabled 1)" = 1 ] && echo true || echo false)
     region_id: 999
     region_code: "headscale"
     region_name: "Headscale Embedded DERP"
@@ -244,8 +244,10 @@ start_service() {
 			log err "at least one of headscale.prefixes.v4 and v6 has to be set"
 			return 1
 		fi
-		if [ "$(opt derp enabled 0)" != 1 ] && [ "$(opt derp tailscale_map 0)" != 1 ]; then
-			log warn "no DERP servers are offered to clients (derp.enabled and derp.tailscale_map are off)"
+		if [ "$(opt derp enabled 1)" != 1 ] && [ "$(opt derp tailscale_map 0)" != 1 ]; then
+			# Headscale refuses to start with an empty DERP map
+			log err "at least one of headscale.derp.enabled and headscale.derp.tailscale_map has to be set (headscale requires a non-empty DERP map)"
+			return 1
 		fi
 
 		# Metrics/debug server has no authentication

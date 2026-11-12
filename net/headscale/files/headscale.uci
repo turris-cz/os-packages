@@ -30,7 +30,9 @@ config prefixes 'prefixes'
 
 config derp 'derp'
 	# Embedded DERP relay. Needs UDP <stun_port> reachable from WAN.
-	option enabled '0'
+	# Headscale requires at least one DERP server, so keep this on unless
+	# 'tailscale_map' below is 1.
+	option enabled '1'
 	option stun_port '3478'
 	# Public addresses advertised to clients (optional)
 	option ipv4 ''
