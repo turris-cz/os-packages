@@ -1,0 +1,47 @@
+Index: reforis-3.10.1/js/src/overview/Cards/OpenVPNClientsCard.js
+===================================================================
+--- reforis-3.10.1.orig/js/src/overview/Cards/OpenVPNClientsCard.js
++++ reforis-3.10.1/js/src/overview/Cards/OpenVPNClientsCard.js
+@@ -18,17 +18,37 @@ import Card from "overview/Cards/Card";
+ import usePopover from "utils/usePopover";
+ 
+ export default function OpenVPNClients() {
+-    const [getOpenVPNClientsResponse, getOpenVPNClients] = useAPIGet(
++    const [serverResponse, getServerSettings] = useAPIGet(
++        API_MODULE_URLs.openvpn
++    );
++    const [clientsResponse, getOpenVPNClients] = useAPIGet(
+         API_MODULE_URLs.openvpnClients
+     );
++
++    useEffect(() => {
++        getServerSettings();
++    }, [getServerSettings]);
++
++    const serverEnabled = serverResponse.data?.enabled;
++
+     useEffect(() => {
+-        getOpenVPNClients();
+-    }, [getOpenVPNClients]);
++        if (serverEnabled) {
++            getOpenVPNClients();
++        }
++    }, [getOpenVPNClients, serverEnabled]);
++
++    if (serverEnabled === false) {
++        return null;
++    }
+ 
+     return (
+         <OpenVPNClientsCardWithErrorAndSpinner
+-            apiState={getOpenVPNClientsResponse.state}
+-            clients={getOpenVPNClientsResponse.data || {}}
++            apiState={
++                serverEnabled === true
++                    ? clientsResponse.state
++                    : serverResponse.state
++            }
++            clients={clientsResponse.data || []}
+             handleRefresh={getOpenVPNClients}
+         />
+     );
