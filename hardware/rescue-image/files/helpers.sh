@@ -48,7 +48,7 @@ uuid2part() {
         retry="$(expr "$retry" - 1)"
     done
     echo "$part"
-} 
+}
 
 override_root() {
     if [ -n "$(fw_printenv root_uuid 2> /dev/null)" ]; then
@@ -97,22 +97,45 @@ download_medkit() {
     local time_to_end=""
     for wan_if in $WAN_IF; do
         echo "Trying to get online using $wan_if"
+        echo 1 > "/proc/sys/net/ipv6/conf/${wan_if}/accept_ra"
         ip link set up dev "$wan_if"
+
         time_to_end=""
-        while ! udhcpc -i "$wan_if" $DHCP_OPTS && [ -z "$time_to_end" ]; do
-            echo "No DHCP :-("
-            sleep 2
+        sleep 4
+        while ! ip -6 route get 2001:148f:ffff::1 && [ -z "$time_to_end" ]; do
+        	echo "No IPv6 route found for 2001:148f:ffff::1"
+         	sleep 2
             i="$(expr "$i" + 1)"
             [ "$i" -lt "$tries" ] || time_to_end="yes"
         done
+
         if [ -n "$time_to_end" ]; then
-            echo "Can't get IP"
-            continue
+        	echo "Failed to check IPv6 reachability of test endpoint, trying DHCPv4"
+
+	        time_to_end=""
+			tries=0
+	        while ! udhcpc -i "$wan_if" $DHCP_OPTS && [ -z "$time_to_end" ]; do
+	            echo "No DHCP :-("
+	            sleep 2
+	            i="$(expr "$i" + 1)"
+	            [ "$i" -lt "$tries" ] || time_to_end="yes"
+	        done
+
+	        if [ -n "$time_to_end" ]; then
+	            echo "Can't get IP"
+	            continue
+	        fi
+
+	        echo "Got IPv4!"
+			ip addr show
+            ip route show
+        else
+        	echo "Got IPv6!"
+         	ip -6 addr show dev "$wan_if"
+          	ip -6 route show
         fi
-        echo "Got IPv4!"
-        ip addr show
-        ip route show
-        grep -q nameserver /etc/resolv.conf || echo nameserver 193.17.47.1 > /etc/resolv.conf
+
+        grep -q nameserver /etc/resolv.conf || echo -e "nameserver 2001:148f:ffff::1\nnameserver 193.17.47.1" > /etc/resolv.conf
         mkdir -p /mnt/src
         # Download medkit and signature
         for ext in tar.gz tar.gz.sig; do
@@ -187,7 +210,7 @@ find_medkit() {
     done
     if [ \! -f /tmp/medkit-file ] && [ -f /mnt/src/medkit.tar.gz ]; then
         echo "No medkit on any drive found, using built-in"
-        echo "medkit.tar.gz" > /tmp/medkit-file 
+        echo "medkit.tar.gz" > /tmp/medkit-file
     fi
     [ -f /tmp/medkit-file ] || die 2 "No valid medkit found!"
 }
@@ -425,6 +448,7 @@ mode_5() {
     done
     ip link set br_lan up
     ip addr add 192.168.1.1/24 dev br_lan
+    ip -6 addr add fe80::1/64 dev br_lan
     rm -f /etc/dropbear/*
     dropbear -R -B -E
     success
@@ -450,4 +474,3 @@ mode_7() {
     reboot
 }
 MAX_MODE=7
-
