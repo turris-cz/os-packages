@@ -1,0 +1,13 @@
+Index: turris-webapps-6.2.1/turris-root.conf
+===================================================================
+--- turris-webapps-6.2.1.orig/turris-root.conf
++++ turris-webapps-6.2.1/turris-root.conf
+@@ -29,3 +29,8 @@ alias.url += ( "/icons/" => "/www/webapp
+ $HTTP["url"] =~ "^/(?:favicon.ico|index.html)?$" {
+         alias.url += ( "/" => "/www/turris-webapps/")
+ }
++
++# Serve WebApps static assets
++$HTTP["url"] =~ "^/assets/" {
++        alias.url += ( "/assets/" => "/www/turris-webapps/assets/" )
++}
