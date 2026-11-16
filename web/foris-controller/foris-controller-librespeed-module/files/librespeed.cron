@@ -1,2 +1,0 @@
-MAILTO=""
-~ 1~4 * * * root /usr/libexec/foris-controller/librespeed.sh

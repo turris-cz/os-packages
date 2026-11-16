@@ -1,0 +1,68 @@
+#!/bin/sh
+# Since 2.0 the module keeps no settings of its own: measurements, schedules
+# and history are librespeed-common's, in its sections of the same config.
+# This moves the 1.x settings there, once. It runs on every install and
+# upgrade of the package. With no 1.x settings left to move it changes
+# nothing, so what was set since in reForis or LuCI stays.
+
+# 1.x kept them in the client section of the file, which the package manager
+# keeps when it was changed.
+uci -q get librespeed.client >/dev/null || exit 0
+autostart=$(uci -q get librespeed.client.autostart_enabled)
+server=$(uci -q get librespeed.client.server)
+
+# 1.x measured along the IPv4 default route, while librespeed-common measures
+# one named interface, wan unless set. A file without its main section yet gets
+# the interface holding that route now, the lowest metric if several do, of
+# those librespeed-common can measure: not dynamic and in the main table.
+# With none, as at boot without netifd or with DS-Lite's dynamic interface
+# holding the route, it keeps wan.
+uplink=""
+if ! uci -q get librespeed.main >/dev/null; then
+	dump=$(ubus -t 5 call network.interface dump 2>/dev/null)
+	[ -n "$dump" ] || dump='{}'
+	best=""
+	for x in $(jsonfilter -s "$dump" -e "@.interface[@.dynamic=false && !@.ip4table && @.route[@.target='0.0.0.0' && !@.table]].interface" 2>/dev/null); do
+		case "$x" in *[!A-Za-z0-9_]*) continue ;; esac
+		metric=$(jsonfilter -s "$dump" -e "@.interface[@.interface='$x'].route[@.target='0.0.0.0' && !@.table].metric" 2>/dev/null | sort -n | head -n 1)
+		[ -n "$best" ] && [ "${metric:-0}" -ge "$best" ] && continue
+		best=${metric:-0} uplink=$x
+	done
+fi
+
+# Such a file has none of librespeed-common's sections. LuCI edits only
+# sections that exist. Their defaults stand for the options left out.
+for section in main schedule history; do
+	uci -q get "librespeed.$section" >/dev/null || uci set "librespeed.$section=librespeed"
+done
+[ -z "$uplink" ] || uci set librespeed.main.interface="$uplink"
+# 1.x always measured against Turris's server list.
+[ -n "$(uci -q get librespeed.main.server_list)" ] ||
+	uci set librespeed.main.server_list=https://librespeed.turris.cz/servers.json
+# Daily within the night window 1.x measured in.
+case "$autostart" in
+1|on|true|yes|enabled)
+	uci set librespeed.schedule.enabled=1
+	uci set librespeed.schedule.interval=1d
+	uci set librespeed.schedule.hours=1-4
+	;;
+esac
+# 1.x took any string, 0 for the closest server, but librespeed-common runs an id.
+case "$server" in
+''|0|*[!0-9]*) ;;
+*) uci set librespeed.main.server="$server" ;;
+esac
+uci delete librespeed.client
+if ! uci commit librespeed; then
+	# Kept for the next run, with nothing staged for another commit to apply.
+	uci revert librespeed
+	exit 1
+fi
+# Beside the file it kept, the package manager saved librespeed-common's own
+# as librespeed-opkg (updater) or librespeed.apk-new (apk). Its sections are
+# now in place, and uci would list the copy as a config of its own.
+rm -f /etc/config/librespeed-opkg /etc/config/librespeed.apk-new
+
+# A migrated autostart gets its cron line now rather than at the next boot.
+[ ! -x /etc/init.d/librespeed ] || /etc/init.d/librespeed reload >/dev/null 2>&1
+exit 0

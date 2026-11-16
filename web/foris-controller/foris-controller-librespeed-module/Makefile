@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=foris-controller-librespeed-module
-PKG_VERSION:=1.3.0
+PKG_VERSION:=2.0.0
 PKG_RELEASE:=1
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/foris-controller/foris-controller-librespeed-module.git
-PKG_MIRROR_HASH:=b143982faa605724725bef1efd1eb1834b16674436022520438ff3a100b8fe63
+PKG_MIRROR_HASH:=set-once-v2.0.0-is-tagged
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
@@ -32,32 +32,16 @@ define Package/foris-controller-librespeed-module
   DEPENDS:=\
     +cronie \
     +foris-controller \
-    +python3-dateutil \
-    +librespeed-cli
+    +librespeed-common
 endef
 
 define Package/foris-controller-librespeed-module/description
   This is a librespeed module for foris-controller.
 endef
 
-define Package/foris-controller-librespeed-module/conffiles
-/etc/config/librespeed
-endef
-
-define Package/foris-controller-librespeed-module/postinst
-#!/bin/sh
-if [ -z "$${IPKG_INSTROOT}" ]; then
-	/etc/init.d/foris-controller restart
-fi
-endef
-
 define ForisControllerModule/foris-controller-librespeed-module/install
-	$(INSTALL_DIR) $(1)/etc/config
-	$(INSTALL_DATA) ./files/librespeed.uci $(1)/etc/config/librespeed
-	$(INSTALL_DIR) $(1)/usr/libexec/foris-controller
-	$(INSTALL_BIN) ./files/librespeed.sh $(1)/usr/libexec/foris-controller/librespeed.sh
-	$(INSTALL_DIR) $(1)/etc/cron.d
-	$(INSTALL_DATA) ./files/librespeed.cron $(1)/etc/cron.d/librespeed
+	$(INSTALL_DIR) $(1)/etc/uci-defaults
+	$(INSTALL_BIN) ./files/uci-defaults $(1)/etc/uci-defaults/99-foris-controller-librespeed-module
 endef
 
 define Package/foris-controller-librespeed-module/postinst

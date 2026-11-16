@@ -1,3 +1,0 @@
-config client client
-    option autostart_enabled 0
-    option data_dir "/tmp/librespeed-data/"
