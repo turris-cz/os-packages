@@ -11,6 +11,8 @@ REPARTITION=1
 MODE=1
 FORCE_MODE=""
 NOR_UPDATE=""
+# OpenWrt disk images that USB flash accepts, set by the board
+OPENWRT_IMAGES=""
 
 # Include all helper functions
 

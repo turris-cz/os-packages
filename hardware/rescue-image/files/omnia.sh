@@ -27,6 +27,7 @@ board_init() {
     TARGET_DRIVE="/dev/mmcblk0"
     PART_NO="1"
     TARGET_PART="${TARGET_DRIVE}p${PART_NO}"
+    OPENWRT_IMAGES="*-cznic_turris-omnia-sysupgrade.img.gz *-cznic_turris-omnia-squashfs-sysupgrade.img.gz *-cznic_turris-omnia-ext4-sysupgrade.img.gz"
     BRIGHT="`cat /sys/class/leds/omnia-led\:all/device/global_brightness`"
     WAN_IF="eth2"
     DELAY=40

@@ -144,15 +144,81 @@ download_medkit() {
     [ -z "$time_to_end" ] || die 1 "No internet :-("
 }
 
+# Checks /mnt/src/$1 against the hash in its checksum file $2 with the tool $3.
+# Only the hash counts, so "hash  name", "hash *name" and a bare hash all work.
+check_checksum() {
+    local want got
+    want="$(sed -n '1{s/^[[:space:]]*//;s/[[:space:]].*//;y/ABCDEF/abcdef/;p;}' "$2")"
+    got="$("$3" "/mnt/src/$1" | sed 's/[[:space:]].*//')"
+    [ -n "$want" ] && [ "$want" = "$got" ]
+}
+
+# Checks the optional .md5, .sha256 and .sig of a file in /mnt/src
+check_medkit_file() {
+    local f="$1"
+    if [ -f "/mnt/src/$f".md5 ] && ! check_checksum "$f" "/mnt/src/$f".md5 md5sum; then
+        echo "Wrong md5 sum for $f"
+        return 1
+    fi
+    if [ -f "/mnt/src/$f".sha256 ] && ! check_checksum "$f" "/mnt/src/$f".sha256 sha256sum; then
+        echo "Wrong sha256 sum for $f"
+        return 1
+    fi
+    if [ -f "/mnt/src/$f".sig ]; then
+        usign -V -m "/mnt/src/$f" -P /etc/opkg/keys || return 1
+    fi
+    echo "Nothing wrong with it"
+}
+
+# Adds the valid files that match patterns $3 on the drive $1, mounted at
+# /mnt/src, to /tmp/$2-list as "name drive" lines. A file that fails its
+# checks creates /tmp/$2-rejected.
+list_valid_files() {
+    local d="$1" kind="$2" f
+    # read keeps each name as is, a for loop over $(ls) would glob it
+    (cd /mnt/src && ls -1 $3 2> /dev/null) | while read -r f; do
+        case "$f" in
+            *' '*|*'	'*) continue ;;
+        esac
+        [ -f "/mnt/src/$f" ] || continue
+        echo "Found $f on device $d"
+        if check_medkit_file "$f"; then
+            echo "$f $d" >> /tmp/"$kind"-list
+        else
+            : > /tmp/"$kind"-rejected
+        fi
+    done
+}
+
+# Picks the OpenWrt disk image of the board, if exactly one valid image is on
+# the drives. A second image stops the rescue instead of guessing.
+find_openwrt_image() {
+    local name drive
+    [ -n "$OPENWRT_IMAGES" ] || return 0
+    for d in /dev/mmcblk*p* /dev/sd*; do
+        [ -e "$d" ] || continue
+        mount "$d" /mnt/src || continue
+        list_valid_files "$d" image "$OPENWRT_IMAGES"
+        umount -fl /mnt/src
+    done
+    [ -s /tmp/image-list ] || return 0
+    [ "$(wc -l < /tmp/image-list)" -eq 1 ] || die 2 "More than one OpenWrt image found, keep only one"
+    read -r name drive < /tmp/image-list
+    echo "No medkit found, using OpenWrt image $name from $drive"
+    echo "$name" > /tmp/medkit-file
+    echo "$drive" > /tmp/medkit-drive
+}
+
 # Takes as an argument number of retries
 find_medkit() {
+    local name drive
     echo "Searching for medkit"
     i=0
     retries="$1"
     mkdir -p /mnt/src
-    rm -f /tmp/medkit-drive /tmp/medkit-file
+    rm -f /tmp/medkit-drive /tmp/medkit-file /tmp/medkit-list /tmp/medkit-sorted /tmp/medkit-rejected /tmp/image-list
     # Till we run out of retries or find the image
-    while [ "$i" -lt "$retries" ] && [ \! -f /tmp/medkit-file ]; do
+    while [ "$i" -lt "$retries" ] && [ \! -s /tmp/medkit-list ]; do
         sleep 1
         i="$(expr "$i" + 1)"
         # Search all block devices
@@ -160,31 +226,23 @@ find_medkit() {
             [ -e "$d" ] || continue
             mount "$d" /mnt/src || continue
             echo "Trying device $d"
-            # Search all files and find the best one
-            for f in $(cd /mnt/src; ls -1 $BOARD-medkit${MDKT_VARIANT}*.tar.gz medkit-$BOARD${MDKT_VARIANT}.tar.gz medkit-$BOARD${MDKT_VARIANT}-*.tar.gz); do
-                [ -f "/mnt/src/$f" ] || continue
-                echo "Found $f on device $d"
-                if [ -f "/mnt/src/$f".md5 ] && [ "$(cat "/mnt/src/$f".md5)" \!= "$(cd /mnt/src; md5sum "$f")" ]; then
-                    echo "Wrong md5 sum for $f"
-                    continue
-                fi
-                if [ -f "/mnt/src/$f".sha256 ] && [ "$(cat "/mnt/src/$f".sha256)" \!= "$(cd /mnt/src; sha256sum "$f")" ]; then
-                    echo "Wrong sha256 sum for $f"
-                    continue
-                fi
-                if [ -f "/mnt/src/$f".sig ]; then
-                    usign -V -m "/mnt/src/$f" -P /etc/opkg/keys || continue
-                fi
-                echo "Nothing wrong with it"
-                if expr "$f" \> "$(cat /tmp/medkit-file 2> /dev/null) > /dev/null"; then
-                    echo "And its our newest one!"
-                    echo "$d" > /tmp/medkit-drive
-                    echo "$f" > /tmp/medkit-file
-                fi
-            done
+            list_valid_files "$d" medkit "$BOARD-medkit${MDKT_VARIANT}*.tar.gz medkit-$BOARD${MDKT_VARIANT}.tar.gz medkit-$BOARD${MDKT_VARIANT}-*.tar.gz"
             umount -fl /mnt/src
         done
     done
+    if [ -s /tmp/medkit-list ]; then
+        # Each pass searches all drives, the passes only wait for slow ones.
+        # The greatest name is the newest medkit. read takes the name as is,
+        # without the glob expansion of an unquoted $(...).
+        sort -r /tmp/medkit-list > /tmp/medkit-sorted
+        read -r name drive < /tmp/medkit-sorted
+        echo "Using medkit $name from $drive"
+        echo "$name" > /tmp/medkit-file
+        echo "$drive" > /tmp/medkit-drive
+    elif [ \! -f /tmp/medkit-rejected ]; then
+        # An OpenWrt image only counts if there is no medkit, not even a broken one
+        find_openwrt_image
+    fi
     if [ \! -f /tmp/medkit-file ] && [ -f /mnt/src/medkit.tar.gz ]; then
         echo "No medkit on any drive found, using built-in"
         echo "medkit.tar.gz" > /tmp/medkit-file 
@@ -248,23 +306,114 @@ check_clock() {
     fi
 }
 
+# Writes a whole disk image, such as an OpenWrt image, to the target drive
+flash_image() {
+    local img="/mnt/src/$(cat /tmp/medkit-file)" try=0
+    [ -b "$TARGET_DRIVE" ] || die 3 "No target drive $TARGET_DRIVE"
+    # Test the whole image first, so a broken one leaves the drive as it is
+    echo "Checking $(cat /tmp/medkit-file)"
+    gzip -t "$img" >> /tmp/debug.txt 2>&1 || die 2 "The image is damaged"
+    echo "Writing it to $TARGET_DRIVE"
+    ( set -o pipefail; gzip -dc "$img" | dd of="$TARGET_DRIVE" bs=4M conv=fsync ) >> /tmp/debug.txt 2>&1 \
+        || die 2 "Flashing failed!!!"
+    sync
+    # A lazily unmounted partition can keep the drive busy for a moment
+    until blockdev --rereadpt "$TARGET_DRIVE" >> /tmp/debug.txt 2>&1; do
+        try="$(expr "$try" + 1)"
+        if [ "$try" -ge 3 ]; then
+            echo "Can't reread the partition table, the reboot will do it"
+            break
+        fi
+        sleep 1
+    done
+    mdev -s
+    echo "Image should be ready"
+    case "$(cat /tmp/medkit-file)" in
+        *-ext4-*) echo "Note: factory reset works only with a squashfs root, not with this ext4 image" ;;
+    esac
+}
+
+root_is_btrfs() {
+    blkid "$TARGET_PART" | grep -q 'TYPE="btrfs"'
+}
+
+# Prints the second partition of the target drive, the OpenWrt root
+openwrt_root_part() {
+    case "$TARGET_DRIVE" in
+        *[0-9]) echo "${TARGET_DRIVE}p2" ;;
+        *) echo "${TARGET_DRIVE}2" ;;
+    esac
+}
+
+# Prints the little endian number made of the bytes given as arguments
+le() {
+    local v=0 s=0 b
+    for b in "$@"; do
+        v=$(( v + (b << s) ))
+        s=$(( s + 8 ))
+    done
+    echo "$v"
+}
+
+# Prints where the OpenWrt overlay starts, in 64 KiB blocks of the root
+# partition. fstools puts it after the squashfs root, aligned to 64 KiB.
+openwrt_overlay_block() {
+    local part="$(openwrt_root_part)" size bsize blog used idt inode dirt block
+    [ -b "$part" ] || return 1
+    [ "$(dd if="$part" bs=4 count=1 2> /dev/null)" = hsqs ] || return 1
+    # Without the partition size, the bounds check below can't work
+    size="$(blockdev --getsize64 "$part")" || return 1
+    case "$size" in
+        ''|*[!0-9]*) return 1 ;;
+    esac
+    # The 96 bytes of the squashfs 4.0 superblock
+    set -- $(hexdump -n 96 -v -e '1/1 "%u "' "$part")
+    [ "$#" -eq 96 ] || return 1
+    bsize="$(le ${13} ${14} ${15} ${16})"
+    blog="$(le ${23} ${24})"
+    used="$(le ${41} ${42} ${43} ${44} ${45} ${46} ${47} ${48})"
+    idt="$(le ${49} ${50} ${51} ${52} ${53} ${54} ${55} ${56})"
+    inode="$(le ${65} ${66} ${67} ${68} ${69} ${70} ${71} ${72})"
+    dirt="$(le ${73} ${74} ${75} ${76} ${77} ${78} ${79} ${80})"
+    block=$(( (used + 65535) / 65536 ))
+    # Version 4, a block size of 4 KiB to 1 MiB that matches block_log, and
+    # the tables in their order inside bytes_used. The wipe of 16 blocks must
+    # stay inside the partition.
+    if [ "$(le ${29} ${30})" -ne 4 ] || [ "$blog" -lt 12 ] || [ "$blog" -gt 20 ] ||
+        [ "$bsize" -ne $(( 1 << blog )) ] || [ "$inode" -lt 96 ] ||
+        [ "$inode" -ge "$dirt" ] || [ "$dirt" -ge "$used" ] || [ "$idt" -ge "$used" ] ||
+        [ "$(( (block + 16) * 65536 ))" -gt "$size" ]; then
+        echo "The squashfs superblock on $part looks damaged" >&2
+        return 1
+    fi
+    echo "$block"
+}
+
 reflash() {
     if [ -f /tmp/medkit-drive ]; then
         if expr "$(cat /tmp/medkit-drive)" : "${TARGET_DRIVE}.*" > /dev/null; then
             echo "Copying medkit to RAM"
             mkdir -p /mnt/tmp
-            mount "$(cat /tmp/medkit-drive)" /mnt/tmp
-            cp /mnt/tmp/"$(cat /tmp/medkit-file)" /mnt/src
-            local extra_file="/mnt/tmp/$(sed 's|\.tar\.gz$|-extra.tar.gz|' /tmp/medkit-file)"
+            mount "$(cat /tmp/medkit-drive)" /mnt/tmp || die 2 "Can't mount $(cat /tmp/medkit-drive)"
+            cp /mnt/tmp/"$(cat /tmp/medkit-file)" /mnt/src || die 2 "Can't copy the medkit to RAM"
+            local extra_file="/mnt/tmp/$(sed -n 's|\.tar\.gz$|-extra.tar.gz|p' /tmp/medkit-file)"
             if [ -f "$extra_file" ]; then
                 cp "$extra_file" /mnt/src
             fi
             umount -fl /mnt/tmp
             rm -f /tmp/medkit-drive
         else
-            mount "$(cat /tmp/medkit-drive)" /mnt/src
+            mount "$(cat /tmp/medkit-drive)" /mnt/src || die 2 "Can't mount $(cat /tmp/medkit-drive)"
         fi
     fi
+    # Nothing on the target is changed yet, so stop here if the file is gone
+    [ -f /mnt/src/"$(cat /tmp/medkit-file)" ] || die 2 "$(cat /tmp/medkit-file) is not there any more"
+    case "$(cat /tmp/medkit-file)" in
+        *.img.gz)
+            flash_image
+            return
+            ;;
+    esac
     format_and_mount_target /mnt/trg
     echo "Unpacking rootfs to the target directory"
     mount >> /tmp/debug.txt
@@ -391,15 +540,27 @@ mode_1() {
 MODE2="Btrfs rollback"
 mode_2() {
     echo "Running btrfs rollback"
-    schnapps rollback
+    root_is_btrfs || die 3 "Rollback needs a btrfs root"
+    schnapps rollback || die 3 "Rollback failed"
 }
 
 # Factory reset
 MODE3="Factory reset"
 mode_3() {
+    local block
     echo "Running factory reset"
-    reset_uenv
-    schnapps rollback factory
+    if root_is_btrfs; then
+        reset_uenv || die 3 "Can't reset the U-Boot environment"
+        schnapps rollback factory || die 3 "Factory reset failed"
+    elif block="$(openwrt_overlay_block)"; then
+        # OpenWrt formats a wiped overlay on the next boot, as after a flash.
+        # Like its own factory reset, this keeps the U-Boot environment.
+        echo "Wiping the OpenWrt overlay"
+        dd if=/dev/zero of="$(openwrt_root_part)" bs=64k seek="$block" count=16 conv=fsync >> /tmp/debug.txt 2>&1 \
+            || die 3 "Can't wipe the OpenWrt overlay"
+    else
+        die 3 "Factory reset needs a btrfs root or OpenWrt on squashfs"
+    fi
 }
 
 # Reflash from USB
