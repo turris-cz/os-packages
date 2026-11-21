@@ -1,0 +1,27 @@
+From 2917db720e57da5c8f45d539dcb50d63f4f112ea Mon Sep 17 00:00:00 2001
+From: Josef Schlehofer <pepe.schlehofer@gmail.com>
+Date: Fri, 20 Nov 2026 15:29:11 +0100
+Subject: [PATCH] led_animate.sh: warn when the animator is not installed
+
+The animate mode only stores the frames. They are played by the
+animator, which is a separate package that Turris OS no longer installs
+by default. Without it the LED just stays lit and nothing tells the
+user why, so say it when the mode is set from the command line.
+---
+ rainbow/led_animate.sh | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/rainbow/led_animate.sh b/rainbow/led_animate.sh
+index fbd083c..bed5e03 100644
+--- a/rainbow/led_animate.sh
++++ b/rainbow/led_animate.sh
+@@ -42,5 +42,9 @@ op_led_animate() {
+ 	shift $(($# - SHIFTARGS))
+ 	mode_args="$animation"
+ 
++	# The animation is performed by the animator, which is a separate package
++	[ -x /etc/init.d/rainbow-animator ] \
++		|| warning "The animate mode needs the rainbow-animator package, which is not installed."
++
+ 	SHIFTARGS=$#
+ }

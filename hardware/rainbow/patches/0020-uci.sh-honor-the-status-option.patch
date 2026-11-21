@@ -1,0 +1,36 @@
+From 9bed915609c3828565f0f39fb7ef82cbd001c592 Mon Sep 17 00:00:00 2001
+From: Josef Schlehofer <pepe.schlehofer@gmail.com>
+Date: Fri, 20 Nov 2026 15:33:10 +0100
+Subject: [PATCH] uci.sh: honor the status option
+
+The rainbow of Turris OS 5 and older stored the mode of an LED in the
+option "status". This code reads "mode" and, for the backward
+compatibility, "state", which neither luci-app-rainbow nor the
+migration scripts write. They save "status", so switching an LED on or
+off in LuCI had no effect.
+
+Read "status" as well. The values auto, enable and disable are the same
+as the ones of the mode.
+
+Note that this changes what the LEDs do on routers where the option was
+set and ignored until now.
+---
+ rainbow/uci.sh | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/rainbow/uci.sh b/rainbow/uci.sh
+index 1f25dab..47b37d4 100644
+--- a/rainbow/uci.sh
++++ b/rainbow/uci.sh
+@@ -134,7 +134,10 @@ _uci_rainbow_section() {
+ 	parse_color "$rawcolor" \
+ 		|| warning "Ignoring invalid color '$rawcolor' in: rainbow.$led"
+ 
+-	config_get rawmode "$led" "state" "" # backward compatibility
++	# The status is the name of this option in the rainbow of Turris OS 5 and
++	# older. It is still what luci-app-rainbow and the migrated configs use.
++	config_get rawmode "$led" "status" ""
++	config_get rawmode "$led" "state" "$rawmode" # backward compatibility
+ 	config_get rawmode "$led" "mode" "$rawmode"
+ 	[ -n "$rawmode" ] || return 0
+ 	case "$rawmode" in

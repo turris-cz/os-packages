@@ -1,0 +1,28 @@
+From a9d0b5f91fcbdd2289fafb08a48312c445085f9b Mon Sep 17 00:00:00 2001
+From: Josef Schlehofer <pepe.schlehofer@gmail.com>
+Date: Fri, 20 Nov 2026 15:19:53 +0100
+Subject: [PATCH] uci.sh: read the animation list from UCI
+
+config_list_foreach was given the content of the animation variable as
+the name of the option. animation_init empties that variable just one
+line above, so the list was never read and an LED with mode animate in
+UCI got no frames at all.
+
+Pass the name of the option as documented in the README.
+---
+ rainbow/uci.sh | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/rainbow/uci.sh b/rainbow/uci.sh
+index 7c350ac..b428640 100644
+--- a/rainbow/uci.sh
++++ b/rainbow/uci.sh
+@@ -143,7 +143,7 @@ _uci_rainbow_section() {
+ 	elif [ "$mode" = "animate" ]; then
+ 		local animation animation_color_r animation_color_g animation_color_b
+ 		animation_init
+-		config_list_foreach "$led" "$animation" _for_uci_animation
++		config_list_foreach "$led" "animation" _for_uci_animation
+ 		animation_finish
+ 		mode_args="$animation"
+ 	fi

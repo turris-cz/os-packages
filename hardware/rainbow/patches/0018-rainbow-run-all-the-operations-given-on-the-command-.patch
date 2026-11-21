@@ -1,0 +1,429 @@
+From ac497ba07704cae70ef1f6fd37a5ab248440c460 Mon Sep 17 00:00:00 2001
+From: Josef Schlehofer <pepe.schlehofer@gmail.com>
+Date: Fri, 20 Nov 2026 15:29:10 +0100
+Subject: [PATCH] rainbow: run all the operations given on the command line
+
+The usage says "<OPERATION>..." and every operation reports in
+SHIFTARGS how many arguments it left unused, but the main loop threw
+all of them away after the first operation. "rainbow lan-0 green lan-1
+blue" set lan-0 only and ended with success. A mistyped color or mode
+was dropped the same way, so "rainbow wan orange" printed the current
+configuration instead of an error.
+
+Continue with the arguments an operation did not use. op_reset now
+reports the remaining arguments like the others, op_brightness consumes
+its value and the inherit mode its keyword. An operation that is
+followed by something that is not an operation fails with exit code 2
+before it stores anything. An empty argument is still ignored, as that
+is what a script passes for a variable it left empty.
+
+Every operation stores its change right away, so apply the stored
+configuration on any exit. Otherwise an error in a later operation
+would leave the earlier ones stored and not shown on the LEDs until the
+next unrelated call.
+
+brightness() preferred a shell variable of the same name over UCI, and
+op_brightness used that variable for its argument. With more operations
+in one run, and with the configuration applied on any exit, a value
+that was refused or replaced in the meantime would still be handed to
+the backend. Read the brightness from UCI every time and keep the
+argument of the operation in a variable of its own.
+
+"reset -a" removes the files generated from UCI together with the
+rest. It now also forgets that they were written, as an earlier
+operation of the same run may have done that.
+
+An activity that the LED does not offer is now refused with a message
+that says so. The check for ledX no longer prints an error of the test
+builtin for an argument that only starts with "led", and looking for
+the optional compatibility function no longer prints "not found" on
+the Mox.
+---
+ rainbow/brightness.sh   |  26 ++++++----
+ rainbow/led.sh          |  32 +++++++++---
+ rainbow/led_activity.sh |   6 ++-
+ rainbow/ledid.sh        |   5 +-
+ rainbow/rainbow.sh      | 107 ++++++++++++++++++++++++++++------------
+ rainbow/reset.sh        |  14 +++++-
+ rainbow/uci.sh          |  31 ++++++------
+ 7 files changed, 153 insertions(+), 68 deletions(-)
+
+diff --git a/rainbow/brightness.sh b/rainbow/brightness.sh
+index ac65332..e9cd73a 100644
+--- a/rainbow/brightness.sh
++++ b/rainbow/brightness.sh
+@@ -57,27 +57,35 @@ op_brightness() {
+ 		brightness_usage
+ 		exit 2
+ 	}
+-	brightness="$1"
++	local value="$1"
++	shift
+ 	# The value is used in shell arithmetic, so make sure it is a number
+-	is_uint "$brightness" && brightness="$(decimal "$brightness")" || brightness=-1
++	is_uint "$value" && value="$(decimal "$value")" || value=-1
+ 	if [ "$precise" ]; then
+-		if [ "$brightness" -lt 0 ] || [ "$brightness" -gt 255 ]; then
++		if [ "$value" -lt 0 ] || [ "$value" -gt 255 ]; then
+ 			echo "The value has to be a number from 0 to 255!" >&2
+ 			brightness_usage
+ 			exit 2
+ 		fi
+ 	else
+-		if [ "$brightness" -lt 0 ] || [ "$brightness" -gt 8 ]; then
++		if [ "$value" -lt 0 ] || [ "$value" -gt 8 ]; then
+ 			echo "The value has to be a number from 0 to 8!" >&2
+ 			brightness_usage
+ 			exit 2
+ 		fi
+-		brightness=$((brightness * 32))
++		value=$((value * 32))
+ 		# The highest level is the full brightness, which is 255 and not 256
+-		[ "$brightness" -le 255 ] || brightness=255
++		[ "$value" -le 255 ] || value=255
+ 	fi
+-	update_brightness "$brightness"
+-	apply_needed="y"
+-
+ 	SHIFTARGS=$#
++	# What is left has to be the next operation
++	local next
++	next="$(next_argument "$@")"
++	if [ -n "$next" ] && ! is_operation "$next"; then
++		echo "Invalid argument for brightness: $next" >&2
++		brightness_usage
++		exit 2
++	fi
++	update_brightness "$value"
++	apply_needed="y"
+ }
+diff --git a/rainbow/led.sh b/rainbow/led.sh
+index 17d3391..8d8b85a 100644
+--- a/rainbow/led.sh
++++ b/rainbow/led.sh
+@@ -80,6 +80,12 @@ op_led() {
+ 	local mode="" mode_args=""
+ 	local color_r="" color_g="" color_b=""
+ 	while [ $# -gt 0 ]; do
++		if [ -z "$1" ]; then
++			# An empty argument sets nothing, which is what a script gets
++			# when it passes a variable it left empty.
++			shift
++			continue
++		fi
+ 		if [ -z "$color_r" ] && [ -z "$color_g" ] && [ -z "$color_b" ]; then
+ 			if parse_color "$1" inherit; then
+ 				shift
+@@ -95,14 +101,15 @@ op_led() {
+ 					;;
+ 				activity)
+ 					loadsrc led_activity
+-					if led_activities_supported "$id"; then
+-						mode="$1"
+-						shift
+-						loadsrc led_activity
+-						op_led_activity "$id" "$@"
+-						shift $(($# - SHIFTARGS))
+-						continue
++					if ! led_activities_supported "$id"; then
++						echo "The activity mode is not available for: $id" >&2
++						exit 2
+ 					fi
++					mode="$1"
++					shift
++					op_led_activity "$id" "$@"
++					shift $(($# - SHIFTARGS))
++					continue
+ 					;;
+ 				animate)
+ 					mode="$1"
+@@ -114,12 +121,23 @@ op_led() {
+ 					;;
+ 				inherit)
+ 					mode="-"
++					shift
++					continue
+ 					;;
+ 			esac
+ 		fi
+ 		break
+ 	done
+ 	SHIFTARGS=$#
++	# What is left has to be the next operation. Fail before anything is
++	# stored when it is not, as it is most likely a mistyped color or mode.
++	local next
++	next="$(next_argument "$@")"
++	if [ -n "$next" ] && ! is_operation "$next"; then
++		echo "Invalid color or mode for '$id': $next" >&2
++		led_usage "$id"
++		exit 2
++	fi
+ 
+ 	id="$(canonled "$id")"
+ 
+diff --git a/rainbow/led_activity.sh b/rainbow/led_activity.sh
+index 7516744..193cb7d 100644
+--- a/rainbow/led_activity.sh
++++ b/rainbow/led_activity.sh
+@@ -56,10 +56,14 @@ op_led_activity() {
+ 			;;
+ 		*)
+ 			# Anything else has to be something the kernel offers for this LED.
+-			# What is not is left for the caller, as it can be a color.
++			# A color or the next operation is left for the caller.
+ 			if [ -n "$(all_supported_activities "$id" | grep -xF -e "$1")" ]; then
+ 				mode_args="$1"
+ 				shift
++			elif ! (parse_color "$1" inherit) && ! is_operation "$1"; then
++				echo "The activity is not available for '$id': $1" >&2
++				led_activity_usage "$id"
++				exit 2
+ 			fi
+ 			;;
+ 	esac
+diff --git a/rainbow/ledid.sh b/rainbow/ledid.sh
+index f6d7c32..50b53a5 100644
+--- a/rainbow/ledid.sh
++++ b/rainbow/ledid.sh
+@@ -14,7 +14,7 @@ is_valid_led() {
+ 		fi
+ 		i=$((i + 1))
+ 	done
+-	if [ "${check_led#led}" != "$check_led" ] \
++	if [ "${check_led#led}" != "$check_led" ] && is_uint "${check_led#led}" \
+ 		&& [ "${check_led#led}" -gt 0 ] && [ "${check_led#led}" -le "$i" ]; then
+ 		return 0
+ 	fi
+@@ -30,7 +30,8 @@ canonled() {
+ 	local led
+ 	for led in $LEDS; do
+ 		if [ "$value" = "$led" ] || {
+-			[ "${value#led}" != "$value" ] && [ "${value#led}" -eq $index ]
++			[ "${value#led}" != "$value" ] && is_uint "${value#led}" \
++				&& [ "${value#led}" -eq $index ]
+ 		}; then
+ 			echo "$led"
+ 			return
+diff --git a/rainbow/rainbow.sh b/rainbow/rainbow.sh
+index b190a60..578ed47 100755
+--- a/rainbow/rainbow.sh
++++ b/rainbow/rainbow.sh
+@@ -93,12 +93,81 @@ if [ "$list_leds" = "y" ]; then
+ 	exit 0
+ fi
+ 
+-[ $# -gt 0 ] || {
++# An empty argument is what a script passes for a variable it left empty, so
++# it is skipped. With nothing else there is no operation to perform.
++has_operation="n"
++for arg in "$@"; do
++	[ -z "$arg" ] || has_operation="y"
++done
++[ "$has_operation" = "y" ] || {
+ 	usage
+ 	exit 2
+ }
+ 
++# Check if the argument is the start of an operation. The operations use it to
++# tell an argument they do not know from the operation that follows them.
++is_operation() {
++	case "$1" in
++		reset|brightness)
++			return 0
++			;;
++		binmask|intensity|get)
++			type compatibility >/dev/null 2>&1
++			return
++			;;
++	esac
++	is_valid_led "$1"
++}
++
++# Print the first argument that is not empty. That is the one the main loop
++# takes for the next operation, as it skips the empty ones.
++next_argument() {
++	local arg
++	for arg in "$@"; do
++		if [ -n "$arg" ]; then
++			printf '%s\n' "$arg"
++			return
++		fi
++	done
++}
++
++################################################################################
++# Helper function that is used in combination with parse_leds_file.
++# This takes variables and passes them as an appropriate arguments as set_led
++# functions expect it.
++call_set_led() {
++	[ "$mode" != "ignore" ] || return 0
++	shift $# # we do not care about our arguments
++	set "$@" "$led" "$color_r" "$color_g" "$color_b" "$mode"
++	while read -r arg; do
++		set "$@" "$arg"
++	done <<-EOF
++		$(echo "$mode_args" | tr '\t' '\n')
++	EOF
++	# An LED that can't be configured must not stop the remaining ones
++	set_led "$@" \
++		|| warning "Unable to configure the LED: $led"
++}
++
++# Apply the stored configuration to the LEDs if any operation changed it
++apply_config() {
++	[ "$apply_needed" = "y" ] || return 0
++	apply_needed="n"
++	loadsrc uci
++	base_config
++	! type preapply >/dev/null 2>&1 || preapply
++	call_for_leds_config call_set_led
++	! type postapply >/dev/null 2>&1 || postapply
++}
++
++# Every operation stores its change right away. When a later one on the same
++# command line fails, the LEDs still have to get what was stored before it, so
++# apply on any exit.
+ apply_needed="n"
++trap apply_config EXIT
++
++# Every operation reports the number of arguments it did not use in SHIFTARGS.
++# Those are the following operations.
+ while [ $# -gt 0 ]; do
+ 	operation="${1:-}"
+ 	shift
+@@ -106,25 +175,23 @@ while [ $# -gt 0 ]; do
+ 		reset)
+ 			loadsrc reset
+ 			op_reset "$@"
+-			shift $#
++			shift $(($# - SHIFTARGS))
+ 			;;
+ 		brightness)
+ 			loadsrc brightness
+ 			op_brightness "$@"
+-			shift $#
++			shift $(($# - SHIFTARGS))
+ 			;;
+ 		"")
+-			usage
+-			exit 2
+ 			;;
+ 		*)
+ 			if is_valid_led "$operation"; then
+ 				loadsrc led
+ 				op_led "$operation" "$@"
+-				shift $#
++				shift $(($# - SHIFTARGS))
+ 			else
+ 				SHIFTARGS=$#
+-				type compatibility >/dev/null \
++				type compatibility >/dev/null 2>&1 \
+ 					&& compatibility "$operation" "$@"
+ 				if [ "$SHIFTARGS" -lt $# ]; then
+ 					shift $(($# - SHIFTARGS))
+@@ -138,28 +205,4 @@ while [ $# -gt 0 ]; do
+ 	esac
+ done
+ 
+-################################################################################
+-# Helper function that is used in combination with parse_leds_file.
+-# This takes variables and passes them as an appropriate arguments as set_led
+-# functions expect it.
+-call_set_led() {
+-	[ "$mode" != "ignore" ] || return 0
+-	shift $# # we do not care about our arguments
+-	set "$@" "$led" "$color_r" "$color_g" "$color_b" "$mode"
+-	while read -r arg; do
+-		set "$@" "$arg"
+-	done <<-EOF
+-		$(echo "$mode_args" | tr '\t' '\n')
+-	EOF
+-	# An LED that can't be configured must not stop the remaining ones
+-	set_led "$@" \
+-		|| warning "Unable to configure the LED: $led"
+-}
+-
+-loadsrc uci
+-if [ "$apply_needed" = "y" ]; then
+-	base_config
+-	! type preapply >/dev/null || preapply
+-	call_for_leds_config call_set_led
+-	! type postapply >/dev/null || postapply
+-fi
++apply_config
+diff --git a/rainbow/reset.sh b/rainbow/reset.sh
+index 9cc0a7e..44e94f6 100644
+--- a/rainbow/reset.sh
++++ b/rainbow/reset.sh
+@@ -43,7 +43,16 @@ op_reset() {
+ 				;;
+ 		esac
+ 	done
+-	SHIFTARGS=$((OPTIND - 1))
++	shift $((OPTIND - 1))
++	SHIFTARGS=$#
++	# What is left has to be the next operation
++	local next
++	next="$(next_argument "$@")"
++	if [ -n "$next" ] && ! is_operation "$next"; then
++		echo "Invalid argument for reset: $next" >&2
++		reset_usage
++		exit 2
++	fi
+ 
+ 	if [ "$nowipe" = "n" ]; then
+ 		if [ "$all" = "y" ]; then
+@@ -51,6 +60,9 @@ op_reset() {
+ 		else
+ 			rm -f "$rainbowdir/$(printf "%03d" "$priority")-$slot"
+ 		fi
++		# That can include the files generated from UCI, which an earlier
++		# operation of this run may have created already.
++		_base_config_updated=""
+ 	fi
+ 
+ 	# Note: the boot sequence is silently ignored if there is none defined
+diff --git a/rainbow/uci.sh b/rainbow/uci.sh
+index 7d365f5..1f25dab 100644
+--- a/rainbow/uci.sh
++++ b/rainbow/uci.sh
+@@ -6,24 +6,23 @@
+ loadsrc led_activity
+ 
+ # Currently configured brightness level
+-brightness() { 
+-	if [ "${1:-}" = "fetch" ] || [ -z "${brightness:-}" ]; then
+-		__brightness="$(uci -q get "rainbow.all.brightness" || echo 255)"
++# It is read from UCI every time. A variable can't stand in for it, as a value
++# an operation refused would then still be applied on the way out.
++brightness() {
++	local __brightness
++	__brightness="$(uci -q get "rainbow.all.brightness" || echo 255)"
+ 
+-		# The value ends up in shell arithmetic, so it has to be a number
+-		if ! is_uint "$__brightness"; then
+-			warning "Ignoring invalid rainbow.all.brightness: $__brightness"
+-			__brightness=255
+-		fi
+-		# This also removes the leading zeros
+-		__brightness="$(decimal "$__brightness")"
+-		if [ "$__brightness" -gt 255 ]; then
+-			__brightness=255
+-		fi
+-		echo "$__brightness"
+-	else
+-		echo "$brightness"
++	# The value ends up in shell arithmetic, so it has to be a number
++	if ! is_uint "$__brightness"; then
++		warning "Ignoring invalid rainbow.all.brightness: $__brightness"
++		__brightness=255
+ 	fi
++	# This also removes the leading zeros
++	__brightness="$(decimal "$__brightness")"
++	if [ "$__brightness" -gt 255 ]; then
++		__brightness=255
++	fi
++	echo "$__brightness"
+ }
+ 
+ # Set the new brightness level

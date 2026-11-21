@@ -1,0 +1,325 @@
+From e6b55ae208159bfd991481b23f719c272a98d965 Mon Sep 17 00:00:00 2001
+From: Josef Schlehofer <pepe.schlehofer@gmail.com>
+Date: Fri, 20 Nov 2026 15:14:54 +0100
+Subject: [PATCH] rainbow: validate numbers before they reach shell arithmetic
+
+The brightness from UCI, the brightness, intensity and binmask given on
+the command line, the priority and the animation times were only
+checked with the test builtin. That check fails with an error for
+anything that is not an integer, the surrounding condition then counts
+as false and the unchecked string went on into $(( )). Bash evaluates
+such a string as an expression, including command substitutions in
+array subscripts, so the content of rainbow.all.brightness could end up
+being run as a command.
+
+The color parser had the same problem for values that span more lines.
+Its checks use grep, which accepts the value as soon as one line
+matches, and the other lines were passed to $((16#...)).
+
+The third way in was /lib/functions.sh of OpenWrt. It counts the
+sections of a config and the items of a list with shell arithmetic on
+variables named after the section and the option. An option or a list
+called foo_LENGTH presets the counter of the list foo, and the section
+NUM with SECTIONS in it presets the counter of the sections. The
+section LIST with STATE in it presets the counter of any list, as every
+word of that variable is passed to export when the next config is
+loaded. The shell of busybox, which that file is written for, fails on
+a value that is not a number. rainbow loads the file into bash, which
+evaluates it.
+
+On a stock system the UCI configs are written by root only, so this is
+hardening and not a way to gain privileges. It matters where the write
+access to a single config is handed to somebody else.
+
+Add is_uint and use it everywhere before the arithmetic. Reject colors
+with characters that no color format uses, and convert only hexadecimal
+digits. In the subshell that loads the configs let nothing but the
+counting of functions.sh itself write its two counters, so an option
+or a list with such a name is dropped. LIST_STATE is guarded the same
+way. Both counters are also checked right before functions.sh uses
+them, which covers a value inherited from the environment. An invalid
+brightness in UCI is reported and replaced by the default, the same way
+an out of range value already was.
+
+Leading zeros are removed with parameter expansion in the new helper
+decimal. The 10# prefix of bash would do the same, but the shell of
+busybox only knows it when it is built with the support for it, and
+button_sync.sh runs under that shell and loads the same files. The
+binmask takes the upper case 0X prefix as it did before.
+
+The priority check now also exits, as an invalid -p used to print the
+usage and carry on with priority 50.
+---
+ rainbow/animation.sh  |  2 +-
+ rainbow/brightness.sh |  2 ++
+ rainbow/color.sh      | 28 ++++++++++++++----
+ rainbow/compat.sh     | 33 +++++++++++++++++++--
+ rainbow/rainbow.sh    |  5 ++--
+ rainbow/uci.sh        | 68 +++++++++++++++++++++++++++++++++++++++----
+ rainbow/utils.sh      | 19 ++++++++++++
+ 7 files changed, 140 insertions(+), 17 deletions(-)
+
+diff --git a/rainbow/animation.sh b/rainbow/animation.sh
+index 9b44266..23612f0 100644
+--- a/rainbow/animation.sh
++++ b/rainbow/animation.sh
+@@ -21,7 +21,7 @@ animation_add() {
+ 	local color_b="$animation_color_b"
+ 
+ 	parse_color "$1" inherit || return
+-	echo "$time" | grep -qE "^[0-9]+$" || return
++	is_uint "$time" || return
+ 
+ 	animation="${animation}${animation:+	}$color_r	$color_g	$color_b	$time"
+ 	animation_color_r="$color_r"
+diff --git a/rainbow/brightness.sh b/rainbow/brightness.sh
+index 89c6135..61b950d 100644
+--- a/rainbow/brightness.sh
++++ b/rainbow/brightness.sh
+@@ -55,6 +55,8 @@ op_brightness() {
+ 		exit 2
+ 	}
+ 	brightness="$1"
++	# The value is used in shell arithmetic, so make sure it is a number
++	is_uint "$brightness" && brightness="$(decimal "$brightness")" || brightness=-1
+ 	if [ "$precise" ]; then
+ 		if [ "$brightness" -lt 0 ] || [ "$brightness" -gt 255 ]; then
+ 			echo "The value has to be a number from 0 to 255!" >&2
+diff --git a/rainbow/color.sh b/rainbow/color.sh
+index 98bc430..cc214ae 100644
+--- a/rainbow/color.sh
++++ b/rainbow/color.sh
+@@ -14,15 +14,27 @@ parse_color() {
+ _parse_value() {
+ 	local value="$1"
+ 	local mode="$2"
+-	[ "${value#x}" == "$value" ] \
+-		|| value="$((16#${value#x}))"
++	case "$value" in
++		x*)
++			# Only hexadecimal digits may reach the arithmetic expansion
++			value="${value#x}"
++			case "$value" in
++				""|*[!0-9a-fA-F]*) return 1 ;;
++			esac
++			[ "${#value}" -le 8 ] || return 1
++			value="$((16#$value))"
++			;;
++	esac
+ 
+ 	if [ "$mode" = "inherit" ] && [ "$value" = "-" ]; then
+ 		true
+ 	elif [ -n "$value" ]; then
+-		echo "$value" | grep -qE "^[0-9]*$" || return
+-		[ "$value" -ge 0 ] || return
+-		[ "$value" -le 255 ] || return
++		case "$value" in
++			*[!0-9]*) return 1 ;;
++		esac
++		[ "${#value}" -le 9 ] || return 1
++		value="$(decimal "$value")"
++		[ "$value" -le 255 ] || return 1
+ 	fi
+ 
+ 	echo "$value"
+@@ -36,6 +48,12 @@ _parse_color() {
+ 		return # Empty value means no modification
+ 	fi
+ 
++	# No valid color uses any other character. The checks below work line by
++	# line, so a value that spans several lines must not get to them.
++	case "$value" in
++		*[!0-9a-zA-Z,-]*) return 1 ;;
++	esac
++
+ 	case "$value" in
+ 		-)
+ 			if [ "$mode" = "inherit" ]; then
+diff --git a/rainbow/compat.sh b/rainbow/compat.sh
+index 3732c18..ccd8e25 100644
+--- a/rainbow/compat.sh
++++ b/rainbow/compat.sh
+@@ -18,8 +18,27 @@ compat_binmask() {
+ 
+ 	local binmask="$1"
+ 	shift
+-	[ "${binmask#0x}" == "$binmask" ] \
+-		|| binmask="$((16#${binmask#0x}))"
++	# The mask is used in shell arithmetic, so make sure it is a number
++	case "$binmask" in
++		0x*|0X*)
++			binmask="${binmask#0[xX]}"
++			case "$binmask" in
++				""|*[!0-9a-fA-F]*) binmask="" ;;
++			esac
++			[ "${#binmask}" -le 8 ] && [ -n "$binmask" ] \
++				&& binmask="$((16#$binmask))" \
++				|| binmask=""
++			;;
++		*)
++			is_uint "$binmask" \
++				&& binmask="$(decimal "$binmask")" \
++				|| binmask=""
++			;;
++	esac
++	if [ -z "$binmask" ]; then
++		echo "Invalid binmask usage. The mask has to be a number." >&2
++		exit 2
++	fi
+ 
+ 	local mask=1
+ 	for led in $LEDS; do
+@@ -42,8 +61,16 @@ compat_binmask() {
+ compat_intensity() {
+ 	local max="$1"; shift
+ 	if [ $# -gt 0 ]; then
++		# The value is used in shell arithmetic, so make sure it is a number
++		if ! is_uint "$1"; then
++			echo "Invalid intensity usage. The value has to be a number from 0 to $max." >&2
++			exit 2
++		fi
++		local intensity
++		intensity="$(decimal "$1")"
++		[ "$intensity" -le "$max" ] || intensity="$max"
+ 		loadsrc uci
+-		update_brightness "$(($1 * 255 / max))"
++		update_brightness "$((intensity * 255 / max))"
+ 		apply_needed="y"
+ 		shift
+ 	else
+diff --git a/rainbow/rainbow.sh b/rainbow/rainbow.sh
+index 3578021..55e1852 100755
+--- a/rainbow/rainbow.sh
++++ b/rainbow/rainbow.sh
+@@ -48,11 +48,12 @@ list_leds="n"
+ while getopts "p:n:lxh" opt; do
+ 	case "$opt" in
+ 		p)
+-			if [ "$OPTARG" -ge 0 ] && [ "$OPTARG" -le 100 ]; then
+-				priority="$OPTARG"
++			if is_uint "$OPTARG" && [ "$(decimal "$OPTARG")" -le 100 ]; then
++				priority="$(decimal "$OPTARG")"
+ 			else
+ 				echo "Priority is not in the range from 0 to 100: $OPTARG" >&2
+ 				usage
++				exit 2
+ 			fi
+ 			;;
+ 		n)
+diff --git a/rainbow/uci.sh b/rainbow/uci.sh
+index 4aa6762..7c350ac 100644
+--- a/rainbow/uci.sh
++++ b/rainbow/uci.sh
+@@ -8,13 +8,14 @@ brightness() {
+ 	if [ "${1:-}" = "fetch" ] || [ -z "${brightness:-}" ]; then
+ 		__brightness="$(uci -q get "rainbow.all.brightness" || echo 255)"
+ 
+-		# remove leading zeros
+-		__brightness="$(echo "$__brightness" | sed 's/^[0]*//')"
+-		if [ -z "$__brightness" ]; then
+-			__brightness=0
++		# The value ends up in shell arithmetic, so it has to be a number
++		if ! is_uint "$__brightness"; then
++			warning "Ignoring invalid rainbow.all.brightness: $__brightness"
++			__brightness=255
+ 		fi
+-
+-		if [ "$__brightness" -lt 0 ] || [ "$__brightness" -gt 255 ]; then
++		# This also removes the leading zeros
++		__brightness="$(decimal "$__brightness")"
++		if [ "$__brightness" -gt 255 ]; then
+ 			__brightness=255
+ 		fi
+ 		echo "$__brightness"
+@@ -44,6 +45,61 @@ base_config() {
+ 		set +u # functions.sh does not support unset variables being error
+ 		. /lib/functions.sh
+ 
++		# functions.sh counts the sections and the items of a list with shell
++		# arithmetic on variables that a section, an option or a list of the
++		# right name can preset, for example foo_LENGTH for the list foo. The
++		# shell of busybox it is written for only fails on a value that is not
++		# a number, but bash evaluates it as an expression. Let nothing but
++		# the counting in functions.sh itself write those variables. An
++		# option or a list named that way is dropped. The same goes for
++		# LIST_STATE, as config_load passes every word of it to export and
++		# that can set the counters as well.
++		eval "_functions_$(declare -f config)"
++		eval "_functions_$(declare -f config_set)"
++		eval "_functions_$(declare -f append)"
++		eval "_functions_$(declare -f list)"
++		_functions_counting=""
++		config_set() {
++			case "${1}_${2}" in
++				LIST_STATE)
++					return 0
++					;;
++				NUM_SECTIONS|*_LENGTH)
++					[ "$_functions_counting" = "y" ] || return 0
++					;;
++			esac
++			_functions_config_set "$@"
++		}
++		append() {
++			case "$1" in
++				CONFIG_NUM_SECTIONS|CONFIG_*_LENGTH)
++					return 0
++					;;
++				CONFIG_LIST_STATE)
++					# list() adds the name of a variable here
++					case "$2" in
++						""|*[!A-Za-z0-9_]*)
++							return 0
++							;;
++					esac
++					;;
++			esac
++			_functions_append "$@"
++		}
++		# The counters can still come from somewhere else, such as the
++		# environment, so make sure that they are numbers right before
++		# functions.sh uses them.
++		config() {
++			is_uint "${CONFIG_NUM_SECTIONS:-0}" || CONFIG_NUM_SECTIONS=0
++			_functions_config "$@"
++		}
++		list() {
++			local _functions_counting="y" len
++			config_get len "$CONFIG_SECTION" "${1}_LENGTH" 0
++			is_uint "$len" || config_set "$CONFIG_SECTION" "${1}_LENGTH" 0
++			_functions_list "$@"
++		}
++
+ 		config_load rainbow
+ 		default_r=255 default_g=255 default_b=255
+ 		default_mode="auto" default_mode_args=""
+diff --git a/rainbow/utils.sh b/rainbow/utils.sh
+index 1bfe3b3..c69690d 100644
+--- a/rainbow/utils.sh
++++ b/rainbow/utils.sh
+@@ -20,6 +20,25 @@ internal_error() {
+ 	exit 3
+ }
+ 
++# Check that the value is a non-negative decimal integer of a sane length.
++# The shell evaluates variables used in arithmetic recursively, including
++# command substitutions in array subscripts. Nothing that comes from the
++# command line or from UCI may reach $(( )) before it passed this check.
++is_uint() {
++	case "${1:-}" in
++		""|*[!0-9]*) return 1 ;;
++	esac
++	[ "${#1}" -le 9 ]
++}
++
++# Print the decimal number without its leading zeros. The shell would read it
++# as an octal number with them. The 10# prefix that does the same in bash is
++# not available in the shell of busybox, which runs button_sync.sh.
++decimal() {
++	local value="${1#"${1%%[!0]*}"}"
++	echo "${value:-0}"
++}
++
+ # This function should be used to load any other source files that are part of
+ # rainbow except of this one.
+ srcdir="$(dirname "$(readlink -f "$0")")"

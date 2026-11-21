@@ -1,0 +1,59 @@
+From 2156de2ca7a79f5bd8e350b225b5f59b55956630 Mon Sep 17 00:00:00 2001
+From: Josef Schlehofer <pepe.schlehofer@gmail.com>
+Date: Fri, 20 Nov 2026 15:27:37 +0100
+Subject: [PATCH] backends: use the full brightness of the LED in the boot
+ sequence
+
+The boot sequence still writes 1 as the brightness. Since e9b6230 the
+Omnia backend reads the maximum from sysfs for everything else, because
+with the upstream driver it is 255 and 1 is hardly visible. Do the same
+in the boot sequence of both backends.
+---
+ backend/omnia/backend.sh    | 4 ++--
+ backend/turris1x/backend.sh | 4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/backend/omnia/backend.sh b/backend/omnia/backend.sh
+index 4107fe3..dd4c43c 100644
+--- a/backend/omnia/backend.sh
++++ b/backend/omnia/backend.sh
+@@ -131,7 +131,7 @@ boot_sequence() {
+ 		sysfs="$(led2sysfs "$led")"
+ 		[ -d "$sysfs" ] || continue
+ 		echo "none" > "$sysfs/trigger"
+-		echo "1" > "$sysfs/brightness"
++		cat "$sysfs/max_brightness" > "$sysfs/brightness"
+ 		echo "0 255 0" > "$sysfs/multi_intensity"
+ 	done
+ 	sleep 1
+@@ -140,7 +140,7 @@ boot_sequence() {
+ 		sysfs="$(led2sysfs "$led")"
+ 		[ -d "$sysfs" ] || continue
+ 		echo "none" > "$sysfs/trigger"
+-		echo "1" > "$sysfs/brightness"
++		cat "$sysfs/max_brightness" > "$sysfs/brightness"
+ 		echo "0 0 255" > "$sysfs/multi_intensity"
+ 	done
+ 	sleep 1
+diff --git a/backend/turris1x/backend.sh b/backend/turris1x/backend.sh
+index b395065..4f1af97 100644
+--- a/backend/turris1x/backend.sh
++++ b/backend/turris1x/backend.sh
+@@ -150,7 +150,7 @@ boot_sequence() {
+ 		sysfs="$(led2sysfs "$led")"
+ 		[ -d "$sysfs" ] || continue
+ 		echo "none" > "$sysfs/trigger"
+-		echo "1" > "$sysfs/brightness"
++		cat "$sysfs/max_brightness" > "$sysfs/brightness"
+ 		echo "0 255 0" > "$sysfs/multi_intensity"
+ 	done
+ 	sleep 1
+@@ -159,7 +159,7 @@ boot_sequence() {
+ 		sysfs="$(led2sysfs "$led")"
+ 		[ -d "$sysfs" ] || continue
+ 		echo "none" > "$sysfs/trigger"
+-		echo "1" > "$sysfs/brightness"
++		cat "$sysfs/max_brightness" > "$sysfs/brightness"
+ 		echo "0 0 255" > "$sysfs/multi_intensity"
+ 	done
+ 	sleep 1

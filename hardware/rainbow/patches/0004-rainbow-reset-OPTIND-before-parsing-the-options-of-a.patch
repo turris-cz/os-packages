@@ -1,0 +1,85 @@
+From 5f0666f00474a47c9f5b3058e7bd4b0d119383e8 Mon Sep 17 00:00:00 2001
+From: Josef Schlehofer <pepe.schlehofer@gmail.com>
+Date: Fri, 20 Nov 2026 15:15:05 +0100
+Subject: [PATCH] rainbow: reset OPTIND before parsing the options of an
+ operation
+
+rainbow.sh parses the global options with getopts and every operation
+then runs its own getopts loop. Bash keeps OPTIND between the two, so
+after a global option the second loop started behind the arguments of
+the operation and the following shift dropped them.
+
+The result was that "rainbow -p 10 all blue" only printed the current
+configuration and changed nothing, "rainbow -p 60 brightness 4" ended
+with the usage text and "rainbow -p 100 -n shutdown all enable white"
+from the init script did not turn the LEDs white on shutdown.
+
+Make OPTIND local to every function that calls getopts.
+---
+ rainbow/brightness.sh   | 1 +
+ rainbow/led.sh          | 1 +
+ rainbow/led_activity.sh | 1 +
+ rainbow/led_animate.sh  | 1 +
+ rainbow/reset.sh        | 1 +
+ 5 files changed, 5 insertions(+)
+
+diff --git a/rainbow/brightness.sh b/rainbow/brightness.sh
+index 61b950d..77a4a85 100644
+--- a/rainbow/brightness.sh
++++ b/rainbow/brightness.sh
+@@ -26,6 +26,7 @@ brightness_help() {
+ op_brightness() {
+ 	local query=
+ 	local precise=
++	local OPTIND=1
+ 	while getopts "qph" opt; do
+ 		case "$opt" in
+ 			q)
+diff --git a/rainbow/led.sh b/rainbow/led.sh
+index be9f638..17d3391 100644
+--- a/rainbow/led.sh
++++ b/rainbow/led.sh
+@@ -59,6 +59,7 @@ led_help() {
+ op_led() {
+ 	local id="$1"; shift
+ 	local localconf="n"
++	local OPTIND=1
+ 	while getopts "lh" opt; do
+ 		case "$opt" in
+ 			l)
+diff --git a/rainbow/led_activity.sh b/rainbow/led_activity.sh
+index 08beead..9e5f8c7 100644
+--- a/rainbow/led_activity.sh
++++ b/rainbow/led_activity.sh
+@@ -18,6 +18,7 @@ led_activity_help() {
+ op_led_activity() {
+ 	local id="$1"; shift
+ 	local list="n"
++	local OPTIND=1
+ 	while getopts "t:lih" opt; do
+ 		case "$opt" in
+ 			l)
+diff --git a/rainbow/led_animate.sh b/rainbow/led_animate.sh
+index 6964142..fbd083c 100644
+--- a/rainbow/led_animate.sh
++++ b/rainbow/led_animate.sh
+@@ -22,6 +22,7 @@ led_animate_help() {
+ 
+ op_led_animate() {
+ 	local id="$1"; shift
++	local OPTIND=1
+ 	while getopts "h" opt; do
+ 		case "$opt" in
+ 			h)
+diff --git a/rainbow/reset.sh b/rainbow/reset.sh
+index dab481d..9cc0a7e 100644
+--- a/rainbow/reset.sh
++++ b/rainbow/reset.sh
+@@ -21,6 +21,7 @@ op_reset() {
+ 	local nowipe="n"
+ 	local all="n"
+ 	local bootseq="n"
++	local OPTIND=1
+ 	while getopts "nabh" opt; do
+ 		case "$opt" in
+ 			n)

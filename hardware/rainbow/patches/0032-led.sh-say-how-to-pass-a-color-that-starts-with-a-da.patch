@@ -1,0 +1,28 @@
+From 90e14ccb8089ef6d1064a073ab6b3c4903e21323 Mon Sep 17 00:00:00 2001
+From: Josef Schlehofer <pepe.schlehofer@gmail.com>
+Date: Fri, 20 Nov 2026 19:13:44 +0100
+Subject: [PATCH] led.sh: say how to pass a color that starts with a dash
+
+The help allows a dash in place of any component of a color. A color
+that begins with one, such as -,-,255, is parsed as a group of options
+and refused. It works after "--", so mention that in the help.
+---
+ rainbow/led.sh | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/rainbow/led.sh b/rainbow/led.sh
+index 5ca8b90..05392e6 100644
+--- a/rainbow/led.sh
++++ b/rainbow/led.sh
+@@ -27,7 +27,10 @@ led_help() {
+ 		  value if you left some out (such as ,255, or G255) or with default
+ 		  '-'. The '-' is the special value that specifies inheritance from
+ 		  lower priority configuration. You can use it as replacement for any
+-		  color compound or alone to set inheritance.
++		  color compound or alone to set inheritance. A color that starts
++		  with it and continues, such as -,-,255, is taken for options when
++		  it comes right after the name of the LED or of the activity and
++		  animate modes. Put '--' in front of it there.
+ 		Mode:
+ 		  auto
+ 		    Operate led status as designed (that is for example ethernet activity for lan leds)

@@ -1,0 +1,31 @@
+From 137a10adc6e7fe6d6cba389bd699ad0c7079c9f1 Mon Sep 17 00:00:00 2001
+From: Richard Muzik <richard.muzik@nic.cz>
+Date: Fri, 5 Jan 2024 15:05:08 +0100
+Subject: [PATCH] compat.sh: get rid of error output
+
+When testing if function exists command type returned error message if
+the function did not exist:
+
+/usr/libexec/rainbow/compat.sh: line 61: type: get_brightness_raw: not found
+
+It is used just for condition, so it is fine to get rid of the message.
+---
+ rainbow/compat.sh | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/rainbow/compat.sh b/rainbow/compat.sh
+index 15e2090..3732c18 100644
+--- a/rainbow/compat.sh
++++ b/rainbow/compat.sh
+@@ -58,9 +58,9 @@ compat_get() {
+ 	local max="$1"; shift
+ 	if [ "${1:-}" = "intensity" ]; then
+ 		local brightness
+-		if type get_brightness_raw >/dev/null; then
++		if type get_brightness_raw >/dev/null 2>&1; then
+ 			brightness=$(get_brightness_raw);
+-		elif type get_brightness >/dev/null; then
++		elif type get_brightness >/dev/null 2>&1; then
+ 			brightness=$(get_brightness);
+ 		else
+ 			echo "Backend doesn't provide a get_brightness_raw or get_brightness function" >&2

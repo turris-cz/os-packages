@@ -1,0 +1,43 @@
+From 7f135cdbbe369d5f6003a7cb5d794ae755c2c6bf Mon Sep 17 00:00:00 2001
+From: Josef Schlehofer <pepe.schlehofer@gmail.com>
+Date: Fri, 20 Nov 2026 19:13:43 +0100
+Subject: [PATCH] uci.sh: report a config that can't be loaded
+
+When uci fails to export the rainbow or the system config, for example
+because the file is missing, the helper of OpenWrt that loads it ends
+the subshell under set -e. rainbow then exited with status 1 and
+without a single word, and after a boot the LEDs stayed in the last
+color of the boot sequence.
+
+Say which config could not be loaded and continue with the defaults.
+
+A file with a syntax error is not such a case. uci exports what it could
+parse and ends with success, so rainbow uses that.
+---
+ rainbow/uci.sh | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/rainbow/uci.sh b/rainbow/uci.sh
+index d005e90..c5e1b14 100644
+--- a/rainbow/uci.sh
++++ b/rainbow/uci.sh
+@@ -101,7 +101,8 @@ base_config() {
+ 			_functions_list "$@"
+ 		}
+ 
+-		config_load rainbow
++		config_load rainbow \
++			|| warning "Unable to load the UCI config: rainbow"
+ 		# The section for all the LEDs is the same for every one of them, so
+ 		# read it once. A dash stands for what it does not set.
+ 		color_r="-" color_g="-" color_b="-" mode="-" mode_args=""
+@@ -113,7 +114,8 @@ base_config() {
+ 			echo "$color_r	$color_g	$color_b	$mode${mode_args:+	}$mode_args"
+ 		done >"$rainbowdir/000-base"
+ 
+-		config_load system
++		config_load system \
++			|| warning "Unable to load the UCI config: system"
+ 		for led in $LEDS; do
+ 			color_r="-" color_g="-" color_b="-" mode="-" mode_args=""
+ 			sysfs="$(led2sysfs "$led")"; sysfs="${sysfs##*/}"

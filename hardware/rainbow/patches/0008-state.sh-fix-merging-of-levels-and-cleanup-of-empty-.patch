@@ -1,0 +1,102 @@
+From 768e64596217df72a47ee31003d9ff48142cb5e8 Mon Sep 17 00:00:00 2001
+From: Josef Schlehofer <pepe.schlehofer@gmail.com>
+Date: Fri, 20 Nov 2026 15:20:28 +0100
+Subject: [PATCH] state.sh: fix merging of levels and cleanup of empty ones
+
+The combined configuration was assembled field by field. When a higher
+level set a mode with fewer arguments than a lower one, the remaining
+arguments of the lower level stayed in place. A netdev activity over an
+animation thus ended with the animation frames as its arguments. Take
+the mode together with all its arguments from the highest level that
+sets it, and do not let a line with fewer fields than expected clear
+the mode.
+
+A level with nothing set is supposed to be removed. The check for that
+used "\t" in a grep pattern, where it is not a tabulator, so it never
+matched and empty files were kept forever. Do the check in awk.
+
+The temporary file of a level was named NNN-slot.new, which matches the
+pattern used to collect the levels. A file left behind by an
+interrupted run was then applied as one more level. Give it a name that
+starts with a dot, which the animator skips already, and remove any
+leftover once the lock is taken.
+---
+ rainbow/rainbow.sh |  4 ++++
+ rainbow/state.sh   | 33 +++++++++++++++++++++++++--------
+ 2 files changed, 29 insertions(+), 8 deletions(-)
+
+diff --git a/rainbow/rainbow.sh b/rainbow/rainbow.sh
+index 55e1852..1487b77 100755
+--- a/rainbow/rainbow.sh
++++ b/rainbow/rainbow.sh
+@@ -10,6 +10,10 @@ mkdir -p "$rainbowdir"
+ [ "${RAINBOW_DIRECTORY_LOCKED-:}" = "y" ] \
+ 	|| RAINBOW_DIRECTORY_LOCKED="y" exec flock -x "$rainbowdir" "$0" "$@"
+ 
++# We hold the lock, so any temporary file found here was left behind by a run
++# that did not finish.
++rm -f "$rainbowdir"/.[0-9][0-9][0-9]-*.new
++
+ . "$(dirname "$(readlink -f "$0")")/utils.sh"
+ loadsrc state
+ loadsrc ledid
+diff --git a/rainbow/state.sh b/rainbow/state.sh
+index 73d4712..eb3628f 100644
+--- a/rainbow/state.sh
++++ b/rainbow/state.sh
+@@ -36,7 +36,12 @@ call_for_leds_config_level() {
+ 	local slot="$2"
+ 	local fnc="$3"
+ 	shift 3
+-	local file="$rainbowdir/$(printf "%03d" "$priority")-$slot"
++	local name
++	name="$(printf "%03d" "$priority")-$slot"
++	local file="$rainbowdir/$name"
++	# The name of the temporary file starts with a dot, so that a leftover of
++	# an interrupted run is not taken for one of the levels.
++	local tmpfile="$rainbowdir/.$name.new"
+ 	{
+ 		if [ -f "$file" ]; then
+ 			cat "$file"
+@@ -45,12 +50,15 @@ call_for_leds_config_level() {
+ 				printf -- "-\t-\t-\t-\n"
+ 			done
+ 		fi
+-	} | parse_leds_file "$fnc" "$@" > "$file.new"
+-	if grep -qv '^-\t-\t-\t-' "$file.new"; then
+-		mv "$file.new" "$file"
++	} | parse_leds_file "$fnc" "$@" > "$tmpfile"
++	if awk -F'\t' '
++			$1 != "-" || $2 != "-" || $3 != "-" || $4 != "-" { found = 1 }
++			END { exit !found }
++		' "$tmpfile"; then
++		mv "$tmpfile" "$file"
+ 	else
+ 		# The configuration is empty so we no longer need it
+-		rm -f "$file" "$file.new"
++		rm -f "$file" "$tmpfile"
+ 	fi
+ }
+ 
+@@ -60,9 +68,18 @@ call_for_leds_config() {
+ 	local fnc="$1"; shift
+ 	awk -F'\t' '
+ 		{
+-			for (i=1; i<=NF; i++)
+-				if (fields[FNR,i] == "" || $i != "-")
+-					fields[FNR,i]=$i
++			for (i = 1; i <= 3; i++)
++				if (!((FNR,i) in fields) || (i <= NF && $i != "-"))
++					fields[FNR,i] = (i <= NF) ? $i : "-"
++			# The mode comes together with its arguments, so the ones from
++			# the lower levels must not stay behind it.
++			if (!((FNR,4) in fields) || (NF >= 4 && $4 != "-")) {
++				for (i = 4; (FNR,i) in fields; i++)
++					delete fields[FNR,i]
++				fields[FNR,4] = "-"
++				for (i = 4; i <= NF; i++)
++					fields[FNR,i] = $i
++			}
+ 		}
+ 		END {
+ 			OFS="\t"
