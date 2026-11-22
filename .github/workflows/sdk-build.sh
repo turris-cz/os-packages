@@ -13,6 +13,10 @@ export LC_ALL=C
 
 FEED_DIR="${GITHUB_WORKSPACE:-$PWD}"
 SDK_DIR="${SDK_DIR:-${RUNNER_TEMP:-/tmp}/turris-sdk}"
+# Kept outside the SDK, which prepare removes, so that the workflow can cache
+# them between runs
+CCACHE_PATH="${CCACHE_PATH:-${RUNNER_TEMP:-/tmp}/ccache}"
+DOWNLOADS_PATH="${DOWNLOADS_PATH:-${RUNNER_TEMP:-/tmp}/dl}"
 ARTIFACTS_DIR="${ARTIFACTS_DIR:-$FEED_DIR/artifacts}"
 REPO_URL="${REPO_URL:-https://repo.turris.cz}"
 OS_BUILD_ARCHIVE_URL="${OS_BUILD_ARCHIVE_URL:-https://codeload.github.com/turris-cz/os-build/tar.gz}"
@@ -349,8 +353,13 @@ build_packages() {
 	group "make defconfig"
 	grep -v -E '^(# )?CONFIG_(SDK|MAKE_TOOLCHAIN|TOOLCHAINOPTS|DEVEL|EXTRA_GCC_CONFIG_OPTIONS|GCC_[A-Z0-9_]+|KERNEL_BUILD_[A-Z]+|TARGET_[A-Za-z0-9_-]+)( is not set|=)' \
 		"$SDK_DIR/turris-config.buildinfo" >.config
+	mkdir -p "$CCACHE_PATH" "$DOWNLOADS_PATH"
+	echo "CONFIG_CCACHE_DIR=\"$CCACHE_PATH\"" >>.config
+	echo "CONFIG_DOWNLOAD_FOLDER=\"$DOWNLOADS_PATH\"" >>.config
 	make defconfig
 	endgroup
+	# Every board and branch stores a cache of its own, so keep each small
+	export CCACHE_MAXSIZE=500M
 
 	for pkg in $PACKAGES; do
 		# The sources of some Turris packages are only on gitlab.nic.cz,
@@ -397,6 +406,10 @@ build_packages() {
 		fi
 		endgroup
 	done
+
+	group "ccache statistics"
+	CCACHE_DIR="$CCACHE_PATH" staging_dir/host/bin/ccache -s || true
+	endgroup
 
 	mkdir -p "$ARTIFACTS_DIR/packages" "$ARTIFACTS_DIR/logs"
 	cp -v bin/packages/*/turrispackages/*.ipk "$ARTIFACTS_DIR/packages/" 2>/dev/null || true

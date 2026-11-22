@@ -42,6 +42,18 @@ jobs:
         env:
           PUSH_BEFORE: ${{ github.event.before }}
 
+      # The compiler cache and the downloaded sources of the last run for the
+      # same board and Turris OS branch
+      - name: Cache ccache and downloads
+        uses: actions/cache@v6
+        with:
+          path: |
+            ${{ runner.temp }}/ccache
+            ${{ runner.temp }}/dl
+          key: sdk-${{ env.TOS_BRANCH }}-${{ matrix.board }}-${{ github.sha }}
+          restore-keys: |
+            sdk-${{ env.TOS_BRANCH }}-${{ matrix.board }}-
+
       - name: Prepare the SDK
         run: bash .github/workflows/sdk-build.sh prepare "${{ matrix.board }}"
 
