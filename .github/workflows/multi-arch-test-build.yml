@@ -10,8 +10,30 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  # Picks the Turris OS branch and the changed packages once for all the
+  # boards, so that the names of the build jobs can show the branch
+  select:
+    name: Changed packages
+    runs-on: ubuntu-latest
+    outputs:
+      tos_branch: ${{ steps.select.outputs.tos_branch }}
+      tos_label: ${{ steps.select.outputs.tos_label }}
+      packages: ${{ steps.select.outputs.packages }}
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Determine the Turris OS branch and the changed packages
+        id: select
+        run: bash .github/workflows/sdk-build.sh select
+        env:
+          PUSH_BEFORE: ${{ github.event.before }}
+
   build:
-    runs-on: ubuntu-24.04
+    needs: select
+    runs-on: ubuntu-latest
     timeout-minutes: 120
     strategy:
       fail-fast: false
@@ -22,12 +44,14 @@ jobs:
           - mox
           - turris1x
 
-    name: Turris ${{ matrix.board }}
+    name: Turris ${{ matrix.board }} (${{ needs.select.outputs.tos_label }})
+
+    env:
+      TOS_BRANCH: ${{ needs.select.outputs.tos_branch }}
+      PACKAGES: ${{ needs.select.outputs.packages }}
 
     steps:
       - uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
 
       # The SDK checks the build prerequisites of OpenWrt on its first run
       - name: Install host packages
@@ -36,11 +60,6 @@ jobs:
           sudo apt-get install -y build-essential file gawk gettext git \
             libncurses-dev libssl-dev python3-setuptools rsync swig unzip \
             wget zlib1g-dev zstd
-
-      - name: Determine the Turris OS branch and the changed packages
-        run: bash .github/workflows/sdk-build.sh select
-        env:
-          PUSH_BEFORE: ${{ github.event.before }}
 
       # The compiler cache and the downloaded sources of the last run for the
       # same board and Turris OS branch

@@ -147,10 +147,18 @@ select_changes() {
 
 	setenv TOS_BRANCH "$tos_branch"
 	setenv PACKAGES "$packages"
+	# The build jobs take these, the label goes to their names
+	if [ -n "${GITHUB_OUTPUT:-}" ]; then
+		{
+			echo "tos_branch=$tos_branch"
+			echo "tos_label=$(echo "$tos_branch" | tr '[:lower:]' '[:upper:]')"
+			echo "packages=$packages"
+		} >>"$GITHUB_OUTPUT"
+	fi
 }
 
 prepare_sdk() {
-	local board="$1" url link target turris_build
+	local board="$1" url link target turris_build version
 	: "${TOS_BRANCH:?unknown Turris OS branch, run the select step first}"
 	url="$REPO_URL/$TOS_BRANCH/$board/packages"
 	rm -rf "$SDK_DIR"
@@ -163,6 +171,13 @@ prepare_sdk() {
 	curl -fsSL --retry 3 -o "$SDK_DIR/turris-config.buildinfo" "$url/config.buildinfo"
 	cat "$SDK_DIR/turris-git-hash"
 	endgroup
+
+	version="$(sed -n 's/^CONFIG_VERSION_NUMBER="\(.*\)"$/\1/p' "$SDK_DIR/turris-config.buildinfo")"
+	echo "Turris OS ${version:-unknown} ($TOS_BRANCH) for $board"
+	if [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then
+		echo "Built with the SDK of Turris OS ${version:-unknown} ($TOS_BRANCH) for $board" \
+			>>"$GITHUB_STEP_SUMMARY"
+	fi
 
 	# A few links of the SDK point into the directory it was built in
 	while IFS= read -r -d '' link; do
