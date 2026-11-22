@@ -1,0 +1,34 @@
+--- a/package/kernel/linux/Makefile
++++ b/package/kernel/linux/Makefile
+@@ -41,9 +41,15 @@
+ define Build/Quilt
+ endef
+ 
++ifndef SDK
+ define Build/Compile
+ 	$(KERNEL_MAKE) $(KERNELNAME)
+ endef
++else
++# The SDK has only part of the kernel tree and no kernel image
++define Build/Compile
++endef
++endif
+ 
+ define KernelPackage/depends
+ endef
+@@ -59,6 +65,7 @@
+   PKG_FLAGS:=nonshared
+ endef
+ 
++ifndef SDK
+ define Package/kernel/install
+ 	$(INSTALL_DIR) "$(1)"/boot
+ 	$(foreach k, $(filter-out dtbs,$(KERNELNAME)), \
+@@ -71,6 +78,7 @@
+ 		$(CP) $(DTS_DIR)/$(d) "$(1)"/boot; \
+ 	)
+ endef
++endif
+ 
+ define Package/kernel/extra_provides
+ 	sed -e 's,.*/,,' $(LINUX_DIR)/modules.builtin;
