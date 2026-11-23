@@ -1,0 +1,26 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Josef Schlehofer <pepe.schlehofer@gmail.com>
+Date: Wed, 11 Nov 2026 16:23:35 +0100
+Subject: [PATCH] Name the missing snapshot in rollback
+
+rollback prints $NUMBER, which is still empty there, so the message
+reads "Snapshot number  does not exists!". Print $ROLL_TO instead.
+
+Signed-off-by: Josef Schlehofer <pepe.schlehofer@gmail.com>
+---
+ schnapps.sh | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/schnapps.sh b/schnapps.sh
+index 31cc32d..e90e89e 100755
+--- a/schnapps.sh
++++ b/schnapps.sh
+@@ -462,7 +462,7 @@ rollback() {
+     fi
+     ROLL_TO="$1"
+     if [ -n "$ROLL_TO" ] && [ \! -d "$TMP_MNT_DIR"/@$ROLL_TO ]; then
+-        die "Snapshot number $NUMBER does not exists!"
++        die "Snapshot number $ROLL_TO does not exists!"
+     fi
+     if [ -z "$ROLL_TO" ]; then
+         SKIP_TO=""
