@@ -10,11 +10,11 @@ include $(INCLUDE_DIR)/kernel.mk
 
 PKG_NAME:=omnia-ng-support
 PKG_VERSION:=1.5
-PKG_RELEASE:=20
+PKG_RELEASE:=21
 
 PKG_MAINTAINER:=CZ.NIC <packaging@turris.cz>
 
-PKG_BUILD_DIR:=$(KERNEL_BUILD_DIR)/packages
+PKG_BUILD_DIR:=$(KERNEL_BUILD_DIR)/$(PKG_NAME)
 PKG_BUILD_DEPENDS:=linux
 
 include $(INCLUDE_DIR)/package.mk
@@ -38,7 +38,7 @@ Build/Configure:=
 
 define Build/Compile
 	mkimage -T script -C none -n boot -d files/boot.txt "$(PKG_BUILD_DIR)"/boot.scr
-	$(KERNEL_MAKE) Image dtbs
+	$(KERNEL_MAKE) qcom/ipq9574-turris-omnia-ng.dtb
 endef
 
 define Package/omnia-ng-support/install
