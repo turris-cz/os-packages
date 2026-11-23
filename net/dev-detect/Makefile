@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=dev-detect
 PKG_VERSION:=0.3.1
-PKG_RELEASE:=7
+PKG_RELEASE:=8
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.nic.cz/turris/dev-detect.git
@@ -32,11 +32,16 @@ define Package/dev-detect
         +python3-logging \
         +python3-sqlite3 \
         +python3-uci \
-        +ouidb
+        +ouidb \
+        +create_notification
 endef
 
 define Package/dev-detect/description
   Small utility to detect devices on local network
+endef
+
+define Package/dev-detect/conffiles
+/etc/config/dev-detect
 endef
 
 define Py3Package/dev-detect/install
@@ -48,6 +53,9 @@ define Py3Package/dev-detect/install
 
 	$(INSTALL_DIR) $(1)/etc/config
 	$(INSTALL_DATA) ./files/dev-detect.uci $(1)/etc/config/dev-detect
+
+	$(INSTALL_DIR) $(1)/etc/uci-defaults
+	$(INSTALL_BIN) ./files/uci-defaults $(1)/etc/uci-defaults/99-dev-detect
 
 	$(INSTALL_DIR) $(1)/usr/libexec
 	$(INSTALL_BIN) ./files/notify_new_device.sh $(1)/usr/libexec/
