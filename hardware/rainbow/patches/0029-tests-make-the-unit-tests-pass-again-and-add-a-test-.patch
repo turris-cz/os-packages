@@ -1,0 +1,316 @@
+From 83884afb84fb3a6bee5b0d0a41faee208d57745b Mon Sep 17 00:00:00 2001
+From: Josef Schlehofer <pepe.schlehofer@gmail.com>
+Date: Fri, 20 Nov 2026 15:38:55 +0100
+Subject: [PATCH] tests: make the unit tests pass again and add a test target
+
+The tests were not run for a long time. state.test.sh still used the
+variable names from before status was renamed to mode and expected an
+empty level to be stored, and ledid.test.sh expected the power LED to
+be invalid. They also started with #!/bin/ash although the code needs
+bash.
+
+Fix them, load utils.sh the way rainbow does and add cases for what
+this series fixes: the checks of numbers, colors that must not reach
+the shell arithmetic, times of an animation that are not numbers, a
+mode that replaces the arguments of a lower level, removal of an empty
+level and a leftover temporary file. "make test" runs all of them.
+---
+ Makefile                  |  8 ++++-
+ rainbow/animation.test.sh | 12 +++++---
+ rainbow/color.test.sh     | 27 +++++++++++++++--
+ rainbow/ledid.test.sh     | 11 +++++--
+ rainbow/state.test.sh     | 62 ++++++++++++++++++++++++++-------------
+ rainbow/utils.test.sh     | 30 +++++++++++++++++++
+ 6 files changed, 119 insertions(+), 31 deletions(-)
+ create mode 100644 rainbow/utils.test.sh
+
+diff --git a/Makefile b/Makefile
+index fbfd173..23f46a7 100644
+--- a/Makefile
++++ b/Makefile
+@@ -2,6 +2,12 @@ PREFIX := /usr
+ 
+ all:
+ 
++test:
++	@for test in rainbow/*.test.sh; do \
++		echo "$$test"; \
++		bash "$$test" || exit 1; \
++	done
++
+ install: rainbow-install button-sync-install animator-install
+ 
+ rainbow-install:
+@@ -40,4 +46,4 @@ turris1x-install:
+ 	install -D -m 644 backend/turris1x/animator_backend.py ${DESTDIR}${PREFIX}/libexec/rainbow/animator_backend.py
+ 	install -D -m 644 backend/turris1x/backend.sh ${DESTDIR}${PREFIX}/libexec/rainbow/backend.sh
+ 
+-.PHONY: all install rainbow-install button-sync-install animator-install mox-install omnia-install turris1x-install
++.PHONY: all test install rainbow-install button-sync-install animator-install mox-install omnia-install turris1x-install
+diff --git a/rainbow/animation.test.sh b/rainbow/animation.test.sh
+index 8fe7a18..1fc8b99 100755
+--- a/rainbow/animation.test.sh
++++ b/rainbow/animation.test.sh
+@@ -1,12 +1,10 @@
+-#!/bin/ash
++#!/bin/bash
+ 
+ # SPDX-License-Identifier: GPL-3.0-or-later
+ # Copyright 2022, CZ.NIC z.s.p.o. (https://www.nic.cz/)
+ 
+ set -eu
+-loadsrc() {
+-	. "${0%/*}/$1.sh"
+-}
++. "${0%/*}/utils.sh"
+ loadsrc animation
+ 
+ fail() {
+@@ -39,3 +37,9 @@ check \
+ 	"0	0	0	1000	255	0	0	1000" \
+ 	2 \
+ 	black 1000 red 1000 something else
++
++# The time has to be a plain number
++check "" 2 red 10x
++check "" 2 red -5
++check "" 2 red "10
++20"
+diff --git a/rainbow/color.test.sh b/rainbow/color.test.sh
+index 56c6d8f..1d8da8b 100755
+--- a/rainbow/color.test.sh
++++ b/rainbow/color.test.sh
+@@ -1,10 +1,11 @@
+-#!/bin/ash
++#!/bin/bash
+ 
+ # SPDX-License-Identifier: GPL-3.0-or-later
+ # Copyright 2022, CZ.NIC z.s.p.o. (https://www.nic.cz/)
+ 
+ set -eu
+-. "${0%/*}/color.sh"
++. "${0%/*}/utils.sh"
++loadsrc color
+ 
+ fail() {
+ 	echo "$@" >&2
+@@ -70,6 +71,28 @@ check "123,-,-" "123" "-" "-" inherit
+ 
+ check_fail "ABCDF"
+ check_fail "ABCDF01"
++check_fail "orange"
++check_fail "Rx1FF"
++check_fail "Rx"
++check_fail "R-1"
++check_fail "1,2"
++check_fail "1,2,3,4"
++
++# Nothing that is not a plain number may get to the shell arithmetic. The
++# marker would be created by a command substitution in an array subscript.
++marker="$(mktemp -u)"
++check_fail "Rx1+marker[\$(touch $marker)]"
++check_fail "x1+marker[\$(touch $marker)],2,3"
++check_fail "R1
++Rx1+marker[\$(touch $marker)]"
++check_fail "x1+marker[\$(touch $marker)]
++1,2,3"
++check_fail "FF00FF
++x"
++[ ! -e "$marker" ] || {
++	rm -f "$marker"
++	fail "A color value was executed"
++}
+ 
+ 
+ check "000000" 0 0 0
+diff --git a/rainbow/ledid.test.sh b/rainbow/ledid.test.sh
+index 01e7bf7..0e2583d 100755
+--- a/rainbow/ledid.test.sh
++++ b/rainbow/ledid.test.sh
+@@ -1,10 +1,11 @@
+-#!/bin/ash
++#!/bin/bash
+ 
+ # SPDX-License-Identifier: GPL-3.0-or-later
+ # Copyright 2022, CZ.NIC z.s.p.o. (https://www.nic.cz/)
+ 
+ set -eu
+-. "${0%/*}/ledid.sh"
++. "${0%/*}/utils.sh"
++loadsrc ledid
+ 
+ fail() {
+ 	echo "$@" >&2
+@@ -24,8 +25,12 @@ not_valid() {
+ for led in $LEDS; do
+ 	valid "$led"
+ done
+-not_valid "power"
++not_valid "pwr"
+ not_valid "usr"
++not_valid "led"
++not_valid "led0"
++not_valid "ledfoo"
++not_valid "led1x"
+ not_valid "p"
+ not_valid "1"
+ 
+diff --git a/rainbow/state.test.sh b/rainbow/state.test.sh
+index e47ced5..76b3890 100755
+--- a/rainbow/state.test.sh
++++ b/rainbow/state.test.sh
+@@ -1,12 +1,10 @@
+-#!/bin/ash
++#!/bin/bash
+ 
+ # SPDX-License-Identifier: GPL-3.0-or-later
+ # Copyright 2022, CZ.NIC z.s.p.o. (https://www.nic.cz/)
+ 
+ set -eu
+-loadsrc() {
+-	. "${0%/*}/$1.sh"
+-}
++. "${0%/*}/utils.sh"
+ loadsrc state
+ 
+ rainbowdir="$(mktemp -d)"
+@@ -32,21 +30,16 @@ cmp_file() (
+ default() {
+ 	true
+ }
++# A level where nothing is set is not stored
+ call_for_leds_config_level 50 "default" default
+-cmp_file 50 "default" <<EOF
+--	-	-	-
+--	-	-	-
+--	-	-	-
+--	-	-	-
+--	-	-	-
+-EOF
++[ ! -e "$rainbowdir/050-default" ] || fail "Empty level was stored"
+ 
+ set_wlan-1() {
+ 	if [ "$led" = "wlan-1" ]; then
+ 		color_r=255
+ 		color_g=0
+ 		color_b=127
+-		status="auto"
++		mode="auto"
+ 	fi
+ }
+ call_for_leds_config_level 51 "wlan-1" set_wlan-1
+@@ -63,8 +56,8 @@ modify_wlan-1() {
+ 		color_r=0
+ 		color_g=255
+ 		color_b=0
+-		status="trigger"
+-		status_args="netdev	wlan-1	link tx rx"
++		mode="activity"
++		mode_args="netdev-wlan0	link	tx	rx"
+ 	fi
+ }
+ call_for_leds_config_level 51 "wlan-1" modify_wlan-1
+@@ -72,7 +65,7 @@ cmp_file 51 "wlan-1" <<EOF
+ -	-	-	-
+ -	-	-	-
+ -	-	-	-
+-0	255	0	trigger	netdev	wlan-1	link tx rx
++0	255	0	activity	netdev-wlan0	link	tx	rx
+ -	-	-	-
+ EOF
+ 
+@@ -80,8 +73,8 @@ modify_all() {
+ 	color_r=127
+ 	color_g=128
+ 	color_b=255
+-	status="auto"
+-	status_args=""
++	mode="auto"
++	mode_args=""
+ }
+ call_for_leds_config_level 49 "all" modify_all
+ cmp_file 49 "all" <<EOF
+@@ -107,8 +100,8 @@ complete_config() {
+ 			r=0
+ 			g=255
+ 			b=0
+-			s="trigger"
+-			a="netdev	wlan-1	link tx rx"
++			s="activity"
++			a="netdev-wlan0	link	tx	rx"
+ 			;;
+ 		*)
+ 			fail "Invalid led: $led"
+@@ -117,7 +110,34 @@ complete_config() {
+ 	[ "$color_r" = "$r" ] || fail "Red color does not match: $color_r != $r"
+ 	[ "$color_g" = "$g" ] || fail "Green color does not match: $color_g != $g"
+ 	[ "$color_b" = "$b" ] || fail "Blue color does not match: $color_b != $b"
+-	[ "$status" = "$s" ] || fail "Status does not match: $status != $s"
+-	[ "$status_args" = "$a" ] || fail "Status arguments does not match: '$status_args' != '$a'"
++	[ "$mode" = "$s" ] || fail "Mode does not match: $mode != $s"
++	[ "$mode_args" = "$a" ] || fail "Mode arguments do not match: '$mode_args' != '$a'"
+ }
+ call_for_leds_config complete_config
++
++
++# A mode set on a higher level replaces the arguments of the lower one
++set_enable() {
++	if [ "$led" = "wlan-1" ]; then
++		mode="enable"
++		mode_args=""
++	fi
++}
++call_for_leds_config_level 60 "enable" set_enable
++check_enable() {
++	[ "$led" != "wlan-1" ] && return
++	[ "$mode" = "enable" ] || fail "Mode does not match: $mode != enable"
++	[ -z "$mode_args" ] || fail "Arguments of the lower level were kept: '$mode_args'"
++}
++call_for_leds_config check_enable
++
++# A level with nothing set is removed
++unset_all() {
++	color_r="-" color_g="-" color_b="-" mode="-" mode_args=""
++}
++call_for_leds_config_level 60 "enable" unset_all
++[ ! -e "$rainbowdir/060-enable" ] || fail "Empty level was not removed"
++
++# A temporary file that was left behind is not one of the levels
++echo "junk" >"$rainbowdir/.049-all.new"
++call_for_leds_config complete_config
+diff --git a/rainbow/utils.test.sh b/rainbow/utils.test.sh
+new file mode 100644
+index 0000000..3a7e3a4
+--- /dev/null
++++ b/rainbow/utils.test.sh
+@@ -0,0 +1,30 @@
++#!/bin/bash
++
++# SPDX-License-Identifier: GPL-3.0-or-later
++# Copyright 2022, CZ.NIC z.s.p.o. (https://www.nic.cz/)
++
++set -eu
++. "${0%/*}/utils.sh"
++
++fail() {
++	echo "$@" >&2
++	exit 1
++}
++
++for value in 0 7 007 255 123456789; do
++	is_uint "$value" || fail "Should be a number: $value"
++done
++# The last ones are what must never get to the shell arithmetic
++for value in "" "-" "-1" "1.5" "0x10" "1 2" "1234567890" 'a[$(true)]' "1
++2"; do
++	! is_uint "$value" || fail "Should not be a number: $value"
++done
++
++check_decimal() {
++	[ "$(decimal "$1")" = "$2" ] || fail "decimal $1 is not $2"
++}
++check_decimal 0 0
++check_decimal 000 0
++check_decimal 007 7
++check_decimal 120 120
++check_decimal 0120 120

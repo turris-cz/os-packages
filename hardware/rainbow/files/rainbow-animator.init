@@ -5,13 +5,15 @@ STOP=01
 
 USE_PROCD=1
 
+# rainbow sends both signals on every call. There is nothing to signal when
+# the service does not run, so no error is printed then.
 reload_service() {
-	procd_send_signal "$(basename "$(readlink -f "$initscript")")" '*' SIGUSR2
+	procd_send_signal "$(basename "$(readlink -f "$initscript")")" '*' SIGUSR2 2>/dev/null || true
 }
 
 extra_command "pause" "Pause animator loop"
 pause() {
-	procd_send_signal "$(basename "$(readlink -f "$initscript")")" '*' SIGUSR1
+	procd_send_signal "$(basename "$(readlink -f "$initscript")")" '*' SIGUSR1 2>/dev/null || true
 }
 
 start_service() {

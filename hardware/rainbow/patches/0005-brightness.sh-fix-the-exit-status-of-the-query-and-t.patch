@@ -1,0 +1,58 @@
+From 1159ddbc4162ef433c829859c0a145f3c6563d6f Mon Sep 17 00:00:00 2001
+From: Josef Schlehofer <pepe.schlehofer@gmail.com>
+Date: Fri, 20 Nov 2026 15:15:18 +0100
+Subject: [PATCH] brightness.sh: fix the exit status of the query and the top
+ level
+
+"rainbow brightness -q" printed the value and then returned the number
+of its arguments, so with set -e the whole script ended with status 1
+on every successful query.
+
+"rainbow brightness 8" stored 8 * 32 = 256 in UCI. It was clamped when
+read back, but the stored value was out of the documented range.
+
+The help now says that the query prints the value in the 0 to 255
+range, as it is not obvious next to the 0 to 8 levels used for setting.
+---
+ rainbow/brightness.sh | 10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
+
+diff --git a/rainbow/brightness.sh b/rainbow/brightness.sh
+index 77a4a85..ac65332 100644
+--- a/rainbow/brightness.sh
++++ b/rainbow/brightness.sh
+@@ -17,7 +17,8 @@ brightness_help() {
+ 		if -p is used).
+ 
+ 		Options:
+-		  -q  Query for current setting instead of setting brightness
++		  -q  Query for current setting instead of setting brightness (the
++		      value is always printed in the range from 0 to 255)
+ 		  -p  Higher precission for brightness
+ 		  -h  Print this help text and exit
+ 	EOF
+@@ -45,12 +46,13 @@ op_brightness() {
+ 				;;
+ 		esac
+ 	done
++	shift $((OPTIND - 1))
+ 	if [ "$query" ]; then
+ 		brightness fetch
+-		return $#
++		SHIFTARGS=$#
++		return 0
+ 	fi
+ 
+-	shift $((OPTIND - 1))
+ 	[ $# -gt 0 ] || {
+ 		brightness_usage
+ 		exit 2
+@@ -71,6 +73,8 @@ op_brightness() {
+ 			exit 2
+ 		fi
+ 		brightness=$((brightness * 32))
++		# The highest level is the full brightness, which is 255 and not 256
++		[ "$brightness" -le 255 ] || brightness=255
+ 	fi
+ 	update_brightness "$brightness"
+ 	apply_needed="y"

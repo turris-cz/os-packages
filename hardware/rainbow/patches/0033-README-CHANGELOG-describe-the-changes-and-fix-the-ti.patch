@@ -1,0 +1,180 @@
+From c2ecbcd0900f560cced8ebe37bd21a61fdc20fd1 Mon Sep 17 00:00:00 2001
+From: Josef Schlehofer <pepe.schlehofer@gmail.com>
+Date: Fri, 20 Nov 2026 15:39:25 +0100
+Subject: [PATCH] README, CHANGELOG: describe the changes and fix the time unit
+
+The times of an animation are in milliseconds, as the help of the
+animate mode says. The README had nanoseconds.
+
+Document the disk triggers and the use of any other kernel trigger,
+which triggers of the LEDs in the system config are understood, what
+the brightness levels stand for, how the button sync tells its own
+changes from the ones of the button, that the animations need the
+animator package and how to run the tests.
+---
+ CHANGELOG.md | 46 ++++++++++++++++++++++++++++++++++++++++++++++
+ README.md    | 45 ++++++++++++++++++++++++++++++++++++++++-----
+ 2 files changed, 86 insertions(+), 5 deletions(-)
+
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index e87fede..abd5d80 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -4,6 +4,52 @@ All notable changes to this project will be documented in this file.
+ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+ 
++## [Unreleased]
++### Added
++- An LED can follow any trigger the kernel offers, for example disk activity
++  (`disk-activity`, `disk-read`, `disk-write`).
++- Option `-n` prints the name of each LED next to its configuration.
++- The Turris 1.x LED driver that is in OpenWrt is supported.
++
++### Changed
++After the update the LEDs can look different in these three cases:
++- **LEDs switched on or off in LuCI:** the setting now has an effect. It was
++  saved before, but ignored.
++- **Color set for all LEDs:** it now applies to every LED, including the
++  power LED.
++- **Brightness levels on Turris Omnia:** `rainbow brightness` uses the same
++  steps as the button on the router.
++
++Other changes:
++- A mistyped color, mode or operation is reported as an error.
++- An LED that Rainbow can't set up the way it is configured is left alone or
++  switched off.
++- The configuration of an LED is printed to the standard output, so that
++  scripts can read it.
++- Values from the configuration and from the command line are checked before
++  they are used.
++
++### Fixed
++- **Triggers set in LuCI:** an LED set to disk activity, a timer or another
++  trigger no longer causes "Unsupported trigger" on every call and no longer
++  goes dark.
++- **Network and Wi-Fi:** `netdev-*` and `phyX` activities can be set from the
++  command line, and the wlan LEDs no longer stay off in the automatic mode.
++- **Brightness:** it no longer drops with every restart on Turris 1.x, the
++  button sync no longer rewrites the stored value, and `rainbow brightness 0`
++  switches off the blinking LED of the Mox.
++- **Wrong configuration:** an invalid value or a missing configuration file
++  no longer stops Rainbow without a word. It is reported and the default is
++  used.
++- **Missing and ignored LEDs:** an LED the router does not have no longer
++  stops the setup of the others, and ignored LEDs are left out of the boot
++  sequence.
++- **Animations:** the ones set in the configuration are played, and the
++  animator no longer uses more CPU the longer an animation runs.
++- **Command line:** all the operations of one command are performed, for
++  example `rainbow lan-0 green lan-1 blue`, and options given before an
++  operation no longer break it.
++
+ ## [0.1.4] - 2023-07-20
+ ### Fixed
+ - button synchronization no longer overwrites UCI values
+diff --git a/README.md b/README.md
+index 7f7dc7e..2f290c2 100644
+--- a/README.md
++++ b/README.md
+@@ -26,12 +26,19 @@ options:
+   `rainbow all -h` for possible values. Note that inheritance is not supported
+   in UCI configuration as there is nowhere to inherit values from.
+ * `mode`: default mode of LED. Continue reading for all available modes (the
+-  default is `auto`).
++  default is `auto`). The option `status` from Turris OS 5 and older is read as
++  well.
+ 
+ The section `all` serves as global defaults for other LEDs. It has also one
+ additional option `brightness`. It is an integer between 0 and 255 specifying
+ global LEDs brightness.
+ 
++The brightness can be set at runtime with `rainbow brightness`. It takes one of
++the levels 0 to 8, or the exact value between 0 and 255 with the option `-p`.
++On Turris Omnia the levels are the steps of the button on the router, which are
++0, 1, 5, 12, 25, 40, 70 and 100 percent. On the other boards they are spread
++evenly. `rainbow brightness -q` always prints the value between 0 and 255.
++
+ The `mode` option can have the following values:
+ 
+ * `auto`: the default behavior for given LED.
+@@ -65,33 +72,50 @@ in `rainbow` config):
+ * `heartbeat`: Variant on `activity` that blinks twice instead of once.
+ * `heartbeat-inverted`: Variant on `activity-inverted` for `heartbeat`.
+ * `disk-activity`: Blinks with disk activity (any disk activity is considered).
++* `disk-read` and `disk-write`: Blinks only when a disk is read or only when it
++  is written.
+ * `usbport`: Blinks with activity on any USB port.
+ * `netdev-NETDEV`: Blink with activity on a specific network device where `NETDEV`
+   is the name of that device.
+ * `mmcX`: Flashes when writing or reading to and from a specific MMC device where
+   `X` is the index of that device.
+ * `phyX`: Blinks with activity on wireless interface where `X`is index of that
+-  interface.
++  interface. This is a short form of the kernel trigger `phyXtpt`. The other
++  triggers of the wireless device, such as `phyXrx` and `phyXtx`, can be used by
++  their full name.
+ * `ataX`: Blink when writing or reading to and from a specific ATA device where
+   `X` is the index of that device.
+ * `netfilter-ID`: Flashes when firewall rule with specified `ID` is triggered.
+ 
++Any other trigger that the kernel offers for the LED and that needs no further
++setup can be used by its name as well.
++
+ The full list of available activities is available by invoking:
+ `rainbow all activity -l`.
+ 
++For the LEDs configured in the UCI config `system` Rainbow understands the
++triggers `none`, `default-on`, `heartbeat`, `timer` (with `delayon` and
++`delayoff`), `netdev` (with `dev` and `mode`), `usbport` and every trigger
++listed by the command above. An LED with any other trigger, or with a `netdev`
++trigger that has no usable `dev`, is reported and left alone, so that it stays
++the way `/etc/init.d/led` configured it.
++
+ ### Animate
+ 
+ This allows the specification of animation patterns. The simplest variant is periodically
+ enabling and disabling the LED, but more complex patterns can be specified as well.
+ 
+-The animation is specified as a set of color and time in nanosecond pairs. The
++The animation is specified as a set of color and time in millisecond pairs. The
+ color changes from one color to the next one in the duration of the specified time.
+ 
+ In the configuration, the animation is specified as a list of those color and time in
+-nanoseconds pairs. For example the following UCI list gradually dims and
+-light ups green color on the power LED:
++milliseconds pairs. For example the following UCI list gradually dims and
++light ups green color on all the LEDs:
+ `rainbow.all.animation='green 1000' 'black 1000'`
+ 
++The animations are played by the `rainbow-animator` service. It is a separate
++package and nothing is animated when it is not installed.
++
+ 
+ ## Hardware integration
+ 
+@@ -114,6 +138,10 @@ the `rainbow-button-sync` service and the `button_sync.sh` shell script. The
+ additional function to be present there - `get_brightness`. The configuration is
+ saved to the UCI config `rainbow`.
+ 
++The brightness in the hardware also changes when Rainbow applies the value from
++UCI. With the functions `get_brightness_raw` and `brightness_to_raw` in the
++backend the button sync recognizes such a change and leaves UCI as it is.
++
+ ### Animator
+ 
+ The animations are designed to work well with the Kernel LED pattern trigger. The
+@@ -132,6 +160,13 @@ desirable to not load the CPU with LED animations. By default, the number of upd
+ a second is set to 15. You can use UCI `rainbow.animation.ups` to set a different
+ value if you want to tweak it.
+ 
++## Tests
++
++The unit tests of the parsers and of the state handling are run with:
++```
++%: make test
++```
++
+ ## Installation
+ 
+ The default install target only installs rainbow itself, not the device-specific backend.

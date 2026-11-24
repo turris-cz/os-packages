@@ -1,0 +1,78 @@
+From cac4db70ab27032c14e405cc9a3e29eadf128e82 Mon Sep 17 00:00:00 2001
+From: Michal Vasilek <michal.vasilek@nic.cz>
+Date: Thu, 3 Nov 2022 19:10:50 +0100
+Subject: [PATCH] compat.sh: fix unbound variable at line 60
+
+rainbow get intensity from compat.sh is supposed to return intensity
+in a the same range as what sysfs provides which is specific to each router
+---
+ backend/omnia/backend.sh   |  8 +++++++-
+ rainbow/backend.example.sh |  9 +++++++++
+ rainbow/compat.sh          | 13 +++++++++++--
+ 3 files changed, 27 insertions(+), 3 deletions(-)
+
+diff --git a/backend/omnia/backend.sh b/backend/omnia/backend.sh
+index c88c147..1e39b97 100644
+--- a/backend/omnia/backend.sh
++++ b/backend/omnia/backend.sh
+@@ -28,9 +28,15 @@ led_defaults() {
+ 	esac
+ }
+ 
+-get_brightness() {
++get_brightness_raw() {
+ 	local cur
+ 	cur="$(cat "$SYSFS/brightness")"
++	echo "$cur"
++}
++
++get_brightness() {
++	local cur
++	cur="$(get_brightness_raw)"
+ 	echo $(((cur * 255 + 50) / 100))
+ }
+ 
+diff --git a/rainbow/backend.example.sh b/rainbow/backend.example.sh
+index a9f7264..b5216cc 100644
+--- a/rainbow/backend.example.sh
++++ b/rainbow/backend.example.sh
+@@ -39,6 +39,15 @@ get_brightness() {
+ 	false
+ }
+ 
++# This function is optional and only makes sense if get_brightness changes the
++# range compared to the sysfs.
++# It is expected to echo the current brightness level as integer in device the
++# specific range.
++get_brightness_raw() {
++	false
++}
++
++
+ # The optional function that is called before application of state using
+ # set_led. This should be used to prepare environment as well as to pause
+ # animator for example.
+diff --git a/rainbow/compat.sh b/rainbow/compat.sh
+index 3c5666c..15e2090 100644
+--- a/rainbow/compat.sh
++++ b/rainbow/compat.sh
+@@ -57,8 +57,17 @@ compat_intensity() {
+ compat_get() {
+ 	local max="$1"; shift
+ 	if [ "${1:-}" = "intensity" ]; then
+-		echo "$(($2 * max / 255))"
+-		shift 2
++		local brightness
++		if type get_brightness_raw >/dev/null; then
++			brightness=$(get_brightness_raw);
++		elif type get_brightness >/dev/null; then
++			brightness=$(get_brightness);
++		else
++			echo "Backend doesn't provide a get_brightness_raw or get_brightness function" >&2
++			exit 2
++		fi
++		echo "$brightness"
++		shift
+ 	else
+ 		echo "Invalid get usage. Missing 'intensity' argument." >&2
+ 		exit 2

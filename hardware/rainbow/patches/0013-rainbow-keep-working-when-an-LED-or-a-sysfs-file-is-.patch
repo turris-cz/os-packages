@@ -1,0 +1,275 @@
+From 73576d4ea2ff65339c001394c71853be6e4ed834 Mon Sep 17 00:00:00 2001
+From: Josef Schlehofer <pepe.schlehofer@gmail.com>
+Date: Fri, 20 Nov 2026 15:26:59 +0100
+Subject: [PATCH] rainbow: keep working when an LED or a sysfs file is missing
+
+Every write to sysfs was a plain echo, so with set -e the first file
+that did not exist ended the whole run with an error of the shell and
+the remaining LEDs were left unconfigured. The package in Turris OS
+carries two patches that put an existence test in front of each write.
+
+Do it in the source instead. An LED the kernel does not provide is
+skipped as a whole, the attributes of the LED controller are written
+through a helper that skips a missing file, and a failure to configure
+one LED is reported and does not stop the others. A hardware trigger
+the running kernel does not have gives a warning that names it.
+
+The animator backends of the Omnia and the Turris 1.x opened the file
+of every LED at start and ended on the first missing one. They now open
+an LED when it is first animated and skip one that is not there. A
+write that fails closes the LED, so that one that goes away later does
+not end the animator either.
+---
+ backend/mox/backend.sh               |  4 +++-
+ backend/omnia/animator_backend.py    | 27 ++++++++++++++++++++++-----
+ backend/omnia/backend.sh             | 12 ++++++++----
+ backend/turris1x/animator_backend.py | 27 ++++++++++++++++++++++-----
+ backend/turris1x/backend.sh          | 14 +++++++++-----
+ rainbow/rainbow.sh                   |  4 +++-
+ rainbow/utils.sh                     |  8 ++++++++
+ 7 files changed, 75 insertions(+), 21 deletions(-)
+
+diff --git a/backend/mox/backend.sh b/backend/mox/backend.sh
+index f1503d9..1adc7dd 100644
+--- a/backend/mox/backend.sh
++++ b/backend/mox/backend.sh
+@@ -30,6 +30,8 @@ set_led() {
+ 	local led="$1" r="$2" g="$3" b="$4" mode="$5"
+ 	shift 5
+ 	[ "$led" = "activity" ] || return
++	# Nothing to do when the kernel does not provide the LED
++	[ -d "$SYSFS" ] || return 0
+ 
+ 	if [ "$mode" = "auto" ]; then # override auto mode
+ 		mode="activity"
+@@ -64,7 +66,7 @@ set_led() {
+ 	echo "$brightness" > "$SYSFS/brightness"
+ 	if [ "$trigger" = "activity" ]; then
+ 		apply_activity "$led" $mode_args "$@" \
+-			|| echo "Warning: activity setup failed for: $led" >&2
++			|| warning "activity setup failed for: $led"
+ 	else
+ 		echo "$trigger" > "$SYSFS/trigger"
+ 	fi
+diff --git a/backend/omnia/animator_backend.py b/backend/omnia/animator_backend.py
+index 274b6a7..b5aab81 100644
+--- a/backend/omnia/animator_backend.py
++++ b/backend/omnia/animator_backend.py
+@@ -11,17 +11,34 @@ class Backend:
+     LEDS = ["power", "lan-0", "lan-1", "lan-2", "lan-3", "lan-4", "wan", "wlan-1", "wlan-2", "wlan-3", "indicator-1", "indicator-2"]
+ 
+     def __init__(self):
+-        self._fds = tuple(os.open(f"/sys/class/leds/rgb:{led}/multi_intensity", os.O_WRONLY) for led in self.LEDS)
++        # The LEDs are opened when they are asked for, as the kernel does not
++        # have to provide all of them and can add one later
++        self._fds = [None] * len(self.LEDS)
+ 
+     def update(self, ledid: int, red: int, green: int, blue: int) -> None:
+         """Update color of led on given index."""
+-        os.write(self._fds[ledid], f"{red} {green} {blue}".encode())
++        if not self.handled(ledid):
++            return
++        try:
++            os.write(self._fds[ledid], f"{red} {green} {blue}".encode())
++        except OSError:
++            # The LED is gone. It is opened again once the kernel has it back.
++            os.close(self._fds[ledid])
++            self._fds[ledid] = None
+ 
+     def apply(self) -> None:
+         """Apply previous LEDs state updates if that is required."""
+         # We apply immediately so we do not need this.
+ 
+-    @staticmethod
+-    def handled(ledid: int) -> bool:
++    def handled(self, ledid: int) -> bool:
+         """Informs animator if given led animation should be handled by it."""
+-        return True  # On Omnia all leds could be animated using animator
++        # On Omnia all leds could be animated using animator, unless the kernel does not
++        # provide the LED
++        if ledid >= len(self._fds):
++            return False
++        if self._fds[ledid] is None:
++            try:
++                self._fds[ledid] = os.open(f"/sys/class/leds/rgb:{self.LEDS[ledid]}/multi_intensity", os.O_WRONLY)
++            except OSError:
++                return False
++        return True
+diff --git a/backend/omnia/backend.sh b/backend/omnia/backend.sh
+index 011db57..4107fe3 100644
+--- a/backend/omnia/backend.sh
++++ b/backend/omnia/backend.sh
+@@ -49,12 +49,14 @@ preapply() {
+ 	brightness_level="$(brightness)"
+ 	# The full range is only 0-100 but that is good enough so we don't adjust
+ 	# more. We just loose the precision on Omnia but who can see it anyway.
+-	echo "$(((brightness_level * 100 + 127) / 255))" > "$SYSFS/brightness"
++	sysfs_write "$(((brightness_level * 100 + 127) / 255))" "$SYSFS/brightness"
+ }
+ 
+ set_led() {
+ 	local led="$1" r="$2" g="$3" b="$4" mode="$5"
+ 	shift 5
++	# Nothing to do for an LED the kernel does not provide
++	[ -d "$(led2sysfs "$led")" ] || return 0
+ 
+ 	if [ "$mode" = "auto" ]; then # override auto mode for some
+ 		case "$led" in 
+@@ -109,9 +111,9 @@ set_led() {
+ 	echo "$r $g $b" > "$sysfs/multi_intensity"
+ 	if [ "$trigger" = "activity" ]; then
+ 		apply_activity "$led" "$@" \
+-			|| echo "Warning: activity setup failed for: $led" >&2
+-	else
+-		echo "$trigger" > "$sysfs/trigger"
++			|| warning "activity setup failed for: $led"
++	elif ! echo "$trigger" 2>/dev/null >"$sysfs/trigger"; then
++		warning "The trigger '$trigger' is not available for: $led"
+ 	fi
+ }
+ 
+@@ -127,6 +129,7 @@ boot_sequence() {
+ 
+ 	for led in $LEDS; do
+ 		sysfs="$(led2sysfs "$led")"
++		[ -d "$sysfs" ] || continue
+ 		echo "none" > "$sysfs/trigger"
+ 		echo "1" > "$sysfs/brightness"
+ 		echo "0 255 0" > "$sysfs/multi_intensity"
+@@ -135,6 +138,7 @@ boot_sequence() {
+ 
+ 	for led in $LEDS; do
+ 		sysfs="$(led2sysfs "$led")"
++		[ -d "$sysfs" ] || continue
+ 		echo "none" > "$sysfs/trigger"
+ 		echo "1" > "$sysfs/brightness"
+ 		echo "0 0 255" > "$sysfs/multi_intensity"
+diff --git a/backend/turris1x/animator_backend.py b/backend/turris1x/animator_backend.py
+index fcfe83d..87e77d5 100644
+--- a/backend/turris1x/animator_backend.py
++++ b/backend/turris1x/animator_backend.py
+@@ -11,17 +11,34 @@ class Backend:
+     LEDS = ["wan", "lan-1", "lan-2", "lan-3", "lan-4", "lan-5", "wlan", "power"]
+ 
+     def __init__(self):
+-        self._fds = tuple(os.open(f"/sys/class/leds/rgb:{led}/multi_intensity", os.O_WRONLY) for led in self.LEDS)
++        # The LEDs are opened when they are asked for, as the kernel does not
++        # have to provide all of them and can add one later
++        self._fds = [None] * len(self.LEDS)
+ 
+     def update(self, ledid: int, red: int, green: int, blue: int) -> None:
+         """Update color of led on given index."""
+-        os.write(self._fds[ledid], f"{red} {green} {blue}".encode())
++        if not self.handled(ledid):
++            return
++        try:
++            os.write(self._fds[ledid], f"{red} {green} {blue}".encode())
++        except OSError:
++            # The LED is gone. It is opened again once the kernel has it back.
++            os.close(self._fds[ledid])
++            self._fds[ledid] = None
+ 
+     def apply(self) -> None:
+         """Apply previous LEDs state updates if that is required."""
+         # We apply immediately so we do not need this.
+ 
+-    @staticmethod
+-    def handled(ledid: int) -> bool:
++    def handled(self, ledid: int) -> bool:
+         """Informs animator if given led animation should be handled by it."""
+-        return True  # On 1.x all leds have to be animated using animator
++        # On 1.x all leds have to be animated using animator, unless the kernel does not
++        # provide the LED
++        if ledid >= len(self._fds):
++            return False
++        if self._fds[ledid] is None:
++            try:
++                self._fds[ledid] = os.open(f"/sys/class/leds/rgb:{self.LEDS[ledid]}/multi_intensity", os.O_WRONLY)
++            except OSError:
++                return False
++        return True
+diff --git a/backend/turris1x/backend.sh b/backend/turris1x/backend.sh
+index 7452820..6630416 100644
+--- a/backend/turris1x/backend.sh
++++ b/backend/turris1x/backend.sh
+@@ -48,13 +48,15 @@ preapply() {
+ 	if [ $brightness_level = 8 ]; then
+ 		brightness_level=7
+ 	fi
+-	echo 0 2 4 8 16 32 64 255 > $SYSFS/brightness_values
+-	echo $brightness_level > $SYSFS/brightness_level
++	sysfs_write "0 2 4 8 16 32 64 255" "$SYSFS/brightness_values"
++	sysfs_write "$brightness_level" "$SYSFS/brightness_level"
+ }
+ 
+ set_led() {
+ 	local led="$1" r="$2" g="$3" b="$4" mode="$5"
+ 	shift 5
++	# Nothing to do for an LED the kernel does not provide
++	[ -d "$(led2sysfs "$led")" ] || return 0
+ 
+ 	if [ "$mode" = "auto" ]; then # override auto mode for some
+ 		case "$led" in
+@@ -104,9 +106,9 @@ set_led() {
+ 	echo "$r $g $b" > "$sysfs/multi_intensity"
+ 	if [ "$trigger" = "activity" ]; then
+ 		apply_activity "$led" "$@" \
+-			|| echo "Warning: activity setup failed for: $led" >&2
+-	else
+-		echo "$trigger" > "$sysfs/trigger"
++			|| warning "activity setup failed for: $led"
++	elif ! echo "$trigger" 2>/dev/null >"$sysfs/trigger"; then
++		warning "The trigger '$trigger' is not available for: $led"
+ 	fi
+ }
+ 
+@@ -121,6 +123,7 @@ boot_sequence() {
+ 
+ 	for led in $LEDS; do
+ 		sysfs="$(led2sysfs "$led")"
++		[ -d "$sysfs" ] || continue
+ 		echo "none" > "$sysfs/trigger"
+ 		echo "1" > "$sysfs/brightness"
+ 		echo "0 255 0" > "$sysfs/multi_intensity"
+@@ -129,6 +132,7 @@ boot_sequence() {
+ 
+ 	for led in $LEDS; do
+ 		sysfs="$(led2sysfs "$led")"
++		[ -d "$sysfs" ] || continue
+ 		echo "none" > "$sysfs/trigger"
+ 		echo "1" > "$sysfs/brightness"
+ 		echo "0 0 255" > "$sysfs/multi_intensity"
+diff --git a/rainbow/rainbow.sh b/rainbow/rainbow.sh
+index 1487b77..b190a60 100755
+--- a/rainbow/rainbow.sh
++++ b/rainbow/rainbow.sh
+@@ -151,7 +151,9 @@ call_set_led() {
+ 	done <<-EOF
+ 		$(echo "$mode_args" | tr '\t' '\n')
+ 	EOF
+-	set_led "$@"
++	# An LED that can't be configured must not stop the remaining ones
++	set_led "$@" \
++		|| warning "Unable to configure the LED: $led"
+ }
+ 
+ loadsrc uci
+diff --git a/rainbow/utils.sh b/rainbow/utils.sh
+index c69690d..ddd41c6 100644
+--- a/rainbow/utils.sh
++++ b/rainbow/utils.sh
+@@ -39,6 +39,14 @@ decimal() {
+ 	echo "${value:-0}"
+ }
+ 
++# Write the value to a file in sysfs. A file that does not exist is skipped,
++# so that rainbow can do the rest of its work with a kernel that does not
++# provide it.
++sysfs_write() {
++	[ -e "$2" ] || return 0
++	echo "$1" >"$2"
++}
++
+ # This function should be used to load any other source files that are part of
+ # rainbow except of this one.
+ srcdir="$(dirname "$(readlink -f "$0")")"

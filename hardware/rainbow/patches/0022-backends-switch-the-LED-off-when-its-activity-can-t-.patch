@@ -1,0 +1,113 @@
+From beae5df998f3e70400fb2e5e905d34e49f7e7a43 Mon Sep 17 00:00:00 2001
+From: Josef Schlehofer <pepe.schlehofer@gmail.com>
+Date: Fri, 20 Nov 2026 16:28:19 +0100
+Subject: [PATCH] backends: switch the LED off when its activity can't be set
+ up
+
+set_led writes the full brightness first and sets the trigger of the
+activity after it. When the trigger is refused, for example because the
+wireless card it belongs to is gone, the LED was left lit, which looks
+like the enable mode. Switch it off in that case.
+
+set_led is called with errexit off, so a failed write of the
+brightness or the color went unnoticed and the function still reported
+success. Return a failure for those in all three backends, so that the
+caller names the LED it could not configure.
+---
+ backend/mox/backend.sh      | 10 +++++++---
+ backend/omnia/backend.sh    | 18 +++++++++++++-----
+ backend/turris1x/backend.sh | 18 +++++++++++++-----
+ 3 files changed, 33 insertions(+), 13 deletions(-)
+
+diff --git a/backend/mox/backend.sh b/backend/mox/backend.sh
+index a0fde1e..eeb3381 100644
+--- a/backend/mox/backend.sh
++++ b/backend/mox/backend.sh
+@@ -67,14 +67,18 @@ set_led() {
+ 
+ 	# We have to disable trigger first to make sure that changes are correctly
+ 	# applied and not modified by this in the meantime.
+-	echo "none" > "$SYSFS/trigger"
+-	echo "$brightness" > "$SYSFS/brightness"
++	# This function is called with errexit off, so collect the failures to
++	# report them to the caller.
++	local ret=0
++	echo "none" > "$SYSFS/trigger" || ret=1
++	echo "$brightness" > "$SYSFS/brightness" || ret=1
+ 	if [ "$trigger" = "activity" ]; then
+ 		apply_activity "$led" "$@" \
+ 			|| warning "activity setup failed for: $led"
+ 	else
+-		echo "$trigger" > "$SYSFS/trigger"
++		echo "$trigger" > "$SYSFS/trigger" || ret=1
+ 	fi
++	return $ret
+ }
+ 
+ postapply() {
+diff --git a/backend/omnia/backend.sh b/backend/omnia/backend.sh
+index dd4c43c..2c4e6e5 100644
+--- a/backend/omnia/backend.sh
++++ b/backend/omnia/backend.sh
+@@ -106,15 +106,23 @@ set_led() {
+ 
+ 	# We have to disable trigger first to make sure that changes are correctly
+ 	# applied and not modified by this in the meantime.
+-	echo "none" > "$sysfs/trigger"
+-	echo "$brightness" > "$sysfs/brightness"
+-	echo "$r $g $b" > "$sysfs/multi_intensity"
++	# This function is called with errexit off, so collect the failures to
++	# report them to the caller.
++	local ret=0
++	echo "none" > "$sysfs/trigger" || ret=1
++	echo "$brightness" > "$sysfs/brightness" || ret=1
++	echo "$r $g $b" > "$sysfs/multi_intensity" || ret=1
+ 	if [ "$trigger" = "activity" ]; then
+-		apply_activity "$led" "$@" \
+-			|| warning "activity setup failed for: $led"
++		if ! apply_activity "$led" "$@"; then
++			warning "activity setup failed for: $led"
++			# Without the trigger the LED would just stay lit, which is
++			# what the enable mode looks like.
++			echo 0 > "$sysfs/brightness" || ret=1
++		fi
+ 	elif ! echo "$trigger" 2>/dev/null >"$sysfs/trigger"; then
+ 		warning "The trigger '$trigger' is not available for: $led"
+ 	fi
++	return $ret
+ }
+ 
+ postapply() {
+diff --git a/backend/turris1x/backend.sh b/backend/turris1x/backend.sh
+index 4f1af97..af3f27d 100644
+--- a/backend/turris1x/backend.sh
++++ b/backend/turris1x/backend.sh
+@@ -126,15 +126,23 @@ set_led() {
+ 
+ 	# We have to disable trigger first to make sure that changes are correctly
+ 	# applied and not modified by this in the meantime.
+-	echo "none" > "$sysfs/trigger"
+-	echo "$brightness" > "$sysfs/brightness"
+-	echo "$r $g $b" > "$sysfs/multi_intensity"
++	# This function is called with errexit off, so collect the failures to
++	# report them to the caller.
++	local ret=0
++	echo "none" > "$sysfs/trigger" || ret=1
++	echo "$brightness" > "$sysfs/brightness" || ret=1
++	echo "$r $g $b" > "$sysfs/multi_intensity" || ret=1
+ 	if [ "$trigger" = "activity" ]; then
+-		apply_activity "$led" "$@" \
+-			|| warning "activity setup failed for: $led"
++		if ! apply_activity "$led" "$@"; then
++			warning "activity setup failed for: $led"
++			# Without the trigger the LED would just stay lit, which is
++			# what the enable mode looks like.
++			echo 0 > "$sysfs/brightness" || ret=1
++		fi
+ 	elif ! echo "$trigger" 2>/dev/null >"$sysfs/trigger"; then
+ 		warning "The trigger '$trigger' is not available for: $led"
+ 	fi
++	return $ret
+ }
+ 
+ postapply() {

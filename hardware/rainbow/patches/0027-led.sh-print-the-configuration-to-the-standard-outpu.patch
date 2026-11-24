@@ -1,0 +1,49 @@
+From 1958af89c2499cb30761faa4b58bc5b7c6276434 Mon Sep 17 00:00:00 2001
+From: Josef Schlehofer <pepe.schlehofer@gmail.com>
+Date: Fri, 20 Nov 2026 18:12:53 +0100
+Subject: [PATCH] led.sh: print the configuration to the standard output
+
+"rainbow LED" without a color and a mode prints the configuration of
+the LED. It did so on the standard error output, because the function
+that prints it is called with its standard output redirected there. A
+script that wanted to read the configuration with $(rainbow wan) got an
+empty string.
+
+Hand the standard output to the function in a descriptor of its own.
+
+Note that the configuration no longer appears on the standard error
+output.
+---
+ rainbow/led.sh | 9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
+
+diff --git a/rainbow/led.sh b/rainbow/led.sh
+index 8d8b85a..fe67d7e 100644
+--- a/rainbow/led.sh
++++ b/rainbow/led.sh
+@@ -141,19 +141,22 @@ op_led() {
+ 
+ 	id="$(canonled "$id")"
+ 
++	# The standard output of the function is not available where it is called
++	# from, so the configuration is printed to the descriptor 3, which is our
++	# standard output.
+ 	config() {
+ 		if [ "$id" = "all" ] || [ "$led" = "$id" ]; then
+ 			printf "%s\t%s\t%s\t%s\n" "$color_r" "$color_g" "$color_b" \
+-				"$mode${mode_args:+	}$mode_args" >&2
++				"$mode${mode_args:+	}$mode_args" >&3
+ 		fi
+ 	}
+ 	if [ -z "$mode" ] && [ -z "$color_r" ] && [ -z "$color_g" ] && [ -z "$color_b" ]; then
+ 		if [ "$localconf" = "y" ]; then
+-			call_for_leds_config_level "$priority" "$slot" config
++			call_for_leds_config_level "$priority" "$slot" config 3>&1
+ 		else
+ 			loadsrc uci
+ 			base_config
+-			call_for_leds_config config
++			call_for_leds_config config 3>&1
+ 		fi
+ 		return
+ 	fi

@@ -1,0 +1,121 @@
+From 1b94fde78a71c6a13d4bdd23433fddba9f12e076 Mon Sep 17 00:00:00 2001
+From: Josef Schlehofer <pepe.schlehofer@gmail.com>
+Date: Fri, 20 Nov 2026 15:25:06 +0100
+Subject: [PATCH] uci.sh: handle more triggers of the LEDs set in the system
+ config
+
+rainbow reads the LED sections of the system config, so that it does
+not fight with /etc/init.d/led over the same LED. It only knew a few
+triggers though. For any other one it printed "Unsupported trigger" on
+every call, even an unrelated one, and then treated the LED as if it
+had no section at all. On the Omnia that switched the LED off, so an
+LED set to disk-activity in LuCI stopped working although the init
+script of OpenWrt had configured it correctly a moment before.
+
+- Pass on every trigger the kernel offers for the LED and that needs no
+  setup. This covers disk-activity, disk-read and disk-write, mmcX,
+  ataX and the separate phyX triggers.
+- OpenWrt names the blinking trigger "timer", the code matched "time".
+  It also produced an animation in a format the animator can't read.
+  Use the timer trigger of the kernel with the configured times.
+- Honor the mode option of the netdev trigger instead of always
+  signaling the link, tx and rx together.
+- When the trigger is one rainbow can't set up, keep the warning but
+  leave the LED alone the way the ignore mode does.
+---
+ rainbow/uci.sh | 57 ++++++++++++++++++++++++++++++++++++--------------
+ 1 file changed, 41 insertions(+), 16 deletions(-)
+
+diff --git a/rainbow/uci.sh b/rainbow/uci.sh
+index b002ca1..7d365f5 100644
+--- a/rainbow/uci.sh
++++ b/rainbow/uci.sh
+@@ -3,6 +3,8 @@
+ 
+ # UCI configuration helper functions
+ 
++loadsrc led_activity
++
+ # Currently configured brightness level
+ brightness() { 
+ 	if [ "${1:-}" = "fetch" ] || [ -z "${brightness:-}" ]; then
+@@ -186,14 +188,15 @@ _uci_system_section() {
+ 				[ "$default" != "1" ] \
+ 					|| mode="enable"
+ 				;;
+-			time)
++			timer)
+ 				local on off
+ 				config_get on "$section" "delayon"
+ 				config_get off "$section" "delayoff"
+-				if [ -n "$on" ] && [ -n "$off" ]; then
+-					mode="animate"
+-					mode_args="black	$off	black	0	-	$on	-	0"
+-				fi
++				mode="activity"
++				# A dash stands for the time that is not set
++				is_uint "$on" || on="-"
++				is_uint "$off" || off="-"
++				mode_args="timer	$on	$off"
+ 				;;
+ 			default-on)
+ 				mode="enable"
+@@ -207,17 +210,28 @@ _uci_system_section() {
+ 				fi
+ 				;;
+ 			netdev)
+-				local dev
++				local dev netmode what
+ 				config_get dev "$section" "dev"
+-				if [ -n "$dev" ]; then
+-					mode="activity"
+-					mode_args="netdev-$dev"
+-				fi
+-				# We ignore mode as rainbow does not support it
+-				;;
+-			phy*)
+-				mode="activity"
+-				mode_args="${trigger%${trigger#phy[0-9]}}"
++				config_get netmode "$section" "mode"
++				case "$dev" in
++					""|*[!A-Za-z0-9_.:@-]*)
++						;;
++					*)
++						mode="activity"
++						mode_args="netdev-$dev"
++						# These are attributes of the trigger, for example
++						# link, link_1000, tx or rx
++						for what in $netmode; do
++							case "$what" in
++								*[!a-z0-9_]*)
++									;;
++								*)
++									mode_args="$mode_args	$what"
++									;;
++							esac
++						done
++						;;
++				esac
+ 				;;
+ 			usbdev|usbport)
+ 				mode="activity"
+@@ -225,7 +239,18 @@ _uci_system_section() {
+ 				# We ignore dev as rainbow simply follows all USB devices
+ 				;;
+ 			*)
+-				warning "Unsupported trigger '$trigger' for: system.$section ($sysfs)"
++				# Any other trigger the kernel has for this LED and that
++				# needs no setup, such as disk-activity or phy0tpt
++				if ! _activity_needs_setup "$trigger" \
++						&& [ -n "$(supported_activities "$led" -xF -e "$trigger")" ]; then
++					mode="activity"
++					mode_args="$trigger"
++				else
++					warning "Unsupported trigger '$trigger' for: system.$section ($sysfs)"
++					# We do not know how to set this one up, so keep the LED
++					# the way /etc/init.d/led configured it.
++					mode="ignore"
++				fi
+ 				;;
+ 		esac
+ 	fi

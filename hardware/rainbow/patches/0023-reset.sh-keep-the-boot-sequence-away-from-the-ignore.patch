@@ -1,0 +1,124 @@
+From 249836908bbd982ae894a84c839226b212a554c4 Mon Sep 17 00:00:00 2001
+From: Josef Schlehofer <pepe.schlehofer@gmail.com>
+Date: Fri, 20 Nov 2026 16:55:05 +0100
+Subject: [PATCH] reset.sh: keep the boot sequence away from the ignored LEDs
+
+The boot sequence wrote its colors to every LED and the configuration
+applied after it skips the LEDs in the ignore mode. Such an LED was
+therefore left in the last color of the sequence after every boot,
+although rainbow is not supposed to touch it at all. The same goes for
+an LED with a trigger in the system config that rainbow can't set up,
+which is handled as ignored.
+
+Give the boot sequence the list of LEDs it may use and leave out the
+ignored ones.
+
+Ask for the configuration to be applied before the sequence starts and
+not after it. A sequence that is interrupted then does not leave its
+colors on the LEDs.
+---
+ backend/omnia/backend.sh    |  7 ++++---
+ backend/turris1x/backend.sh |  7 ++++---
+ rainbow/backend.example.sh  |  2 ++
+ rainbow/reset.sh            | 22 +++++++++++++++++-----
+ 4 files changed, 27 insertions(+), 11 deletions(-)
+
+diff --git a/backend/omnia/backend.sh b/backend/omnia/backend.sh
+index 2c4e6e5..48ab44d 100644
+--- a/backend/omnia/backend.sh
++++ b/backend/omnia/backend.sh
+@@ -132,10 +132,11 @@ postapply() {
+ }
+ 
+ 
++# The arguments are the LEDs to perform the sequence on
+ boot_sequence() {
+-	local sysfs
++	local sysfs led
+ 
+-	for led in $LEDS; do
++	for led in "$@"; do
+ 		sysfs="$(led2sysfs "$led")"
+ 		[ -d "$sysfs" ] || continue
+ 		echo "none" > "$sysfs/trigger"
+@@ -144,7 +145,7 @@ boot_sequence() {
+ 	done
+ 	sleep 1
+ 
+-	for led in $LEDS; do
++	for led in "$@"; do
+ 		sysfs="$(led2sysfs "$led")"
+ 		[ -d "$sysfs" ] || continue
+ 		echo "none" > "$sysfs/trigger"
+diff --git a/backend/turris1x/backend.sh b/backend/turris1x/backend.sh
+index af3f27d..d80a389 100644
+--- a/backend/turris1x/backend.sh
++++ b/backend/turris1x/backend.sh
+@@ -151,10 +151,11 @@ postapply() {
+ 	fi
+ }
+ 
++# The arguments are the LEDs to perform the sequence on
+ boot_sequence() {
+-	local sysfs
++	local sysfs led
+ 
+-	for led in $LEDS; do
++	for led in "$@"; do
+ 		sysfs="$(led2sysfs "$led")"
+ 		[ -d "$sysfs" ] || continue
+ 		echo "none" > "$sysfs/trigger"
+@@ -163,7 +164,7 @@ boot_sequence() {
+ 	done
+ 	sleep 1
+ 
+-	for led in $LEDS; do
++	for led in "$@"; do
+ 		sysfs="$(led2sysfs "$led")"
+ 		[ -d "$sysfs" ] || continue
+ 		echo "none" > "$sysfs/trigger"
+diff --git a/rainbow/backend.example.sh b/rainbow/backend.example.sh
+index 30c0a44..0d9f78e 100644
+--- a/rainbow/backend.example.sh
++++ b/rainbow/backend.example.sh
+@@ -75,6 +75,8 @@ postapply() {
+ # Perform boot sequence specific for this device.
+ # This function is only optional and does not have to be defined if there is no
+ # boot sequence.
++# It gets the LEDs to perform the sequence on as its arguments. Those are all
++# the LEDs except for the ones in the ignore mode.
+ boot_sequence() {
+ 	false
+ 	# Note: The current state is always applied in the end in when this function
+diff --git a/rainbow/reset.sh b/rainbow/reset.sh
+index 44e94f6..3557057 100644
+--- a/rainbow/reset.sh
++++ b/rainbow/reset.sh
+@@ -65,10 +65,22 @@ op_reset() {
+ 		_base_config_updated=""
+ 	fi
+ 
+-	# Note: the boot sequence is silently ignored if there is none defined
+-	[ "$bootseq" = "y" ] \
+-		&& type boot_sequence >/dev/null \
+-		&& boot_sequence
+-
++	# This comes before the boot sequence, so that the configuration is
++	# applied even when the sequence does not get to its end.
+ 	apply_needed="y"
++
++	# Note: the boot sequence is silently ignored if there is none defined
++	if [ "$bootseq" = "y" ] && type boot_sequence >/dev/null 2>&1; then
++		# The LEDs that are to be ignored are not ours to play with. That
++		# includes the ones with a trigger in the system config we can't
++		# set up, which would otherwise stay in the last color of the
++		# sequence.
++		loadsrc uci
++		base_config
++		_boot_led() {
++			[ "$mode" = "ignore" ] || echo "$led" >&3
++		}
++		# shellcheck disable=SC2046
++		boot_sequence $(call_for_leds_config _boot_led 3>&1)
++	fi
+ }

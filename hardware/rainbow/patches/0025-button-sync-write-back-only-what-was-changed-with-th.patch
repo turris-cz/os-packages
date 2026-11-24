@@ -1,0 +1,161 @@
+From 7fe83fbe6bbc6e2526c242e0bbb03ab1b07b5441 Mon Sep 17 00:00:00 2001
+From: Josef Schlehofer <pepe.schlehofer@gmail.com>
+Date: Fri, 20 Nov 2026 18:12:21 +0100
+Subject: [PATCH] button-sync: write back only what was changed with the button
+
+The button sync polls the brightness in the hardware and stores every
+change to UCI, so that the level set with the button survives a reboot.
+The hardware also changes when rainbow applies the value from UCI, and
+the sync then replaced that value with the one read back. On the Omnia
+the hardware has a 0-100 range, so "rainbow brightness -p 32" was
+turned into 33 two seconds later.
+
+Add brightness_to_raw to the backends that have the sync. When the
+hardware holds exactly what the value in UCI gives, the change was made
+by rainbow and UCI is left as it is.
+
+rainbow stores a new brightness in UCI first and writes it to the
+hardware at the end of its run. When the sync looked in between, it
+took the value the hardware still had for a press of the button and
+put it back to UCI, and the running rainbow then applied that one. On
+the Omnia it was enough to change the brightness twice within two
+seconds. rainbow holds a lock on its directory for the whole run, so
+compare the two values under the same lock.
+---
+ backend/omnia/backend.sh    | 13 ++++++++-----
+ backend/turris1x/backend.sh | 18 +++++++++++-------
+ button-sync/button_sync.sh  | 29 +++++++++++++++++++++++++----
+ rainbow/backend.example.sh  |  8 ++++++++
+ 4 files changed, 52 insertions(+), 16 deletions(-)
+
+diff --git a/backend/omnia/backend.sh b/backend/omnia/backend.sh
+index 48ab44d..e2ceb7a 100644
+--- a/backend/omnia/backend.sh
++++ b/backend/omnia/backend.sh
+@@ -40,16 +40,19 @@ get_brightness() {
+ 	echo $(((cur * 255 + 50) / 100))
+ }
+ 
++# Convert the brightness in the 0-255 range to what is written to the hardware
++# The full range is only 0-100 but that is good enough so we don't adjust more.
++# We just loose the precision on Omnia but who can see it anyway.
++brightness_to_raw() {
++	echo "$((($1 * 100 + 127) / 255))"
++}
++
+ preapply() {
+ 	if [ -x /etc/init.d/rainbow-animator ]; then
+ 		/etc/init.d/rainbow-animator pause
+ 	fi
+ 
+-	local brightness_level
+-	brightness_level="$(brightness)"
+-	# The full range is only 0-100 but that is good enough so we don't adjust
+-	# more. We just loose the precision on Omnia but who can see it anyway.
+-	sysfs_write "$(((brightness_level * 100 + 127) / 255))" "$SYSFS/brightness"
++	sysfs_write "$(brightness_to_raw "$(brightness)")" "$SYSFS/brightness"
+ }
+ 
+ set_led() {
+diff --git a/backend/turris1x/backend.sh b/backend/turris1x/backend.sh
+index d80a389..3bd0b09 100644
+--- a/backend/turris1x/backend.sh
++++ b/backend/turris1x/backend.sh
+@@ -47,6 +47,16 @@ get_brightness_raw() {
+ 	cat "$SYSFS/brightness_level"
+ }
+ 
++# Convert the brightness in the 0-255 range to what is written to the
++# hardware, which is the level. We only have 8 of them with indexes 0-7.
++brightness_to_raw() {
++	local level="$(($1 / 32))"
++	if [ "$level" -gt 7 ]; then
++		level=7
++	fi
++	echo "$level"
++}
++
+ # Set the brightness each of the eight levels stands for
+ set_brightness_levels() {
+ 	if [ -e "$SYSFS/brightness_values" ]; then
+@@ -67,14 +77,8 @@ preapply() {
+ 		/etc/init.d/rainbow-animator pause
+ 	fi
+ 
+-	local brightness_level
+-	brightness_level="$(($(brightness) / 32))"
+-	# we only have 8 indexes - 0-7
+-	if [ "$brightness_level" -gt 7 ]; then
+-		brightness_level=7
+-	fi
+ 	set_brightness_levels 0 2 4 8 16 32 64 255
+-	sysfs_write "$brightness_level" "$SYSFS/brightness_level"
++	sysfs_write "$(brightness_to_raw "$(brightness)")" "$SYSFS/brightness_level"
+ }
+ 
+ set_led() {
+diff --git a/button-sync/button_sync.sh b/button-sync/button_sync.sh
+index 26897f2..8231d15 100755
+--- a/button-sync/button_sync.sh
++++ b/button-sync/button_sync.sh
+@@ -14,16 +14,37 @@ type get_brightness >/dev/null \
+ 	|| fail "Button sync is not supported on this board!"
+ 
+ 
++# The brightness in the hardware changes in two ways. One is the button and the
++# other is rainbow itself when it applies the value from UCI. In the second
++# case UCI is right already and the value read back from the hardware would
++# only replace it with a rounded one.
++set_by_rainbow() {
++	type brightness_to_raw >/dev/null 2>&1 || return 1
++	type get_brightness_raw >/dev/null 2>&1 || return 1
++	[ "$(brightness_to_raw "$(brightness)")" = "$(get_brightness_raw)" ]
++}
++
++# rainbow holds a lock on its directory for the whole run, so from the moment it
++# stores a new brightness in UCI until the hardware has it. The two are
++# compared under the same lock. A look in the middle of such a run would take
++# the value the hardware still has for a press of the button and put it back
++# to UCI, where the running rainbow would read it again.
++rainbowdir="/var/run/rainbow"
++mkdir -p "$rainbowdir"
++exec 9<"$rainbowdir"
++
+ trap 'exit 0' INT QUIT TERM
+ old_brightness="$(get_brightness)"
+ while true; do
+-	# TODO we might race here with rainbow configuration (uci changes but change
+-	# is not yet propagated). It is very unlikely but probably possible.
++	flock -x 9
+ 	current_brightness="$(get_brightness)"
+ 	if [ "$old_brightness" != "$current_brightness" ]; then
+-		echo "Brightness update using button to: $current_brightness"
+-		update_brightness "$current_brightness"
++		if ! set_by_rainbow; then
++			echo "Brightness update using button to: $current_brightness"
++			update_brightness "$current_brightness"
++		fi
+ 		old_brightness="$current_brightness"
+ 	fi
++	flock -u 9
+ 	sleep 2
+ done
+diff --git a/rainbow/backend.example.sh b/rainbow/backend.example.sh
+index 0d9f78e..a077ea6 100644
+--- a/rainbow/backend.example.sh
++++ b/rainbow/backend.example.sh
+@@ -48,6 +48,14 @@ get_brightness_raw() {
+ }
+ 
+ 
++# This function is optional and is used by button_sync.sh together with
++# get_brightness_raw. It converts the brightness in the 0-255 range to the value
++# the hardware reports in get_brightness_raw. With both functions the button
++# sync can tell a change made by the button from the one rainbow made itself.
++brightness_to_raw() {
++	false
++}
++
+ # The optional function that is called before application of state using
+ # set_led. This should be used to prepare environment as well as to pause
+ # animator for example.

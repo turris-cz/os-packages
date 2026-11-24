@@ -1,0 +1,105 @@
+From 042c12e6440391011700901296b7ec66bb2bfa0f Mon Sep 17 00:00:00 2001
+From: Josef Schlehofer <pepe.schlehofer@gmail.com>
+Date: Fri, 20 Nov 2026 18:12:22 +0100
+Subject: [PATCH] backend/omnia: make the brightness levels match the button
+
+"rainbow brightness N" spread the levels evenly, so 1 to 8 gave 13, 25,
+38, 50, 63, 75, 88 and 100 percent. The button on the Omnia goes
+through 100, 70, 40, 25, 12, 5, 1 and 0 percent. The comment in
+brightness.sh says that the 0 to 8 range was chosen for the number of
+levels of that button, but the two ways of setting the brightness never
+gave the same values.
+
+Let a backend say what the levels stand for and use the steps of the
+button on the Omnia. All of them survive the conversion to the 0-100
+range of the hardware and back unchanged.
+
+Note that this changes what the levels mean on the Omnia. Level 4 was
+50 percent and is 25 percent now. The -p option with the 0-255 range
+and the output of the query are not changed.
+---
+ backend/omnia/backend.sh   | 19 +++++++++++++++++++
+ rainbow/backend.example.sh |  8 ++++++++
+ rainbow/brightness.sh      | 13 ++++++++++---
+ 3 files changed, 37 insertions(+), 3 deletions(-)
+
+diff --git a/backend/omnia/backend.sh b/backend/omnia/backend.sh
+index e2ceb7a..64d2d22 100644
+--- a/backend/omnia/backend.sh
++++ b/backend/omnia/backend.sh
+@@ -40,6 +40,25 @@ get_brightness() {
+ 	echo $(((cur * 255 + 50) / 100))
+ }
+ 
++# The brightness in the 0-255 range for the levels of "rainbow brightness".
++# The levels are the steps the button on the router goes through, which are
++# 0, 1, 5, 12, 25, 40, 70 and 100 percent, so that both ways of setting the
++# brightness give the same result. Level 8 is the same as level 7.
++brightness_level() {
++	local percent
++	case "$1" in
++		0) percent=0 ;;
++		1) percent=1 ;;
++		2) percent=5 ;;
++		3) percent=12 ;;
++		4) percent=25 ;;
++		5) percent=40 ;;
++		6) percent=70 ;;
++		*) percent=100 ;;
++	esac
++	echo "$(((percent * 255 + 50) / 100))"
++}
++
+ # Convert the brightness in the 0-255 range to what is written to the hardware
+ # The full range is only 0-100 but that is good enough so we don't adjust more.
+ # We just loose the precision on Omnia but who can see it anyway.
+diff --git a/rainbow/backend.example.sh b/rainbow/backend.example.sh
+index a077ea6..55b9f1e 100644
+--- a/rainbow/backend.example.sh
++++ b/rainbow/backend.example.sh
+@@ -48,6 +48,14 @@ get_brightness_raw() {
+ }
+ 
+ 
++# This function is optional. It gets one of the levels 0-8 that the brightness
++# operation takes and echoes the brightness in the 0-255 range it stands for.
++# Without it the levels are spread evenly.
++brightness_level() {
++	local level="$1"
++	false
++}
++
+ # This function is optional and is used by button_sync.sh together with
+ # get_brightness_raw. It converts the brightness in the 0-255 range to the value
+ # the hardware reports in get_brightness_raw. With both functions the button
+diff --git a/rainbow/brightness.sh b/rainbow/brightness.sh
+index e9cd73a..17efa47 100644
+--- a/rainbow/brightness.sh
++++ b/rainbow/brightness.sh
+@@ -11,6 +11,7 @@ brightness_help() {
+ 	# Note: We use 0-8 as that is the number of levels Omnia can specify using
+ 	# button. The Turris 1.x has only 7 levels but we can use 7 and 8 as the
+ 	# same. The Mox has no levels thus we are free to choose what ever we want.
++	# A backend can define brightness_level to say what the levels stand for.
+ 	cat >&2 <<-EOF
+ 		Set maximum brightness (the global modifier for all controlled leds).
+ 		The brightness has to be specified as number between 0 and 8 (or 255
+@@ -73,9 +74,15 @@ op_brightness() {
+ 			brightness_usage
+ 			exit 2
+ 		fi
+-		value=$((value * 32))
+-		# The highest level is the full brightness, which is 255 and not 256
+-		[ "$value" -le 255 ] || value=255
++		if type brightness_level >/dev/null 2>&1; then
++			# The backend knows what the levels stand for on its board
++			value="$(brightness_level "$value")"
++		else
++			value=$((value * 32))
++			# The highest level is the full brightness, which is 255 and
++			# not 256
++			[ "$value" -le 255 ] || value=255
++		fi
+ 	fi
+ 	SHIFTARGS=$#
+ 	# What is left has to be the next operation

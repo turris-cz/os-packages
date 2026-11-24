@@ -1,0 +1,59 @@
+From f2d86ce533a250ee1c6171cf54276b0052916f48 Mon Sep 17 00:00:00 2001
+From: Josef Schlehofer <pepe.schlehofer@gmail.com>
+Date: Fri, 20 Nov 2026 15:21:23 +0100
+Subject: [PATCH] uci.sh: do not abort on an invalid color, mode or trigger in
+ UCI
+
+parse_color fails for a color it does not know and with set -e that
+ended the subshell that generates the base configuration, and with it
+the whole script, without any message. Every rainbow call then failed,
+including the one at boot, which had already run the boot sequence.
+The LEDs stayed blue, as the boot sequence ends with that color. This
+is what happens after an update from Turris OS 5 with the color
+"turris-default" in the config.
+
+An unknown mode got further and ended with an internal error in the
+backend in the middle of applying the configuration.
+
+Report the invalid value, name the section it is in and continue with
+the default instead.
+---
+ rainbow/uci.sh | 17 ++++++++++++++++-
+ 1 file changed, 16 insertions(+), 1 deletion(-)
+
+diff --git a/rainbow/uci.sh b/rainbow/uci.sh
+index cb321c6..b002ca1 100644
+--- a/rainbow/uci.sh
++++ b/rainbow/uci.sh
+@@ -130,15 +130,30 @@ _uci_rainbow_section() {
+ 	! type led_defaults >/dev/null || led_defaults "$led"
+ 
+ 	config_get rawcolor "$led" "color" ""
+-	parse_color "$rawcolor"
++	parse_color "$rawcolor" \
++		|| warning "Ignoring invalid color '$rawcolor' in: rainbow.$led"
+ 
+ 	config_get rawmode "$led" "state" "" # backward compatibility
+ 	config_get rawmode "$led" "mode" "$rawmode"
+ 	[ -n "$rawmode" ] || return 0
++	case "$rawmode" in
++		auto|disable|enable|activity|animate|ignore)
++			;;
++		*)
++			warning "Ignoring invalid mode '$rawmode' in: rainbow.$led"
++			return 0
++			;;
++	esac
+ 	mode="$rawmode"
+ 	mode_args=""
+ 	if [ "$mode" = "activity" ]; then
+ 		config_get trigger "$led" "trigger" "activity"
++		case "$trigger" in
++			""|*[!A-Za-z0-9_.:@-]*)
++				warning "Ignoring invalid trigger '$trigger' in: rainbow.$led"
++				trigger="activity"
++				;;
++		esac
+ 		mode_args="$trigger"
+ 	elif [ "$mode" = "animate" ]; then
+ 		local animation animation_color_r animation_color_g animation_color_b

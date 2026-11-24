@@ -1,0 +1,36 @@
+From eddef41a95f7de7040b039ed03cb2d1f07ea0c67 Mon Sep 17 00:00:00 2001
+From: Josef Schlehofer <pepe.schlehofer@gmail.com>
+Date: Fri, 20 Nov 2026 15:20:28 +0100
+Subject: [PATCH] uci.sh: separate the mode arguments with a tabulator
+
+The state files are tab separated, but the two files generated from UCI
+had a space between the mode and its arguments. The shell code reads
+both, so it went unnoticed there. The animator splits the lines on
+tabulators only and compares the fourth field with "animate", so it
+never saw an animation that was configured in UCI.
+---
+ rainbow/uci.sh | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/rainbow/uci.sh b/rainbow/uci.sh
+index b428640..cb321c6 100644
+--- a/rainbow/uci.sh
++++ b/rainbow/uci.sh
+@@ -108,7 +108,7 @@ base_config() {
+ 		default_mode="$mode" default_mode_args="$mode_args"
+ 		for led in $LEDS; do
+ 			_uci_rainbow_section "$(echo "$led" | sed 's|-|_|')"
+-			echo "$color_r	$color_g	$color_b	$mode${mode_args:+ }$mode_args"
++			echo "$color_r	$color_g	$color_b	$mode${mode_args:+	}$mode_args"
+ 		done >"$rainbowdir/000-base"
+ 
+ 		config_load system
+@@ -116,7 +116,7 @@ base_config() {
+ 			color_r="-" color_g="-" color_b="-" mode="-" mode_args=""
+ 			sysfs="$(led2sysfs "$led")"; sysfs="${sysfs##*/}"
+ 			config_foreach _uci_system_section "led"
+-			echo "$color_r	$color_g	$color_b	$mode${mode_args:+ }$mode_args"
++			echo "$color_r	$color_g	$color_b	$mode${mode_args:+	}$mode_args"
+ 		done >"$rainbowdir/000-system"
+ 	)
+ 	_base_config_updated="y"

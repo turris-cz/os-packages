@@ -1,0 +1,144 @@
+From ca192de1342353dde2e8d1cecc2946af552574fa Mon Sep 17 00:00:00 2001
+From: Josef Schlehofer <pepe.schlehofer@gmail.com>
+Date: Fri, 20 Nov 2026 17:10:07 +0100
+Subject: [PATCH] rainbow: check the names of triggers and devices in all the
+ places
+
+The names of triggers and network devices from the system config and
+from the command line are stored in the tab separated state files and
+passed on as arguments of the backend. A value with a tabulator or a
+newline in it added arguments, or whole lines that were then taken as
+the configuration of the following LEDs. The dev option of the netdev
+trigger was stored that way.
+
+Check all of them for the same characters as the trigger from the
+rainbow config.
+
+A netdev trigger of the rainbow config that names no network device is
+refused the way it is on the command line. The name is also limited to
+the 15 characters the kernel takes. It is written without the newline,
+as the kernel counts it into the length and refused a name of the full
+15 characters with it.
+
+A netdev trigger of the system config with a name that is refused or
+with no name at all is reported, and its LED is left the way
+/etc/init.d/led configured it, the same as with a trigger that rainbow
+can't set up.
+
+A name that starts with a dash is refused as well. echo took "-n" for
+its option and printed nothing, which ended the run with an internal
+error. Print the arguments of a mode with printf.
+
+The red color is used in the arithmetic of the Mox backend, so make
+sure there that it is a number.
+---
+ backend/mox/backend.sh  |  2 ++
+ rainbow/led_activity.sh | 11 ++++++++++-
+ rainbow/rainbow.sh      |  2 +-
+ rainbow/uci.sh          | 24 ++++++++++++++++++++++--
+ 4 files changed, 35 insertions(+), 4 deletions(-)
+
+diff --git a/backend/mox/backend.sh b/backend/mox/backend.sh
+index eeb3381..a27dac2 100644
+--- a/backend/mox/backend.sh
++++ b/backend/mox/backend.sh
+@@ -39,6 +39,8 @@ set_led() {
+ 	fi
+ 	local global_brightness
+ 	global_brightness="$(brightness)"
++	# The color is used in shell arithmetic, so make sure it is a number
++	is_uint "$r" || r=0
+ 
+ 	local brightness=255 trigger="none"
+ 	case "$mode" in
+diff --git a/rainbow/led_activity.sh b/rainbow/led_activity.sh
+index 193cb7d..57a18cf 100644
+--- a/rainbow/led_activity.sh
++++ b/rainbow/led_activity.sh
+@@ -51,6 +51,13 @@ op_led_activity() {
+ 			# We do not intentionally verify that these are available right
+ 			# now. The module with the trigger can be loaded later and the
+ 			# network device can be a hotplug one.
++			case "$1" in
++				*[!A-Za-z0-9_.:@-]*|netdev-????????????????*)
++					# The kernel takes at most 15 characters
++					echo "Invalid name of the network device: ${1#netdev-}" >&2
++					exit 2
++					;;
++			esac
+ 			mode_args="$1"
+ 			shift
+ 			;;
+@@ -193,7 +200,9 @@ apply_activity() {
+ 			;;
+ 		netdev-*)
+ 			_set_trigger "$sysfs" "netdev" || return
+-			if ! echo "${trigger#netdev-}" 2>/dev/null >"$sysfs/device_name"; then
++			# The kernel counts the newline into the length of the name, so
++			# it would refuse a name of the full 15 characters with it.
++			if ! printf '%s' "${trigger#netdev-}" 2>/dev/null >"$sysfs/device_name"; then
+ 				warning "The kernel refused the network device name: ${trigger#netdev-}"
+ 				return 1
+ 			fi
+diff --git a/rainbow/rainbow.sh b/rainbow/rainbow.sh
+index 578ed47..9b17f8c 100755
+--- a/rainbow/rainbow.sh
++++ b/rainbow/rainbow.sh
+@@ -142,7 +142,7 @@ call_set_led() {
+ 	while read -r arg; do
+ 		set "$@" "$arg"
+ 	done <<-EOF
+-		$(echo "$mode_args" | tr '\t' '\n')
++		$(printf '%s\n' "$mode_args" | tr '\t' '\n')
+ 	EOF
+ 	# An LED that can't be configured must not stop the remaining ones
+ 	set_led "$@" \
+diff --git a/rainbow/uci.sh b/rainbow/uci.sh
+index b6c371c..d005e90 100644
+--- a/rainbow/uci.sh
++++ b/rainbow/uci.sh
+@@ -170,7 +170,9 @@ _uci_rainbow_options() {
+ 	if [ "$mode" = "activity" ]; then
+ 		config_get trigger "$led" "trigger" "activity"
+ 		case "$trigger" in
+-			""|*[!A-Za-z0-9_.:@-]*)
++			""|-*|*[!A-Za-z0-9_.:@-]*|netdev-|netdev-????????????????*)
++				# The last two are a missing name of a network device
++				# and one longer than the 15 characters the kernel takes
+ 				warning "Ignoring invalid trigger '$trigger' in: rainbow.$led"
+ 				trigger="activity"
+ 				;;
+@@ -202,6 +204,14 @@ _uci_system_section() {
+ 		local default trigger
+ 		config_get_bool default "$section" "default" "0"
+ 		config_get trigger "$section" "trigger" "none"
++		# The name is stored in the state file and passed on as an argument,
++		# so it must not hold anything that splits it into more of them.
++		case "$trigger" in
++			""|-*|*[!A-Za-z0-9_.:@-]*)
++				warning "Ignoring invalid trigger in: system.$section ($sysfs)"
++				return 0
++				;;
++		esac
+ 		case "$trigger" in
+ 			none)
+ 				[ "$default" != "1" ] \
+@@ -233,7 +243,17 @@ _uci_system_section() {
+ 				config_get dev "$section" "dev"
+ 				config_get netmode "$section" "mode"
+ 				case "$dev" in
+-					""|*[!A-Za-z0-9_.:@-]*)
++					""|-*|*[!A-Za-z0-9_.:@-]*|????????????????*)
++						# No name of a network device, which also has at
++						# most 15 characters. The trigger can't be set up
++						# without one, so keep the LED the way
++						# /etc/init.d/led configured it.
++						if [ -z "$dev" ]; then
++							warning "Missing network device in: system.$section ($sysfs)"
++						else
++							warning "Ignoring invalid network device '$dev' in: system.$section ($sysfs)"
++						fi
++						mode="ignore"
+ 						;;
+ 					*)
+ 						mode="activity"

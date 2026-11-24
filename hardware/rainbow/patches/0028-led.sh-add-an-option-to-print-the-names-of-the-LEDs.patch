@@ -1,0 +1,51 @@
+From 13fc3047842d7396f790ef73450b00c67cf9f396 Mon Sep 17 00:00:00 2001
+From: Josef Schlehofer <pepe.schlehofer@gmail.com>
+Date: Fri, 20 Nov 2026 18:12:53 +0100
+Subject: [PATCH] led.sh: add an option to print the names of the LEDs
+
+"rainbow all" prints one line for every LED and nothing says which line
+belongs to which LED. Add the option -n that puts the name in front of
+each line. The output without it stays the same, as it is what scripts
+parse.
+---
+ rainbow/led.sh | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/rainbow/led.sh b/rainbow/led.sh
+index fe67d7e..5ca8b90 100644
+--- a/rainbow/led.sh
++++ b/rainbow/led.sh
+@@ -52,6 +52,7 @@ led_help() {
+ 		    Rainbow should ignore this led all together
+ 		Options:
+ 		  -l  Show configuration only for the current priority and slot
++		  -n  Print the name of the LED in front of its configuration
+ 		  -h  Print this help text and exit
+ 	EOF
+ }
+@@ -59,12 +60,16 @@ led_help() {
+ op_led() {
+ 	local id="$1"; shift
+ 	local localconf="n"
++	local names="n"
+ 	local OPTIND=1
+-	while getopts "lh" opt; do
++	while getopts "lnh" opt; do
+ 		case "$opt" in
+ 			l)
+ 				localconf="y"
+ 				;;
++			n)
++				names="y"
++				;;
+ 			h)
+ 				led_help "$id"
+ 				exit 0
+@@ -146,6 +151,7 @@ op_led() {
+ 	# standard output.
+ 	config() {
+ 		if [ "$id" = "all" ] || [ "$led" = "$id" ]; then
++			[ "$names" != "y" ] || printf "%s\t" "$led" >&3
+ 			printf "%s\t%s\t%s\t%s\n" "$color_r" "$color_g" "$color_b" \
+ 				"$mode${mode_args:+	}$mode_args" >&3
+ 		fi

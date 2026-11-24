@@ -1,0 +1,73 @@
+From 0f2de40ef7e8a5fe0114b5324cfa9a565bfd15da Mon Sep 17 00:00:00 2001
+From: Josef Schlehofer <pepe.schlehofer@gmail.com>
+Date: Fri, 20 Nov 2026 15:28:30 +0100
+Subject: [PATCH] backend/mox: honor zero brightness and fix the animator
+ backend
+
+The only LED of the Mox is either on or off. With an activity trigger,
+which is also what the auto mode uses, the trigger switches it and the
+brightness written before has no effect, so "rainbow brightness 0" did
+not turn the blinking LED off. Do not set the trigger when the
+brightness or the red color is zero.
+
+The animator backend compared the index of the LED with the string
+"activity", so the assert stopped the animator with the first frame.
+It also wrote the brightness as a float, which sysfs refuses.
+
+Pass the arguments of the activity quoted, the same way the other
+backends do.
+---
+ backend/mox/animator_backend.py | 4 ++--
+ backend/mox/backend.sh          | 9 +++++++--
+ 2 files changed, 9 insertions(+), 4 deletions(-)
+
+diff --git a/backend/mox/animator_backend.py b/backend/mox/animator_backend.py
+index 91b349e..ffe121b 100644
+--- a/backend/mox/animator_backend.py
++++ b/backend/mox/animator_backend.py
+@@ -14,9 +14,9 @@ class Backend:
+ 
+     def update(self, ledid: int, red: int, green: int, blue: int) -> None:
+         """Update color of LED on given index."""
+-        assert ledid == "activity"
++        assert ledid == 0  # There is only one LED
+         brightness = self.uci.get("rainbow", "all", "brightness", dtype=int, default=255)
+-        os.write(self._fd, f"{red * brightness / 255}".encode())
++        os.write(self._fd, f"{red * brightness // 255}".encode())
+ 
+     def apply(self) -> None:
+         """Apply previous LEDs state updates if that is required."""
+diff --git a/backend/mox/backend.sh b/backend/mox/backend.sh
+index 1adc7dd..a0fde1e 100644
+--- a/backend/mox/backend.sh
++++ b/backend/mox/backend.sh
+@@ -35,7 +35,7 @@ set_led() {
+ 
+ 	if [ "$mode" = "auto" ]; then # override auto mode
+ 		mode="activity"
+-		mode_args="heartbeat"
++		set "heartbeat"
+ 	fi
+ 	local global_brightness
+ 	global_brightness="$(brightness)"
+@@ -50,6 +50,11 @@ set_led() {
+ 		activity)
+ 			brightness=0
+ 			trigger="activity"
++			# The trigger switches the LED on its own, so the only way to
++			# honor zero brightness is not to use it.
++			if [ "$global_brightness" -eq 0 ] || [ "$r" -eq 0 ]; then
++				trigger="none"
++			fi
+ 			;;
+ 		animate)
+ 			# For animation we we rely on animator
+@@ -65,7 +70,7 @@ set_led() {
+ 	echo "none" > "$SYSFS/trigger"
+ 	echo "$brightness" > "$SYSFS/brightness"
+ 	if [ "$trigger" = "activity" ]; then
+-		apply_activity "$led" $mode_args "$@" \
++		apply_activity "$led" "$@" \
+ 			|| warning "activity setup failed for: $led"
+ 	else
+ 		echo "$trigger" > "$SYSFS/trigger"
