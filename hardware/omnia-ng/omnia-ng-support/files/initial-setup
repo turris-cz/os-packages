@@ -47,6 +47,9 @@ start() {
         uci set "wireless.@wifi-iface[$i].disabled"=$DISABLED
         uci set "wireless.$(uci get "wireless.@wifi-iface[$i].device").disabled"=$DISABLED
         uci set "wireless.$(uci get "wireless.@wifi-iface[$i].device").channel"='auto'
+        if [ "$(uci get "wireless.$(uci get "wireless.@wifi-iface[$i].device").band")" = "5g" ]; then
+            uci set "wireless.$(uci get "wireless.@wifi-iface[$i].device").acs_exclude_dfs"='1'
+        fi
         i=$((i + 1))
     done
     uci commit wireless
