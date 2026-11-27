@@ -248,6 +248,33 @@ check_clock() {
     fi
 }
 
+# With nor_update on the command line, writes the images of a NOR bundle to
+# the MTD partitions of the same name. download_medkit stores the bundle as
+# nor.tar.gz, a medkit drive may carry it as nor.tgz.
+nor_update() {
+    local bundle="" f img mtd
+    [ -n "$NOR_UPDATE" ] || return 0
+    for f in nor.tar.gz nor.tgz; do
+        if [ -f /mnt/src/"$f" ]; then
+            bundle=/mnt/src/"$f"
+            break
+        fi
+    done
+    [ -n "$bundle" ] || return 0
+    # A bad NOR image can brick the board, so never write one without a valid signature
+    usign -V -m "$bundle" -P /etc/opkg/keys || die 2 "Can't validate the NOR bundle signature"
+    # Unpack to RAM, not to the medkit drive
+    rm -rf /tmp/nor
+    mkdir -p /tmp/nor
+    tar -C /tmp/nor -xzf "$bundle" || die 2 "Unpacking NOR failed!!!"
+    for img in /tmp/nor/*.img; do
+        [ -f "$img" ] || continue
+        # The whole quoted name, so env.img does not match "u-boot-env"
+        mtd="$(grep "\"$(basename "$img" .img)\"" /proc/mtd | sed 's|^\([^:]*\):.*|/dev/\1|' | head -n1)"
+        [ -z "$mtd" ] || mtd write "$img" "$mtd" || die 2 "Writing $(basename "$img") to $mtd failed"
+    done
+}
+
 reflash() {
     if [ -f /tmp/medkit-drive ]; then
         if expr "$(cat /tmp/medkit-drive)" : "${TARGET_DRIVE}.*" > /dev/null; then
@@ -278,15 +305,7 @@ reflash() {
     sync
     umount -fl /mnt/trg
     create_factory
-    if [ -n "$NOR_UPDATE" ] && [ -f /mnt/src/nor.tgz ]; then
-        mkdir -p /mnt/src/nor
-        tar -C /mnt/src/nor -xzvf /mnt/src/nor.tgz || die 2 "Unpacking NOR failed!!!"
-        cd /mnt/src/nor
-        for img in *.img; do
-            mtd="$(grep "$(basename "$img" .img)\"" /proc/mtd | sed 's|^\([^[:blank:]]*\):\ \([^[:blank:]]*\)\ \([^[:blank:]]*\)\ .*|/dev/\1|' | head -n1)"
-            [ -z "$mtd" ] || mtd write $img $mtd
-        done
-    fi
+    nor_update
 }
 
 reboot() {
